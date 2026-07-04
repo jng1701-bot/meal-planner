@@ -145,7 +145,8 @@ const CONDS = {
   roux:{n:"Curry roux",jp:"カレールー",p:250}, miso:{n:"Miso",jp:"味噌",p:350},
   mayo:{n:"Kewpie mayo",jp:"マヨネーズ",p:250}, garlic:{n:"Garlic tube",jp:"にんにくチューブ",p:150},
   ginger:{n:"Ginger tube",jp:"生姜チューブ",p:150}, oil:{n:"Cooking oil",jp:"サラダ油",p:300},
-  katakuriko:{n:"Potato starch",jp:"片栗粉",p:200}
+  katakuriko:{n:"Potato starch",jp:"片栗粉",p:200},
+  ponzu:{n:"Ponzu",jp:"ポン酢",p:300}
 };
 /* ============ INGREDIENTS ============ */
 const ING = {
@@ -170,7 +171,10 @@ const ING = {
   cantomato:{n:"Canned tomato",jp:"カットトマト缶",u:"g",p:0.3,cat:"dry"},
   pasta:{n:"Pasta",jp:"スパゲッティ",u:"g",p:0.3,cat:"dry"},
   fbroc:{n:"Frozen broccoli",jp:"冷凍ブロッコリー",u:"g",p:0.6,cat:"frozen"},
-  fveg:{n:"Frozen mixed veg",jp:"冷凍ミックスベジタブル",u:"g",p:0.5,cat:"frozen"}
+  fveg:{n:"Frozen mixed veg",jp:"冷凍ミックスベジタブル",u:"g",p:0.5,cat:"frozen"},
+  udon:{n:"Frozen udon",jp:"冷凍うどん",u:"g",p:0.25,cat:"frozen"},
+  saba:{n:"Salted mackerel fillet",jp:"塩さば切身",u:"pc",p:150,cat:"meat"},
+  panko:{n:"Panko",jp:"パン粉",u:"g",p:0.4,cat:"dry"}
 };
 const CATS = {meat:"🥩 Meat & fish 肉・魚", veg:"🥬 Produce 野菜", other:"🥚 Chilled 卵・豆腐", dry:"🍝 Dry & canned 乾物・缶", frozen:"🧊 Frozen 冷凍"};
 /* ============ RECIPES (qty per serving) ============ */
@@ -222,7 +226,31 @@ const RECIPES = [
   steps:["Salted salmon straight into the air fryer, 180°C 10–12 min.","Frozen broccoli alongside for the last 5, dab of mayo.","Rice from the cooker. The laziest real meal in Japan."]},
  {id:"karaage", n:"Air-fryer karaage", jp:"唐揚げ", gear:["air","rice"], time:"10 min work", batch:true, freeze:"freeze marinated raw",
   ing:[["chicken",150],["cabbage",50]], rice:1, conds:["soy","garlic","ginger","katakuriko"],
-  steps:["Cut chicken to chunks, marinate in soy + garlic + ginger (batch it: freeze extra portions raw in bags).","Toss in katakuriko, air fry 190°C 12–14 min, flip once.","Shredded cabbage + rice."]}
+  steps:["Cut chicken to chunks, marinate in soy + garlic + ginger (batch it: freeze extra portions raw in bags).","Toss in katakuriko, air fry 190°C 12–14 min, flip once.","Shredded cabbage + rice."]},
+ {id:"chinchalok", n:"Chinchalok omelette don", jp:"チンチャロクオムレツ丼", gear:["pan","rice"], time:"7 min", batch:false,
+  ing:[["egg",3],["negi",0.2]], rice:1, conds:["oil"],
+  steps:["Beat eggs with 1 tsp of your chinchalok and sliced negi.","Hot pan, oil, pour, scramble-fold soft — don't overcook.","Slide over rice. Belachan on the side if you want heat. Your signature dish."]},
+ {id:"chahan", n:"Fried rice (chahan)", jp:"チャーハン", gear:["pan"], time:"10 min", batch:false, flex:true,
+  ing:[["pork",80],["egg",2],["negi",0.3]], rice:1, conds:["soy","sesame","torigara","oil"],
+  steps:["Hot pan, oil, scramble eggs, set aside.","Fry pork, add day-old or reheated frozen rice, break it up on high heat.","Egg back in, season: 1 tsp stock powder + soy around the rim + sesame oil. Chinchalok works in here too."]},
+ {id:"shogayaki", n:"Ginger pork (shōgayaki)", jp:"豚の生姜焼き", gear:["pan","rice"], time:"10 min", batch:true,
+  ing:[["pork",150],["onion",0.5],["cabbage",50]], rice:1, conds:["soy","mirin","ginger","oil"],
+  steps:["Fry sliced onion + pork on high heat.","Add soy + mirin (1:1) + a big squeeze of ginger tube, toss 1 min until glossy.","Rice + shredded cabbage. The sauce-meat batch keeps 3 days chilled."]},
+ {id:"soboro", n:"Soboro don (meat & egg)", jp:"そぼろ丼", gear:["pan","rice"], time:"12 min", batch:true, flex:true, freeze:"soboro freezes well",
+  ing:[["gpork",120],["egg",2]], rice:1, conds:["soy","mirin","sake","ginger"],
+  steps:["Simmer ground meat in soy + mirin + sake + ginger, stirring until dry and crumbly.","Scramble eggs separately into soft curds.","Both over rice. Make a big soboro batch — it keeps a week."]},
+ {id:"nabe", n:"Chicken mizutaki nabe", jp:"水炊き鍋", gear:["pot"], time:"20 min", batch:true,
+  ing:[["chicken",150],["cabbage",150],["tofu",0.5],["shimeji",50]], rice:1, conds:["dashi","ponzu"],
+  steps:["Water + hondashi in the pot, bring to a simmer.","Add chicken chunks, then cabbage, tofu, shimeji. Lid on 10 min.","Eat from the pot with ponzu. Night two: add rice to the leftover broth = zōsui."]},
+ {id:"udon", n:"One-pot mentsuyu udon", jp:"かけうどん", gear:["pot"], time:"8 min", batch:false,
+  ing:[["udon",200],["egg",1],["negi",0.2],["pork",50]], conds:["mentsuyu"],
+  steps:["Boil water + mentsuyu (1:7), drop in pork slices.","Add frozen udon straight from the freezer, 2 min.","Crack an egg in, negi on top, lid 1 min. Done."]},
+ {id:"saba", n:"Air-fryer mackerel set", jp:"塩さば定食", gear:["air","rice"], time:"3 min work", batch:false,
+  ing:[["saba",1],["daikon",50]], rice:1, conds:["soy"],
+  steps:["Salted saba into the air fryer, 180°C 10 min, skin up.","Grate the daikon while it cooks.","Rice + grated daikon with a drop of soy. Cheaper than the salmon set, just as lazy."]},
+ {id:"katsu", n:"Air-fryer chicken katsu", jp:"チキンカツ", gear:["air","rice"], time:"12 min work", batch:false,
+  ing:[["chicken",150],["panko",15],["cabbage",80]], rice:1, conds:["mayo","soy"],
+  steps:["Flatten chicken thigh, coat in a thin layer of mayo (replaces flour+egg), press into panko.","Air fry 190°C 14 min, flip at 10.","Shredded cabbage + rice. Sauce = soy + mayo, or your belachan."]}
 ];
 const EAT_OUT = 1000;
 const GEARICON = {rice:"🍚 rice cooker", pot:"🍲 pot", pan:"🍳 pan", air:"💨 air fryer"};
@@ -237,14 +265,16 @@ function save(){ localStorage.setItem("lmp", JSON.stringify(S)); }
 
 /* ============ ACTIONS ============ */
 function setTab(t){ S.tab=t; save(); render(); }
-function stepMeals(d){ S.N = Math.min(14, Math.max(3, S.N+d)); save(); if (S.plan) plan("keep"); else render(); }
+function stepMeals(d){ S.N = Math.min(14, Math.max(1, S.N+d)); save(); if (S.plan) plan(S.N<=2?true:"keep"); else render(); }
 function setVariety(v){ S.v=v; save(); plan(true); }
 function eligible(){ return RECIPES; }
 function plan(reshuffle){
   const N = S.N, v = S.v;
-  const k = v===1 ? 1 : v===2 ? Math.min(3, Math.max(2, Math.ceil(N/3))) : Math.min(N, 6);
+  const short = N<=2; /* travel week: fresh quick dishes only, no batching */
+  const k = short ? N : v===1 ? 1 : v===2 ? Math.min(3, Math.max(2, Math.ceil(N/3))) : Math.min(N, 6);
   let pool = eligible();
-  if (v===1) pool = pool.filter(r=>r.batch);
+  if (short) pool = pool.filter(r=>!r.batch);
+  else if (v===1) pool = pool.filter(r=>r.batch);
   const locked = pool.filter(r=>S.locked.includes(r.id)).slice(0,k);
   let picks = [...locked];
   if (reshuffle!=="keep" || !S.plan) {
@@ -257,7 +287,8 @@ function plan(reshuffle){
   save(); render();
 }
 function swap(id){
-  const pool = eligible().filter(r=>!S.plan.includes(r.id));
+  let pool = eligible().filter(r=>!S.plan.includes(r.id));
+  if (S.N<=2) pool = pool.filter(r=>!r.batch);
   if (!pool.length) return;
   const nu = pool[Math.floor(Math.random()*pool.length)];
   S.plan = S.plan.map(x=>x===id?nu.id:x);
@@ -338,6 +369,7 @@ function renderPlan(c){
     </div>
     <div class="seg">${[1,2,3].map(v=>`<button class="${S.v===v?"on":""}" onclick="setVariety(${v})">${V[v]}</button>`).join("")}</div>
     <button class="cta" onclick="plan(true)">🎲 Generate my week</button>
+    ${S.N<=2?`<div class="hint">✈️ Short week: quick cook-fresh dishes only — no batching, no leftovers.</div>`:""}
   </div>`;
   if (c) {
     h += `<h2>This week</h2>` + c.picks.map(r=>`
