@@ -148,7 +148,8 @@ const CONDS = {
   mayo:{n:"Kewpie mayo",jp:"マヨネーズ",p:250}, garlic:{n:"Garlic tube",jp:"にんにくチューブ",p:150},
   ginger:{n:"Ginger tube",jp:"生姜チューブ",p:150}, oil:{n:"Cooking oil",jp:"サラダ油",p:300},
   katakuriko:{n:"Potato starch",jp:"片栗粉",p:200},
-  ponzu:{n:"Ponzu",jp:"ポン酢",p:300}
+  ponzu:{n:"Ponzu",jp:"ポン酢",p:300},
+  ketchup:{n:"Ketchup",jp:"ケチャップ",p:200}
 };
 /* ============ INGREDIENTS ============ */
 const ING = {
@@ -175,7 +176,11 @@ const ING = {
   fbroc:{n:"Frozen broccoli",jp:"冷凍ブロッコリー",u:"g",p:0.6,cat:"frozen"},
   fveg:{n:"Frozen mixed veg",jp:"冷凍ミックスベジタブル",u:"g",p:0.5,cat:"frozen"},
   udon:{n:"Frozen udon",jp:"冷凍うどん",u:"g",p:0.25,cat:"frozen"},
-  panko:{n:"Panko",jp:"パン粉",u:"g",p:0.4,cat:"dry"}
+  panko:{n:"Panko",jp:"パン粉",u:"g",p:0.4,cat:"dry"},
+  tuna:{n:"Tuna can",jp:"ツナ缶",u:"pc",p:120,cat:"dry"},
+  tomato:{n:"Tomato",jp:"トマト",u:"pc",p:100,cat:"veg"},
+  yakisoba:{n:"Yakisoba noodles",jp:"焼きそば麺（ソース付き）",u:"pc",p:60,cat:"other"},
+  gyoza:{n:"Frozen gyoza",jp:"冷凍餃子",u:"g",p:0.5,cat:"frozen"}
 };
 const CATS = {meat:"🥩 Meat & fish 肉・魚", veg:"🥬 Produce 野菜", other:"🥚 Chilled 卵・豆腐", dry:"🍝 Dry & canned 乾物・缶", frozen:"🧊 Frozen 冷凍"};
 /* ============ RECIPES (qty per serving) ============ */
@@ -248,7 +253,34 @@ const RECIPES = [
   steps:["Pot: 350 ml water + 50 ml mentsuyu per serving. Bring to a boil.","Add 50 g thin pork slices, 1 min, skim any foam.","Frozen udon block straight in — no thawing. 2 min, loosening it with chopsticks as it softens.","Crack an egg in, do NOT stir, lid on, heat OFF, wait 1 min — you get a just-set onsen-style egg.","Negi on top, eat from the pot. Total washing up: one pot, one pair of chopsticks."]},
  {id:"katsu", n:"Air-fryer chicken katsu", jp:"チキンカツ", gear:["air","rice"], time:"12 min work", batch:false,
   ing:[["chicken",150],["panko",15],["cabbage",80]], rice:1, conds:["mayo","soy"],
-  steps:["Put the chicken thigh between two sheets of plastic wrap and flatten it to an even ~1.5 cm with a bottle or your fist — even thickness = even cooking.","Spread a THIN layer of mayo over the whole surface with the back of a spoon. This replaces the flour-and-egg dip entirely.","Tip ~15 g panko onto a plate and press the chicken into it firmly, both sides, until fully coated.","Air fryer 190 °C: 10 min, flip carefully, 4 more min until deep golden. Check: juices run clear / 75 °C inside.","Rest 3 min (juicier), slice into strips, serve on rice with 80 g shredded cabbage. Sauce: soy + mayo mixed, or your belachan."]}
+  steps:["Put the chicken thigh between two sheets of plastic wrap and flatten it to an even ~1.5 cm with a bottle or your fist — even thickness = even cooking.","Spread a THIN layer of mayo over the whole surface with the back of a spoon. This replaces the flour-and-egg dip entirely.","Tip ~15 g panko onto a plate and press the chicken into it firmly, both sides, until fully coated.","Air fryer 190 °C: 10 min, flip carefully, 4 more min until deep golden. Check: juices run clear / 75 °C inside.","Rest 3 min (juicier), slice into strips, serve on rice with 80 g shredded cabbage. Sauce: soy + mayo mixed, or your belachan."]},
+{id:"omurice", n:"Omurice", jp:"オムライス", gear:["pan","rice"], time:"15 min", batch:false,
+  ing:[["chicken",60],["onion",0.25],["egg",2]], rice:1, conds:["ketchup","torigara","oil"],
+  steps:["Per serving: dice a quarter onion and 60 g chicken small. Have ~200 g cooked rice ready and HOT (microwave frozen rice works).","Pan on medium, 15 ml (1 tbsp) oil. Chicken + onion ~3 min until the chicken is white all through.","Rice in, break it up, add 30 ml (2 tbsp) ketchup + 1 tsp chicken stock powder. Toss 2 min, then mound it onto a plate in an oval shape.","Wipe the pan with kitchen paper. Beat 2 eggs. Medium-high, 15 ml (1 tbsp) oil, eggs in — drag the edges inward 3–4 times and stop while the top is still glossy.","Slide the soft omelette over the rice mound. Ketchup zigzag on top. Restaurant-shaped is optional; delicious is guaranteed."]},
+ {id:"tunamayo", n:"Tuna-mayo don (zero cook)", jp:"ツナマヨ丼", gear:["rice"], time:"2 min", batch:false,
+  ing:[["tuna",1],["negi",0.2]], rice:1, conds:["mayo","soy"],
+  steps:["Hot rice into a bowl — about 200 g cooked per serving.","Open the tuna can and press the lid down over the sink to drain the liquid out.","Mix the tuna with 15 ml (1 tbsp) mayo + 5 ml (1 tsp) soy right in the can or a small bowl.","Pile onto the rice, sliced negi on top. Total time: 90 seconds. This is the emergency meal that keeps you from ordering delivery."]},
+ {id:"yakisoba", n:"Yakisoba", jp:"焼きそば", gear:["pan"], time:"10 min", batch:false, flex:true,
+  ing:[["pork",80],["yakisoba",1],["cabbage",100],["moyashi",50]], conds:["oyster","soy","mayo","oil"],
+  steps:["Per serving: cut 80 g pork bite-size, tear 100 g cabbage into pieces by hand, rinse 50 g bean sprouts.","Pan on HIGH, 15 ml (1 tbsp) oil. Pork until browned, then vegetables, toss 2 min.","Add the noodle packet + 30 ml (2 tbsp) water. Loosen the noodles gently with chopsticks as they steam, ~1 min.","Sauce: the packet powder if your noodles came with one, otherwise 15 ml (1 tbsp) oyster sauce + 5 ml (1 tsp) soy. Toss 1 min until everything is coated and glossy.","Kewpie squiggle on top. Belachan for the brave."]},
+ {id:"gyoza", n:"Frozen gyoza set", jp:"冷凍餃子定食", gear:["pan","rice"], time:"10 min", batch:false,
+  ing:[["gyoza",300],["cabbage",50]], rice:1, conds:["soy","sesame","oil"],
+  steps:["Pan on medium-high, 15 ml (1 tbsp) oil. Arrange 10–12 frozen gyoza flat side down, straight from the freezer — no thawing, no gaps needed.","Fry ~2 min. Lift one with chopsticks to peek: the base should be light gold.","Pour in 100 ml water and put the lid ON immediately (it will spit). Steam ~5 min until the water is gone.","Lid off, 1 more min to re-crisp the bases. They release easily when ready — do not force them early.","Dip: 15 ml soy + a drop of sesame oil (+ belachan). Rice from the cooker. Zero shame, this is a real Japanese dinner."]},
+ {id:"butashabu", n:"Pork shabu & cabbage with ponzu", jp:"豚しゃぶポン酢", gear:["pot"], time:"12 min", batch:false,
+  ing:[["pork",100],["cabbage",150],["moyashi",100]], rice:1, conds:["ponzu","sesame"],
+  steps:["Tear 150 g cabbage per serving into pieces, rinse the moyashi. Boil water in the pot, drop both in for 2 min, scoop out onto your plate as a bed.","Turn the heat DOWN until the water barely bubbles — a rolling boil makes pork tough; small lazy bubbles keep it tender.","Lower 100 g pork slices in one at a time. Each needs only 30–40 seconds — when no pink remains, it is done.","Lift the pork onto the cabbage bed. Pour ponzu over everything + 5 ml (1 tsp) sesame oil.","Rice on the side. No oil, no frying, and the pot only touched water — easiest washing-up in the database."]},
+ {id:"tomatorice", n:"Rice-cooker tomato & tuna rice", jp:"炊飯器トマトツナご飯", gear:["rice"], time:"5 min prep", batch:true,
+  ing:[["tomato",1],["tuna",0.5],["onion",0.25]], rice:1, conds:["torigara","soy"],
+  steps:["Per serving: rinse 150 g rice, into the cooker, water to just UNDER the 1-cup line (the tomato adds liquid).","Stir in 1 tsp chicken stock powder + half a drained tuna can + a quarter onion, diced.","Core the tomato (cut a small cone out of the stem end) and sit it whole in the middle of the rice. It looks wrong; it is right.","Press cook. When it beeps, smash the tomato with the paddle and mix everything through.","Season: 5 ml (1 tsp) soy + black pepper. Freezes well in portions."]},
+ {id:"curryudon", n:"Curry udon", jp:"カレーうどん", gear:["pot"], time:"10 min", batch:false,
+  ing:[["udon",200],["pork",50],["negi",0.2]], conds:["mentsuyu","roux"],
+  steps:["Pot: 300 ml water + 40 ml mentsuyu per serving. Boil, add 50 g pork slices, 1 min, skim the foam.","Frozen udon straight in, 2 min, loosen with chopsticks.","Heat OFF. Melt in 1 roux block (25 g) per serving, stirring until smooth.","Back on LOW ~1 min until it thickens — keep stirring, roux + noodles love to stick to the bottom.","Negi on top. Warning from experience: curry udon splashes — lean over the pot."]},
+ {id:"butadaikon", n:"Pork & daikon simmer", jp:"豚バラ大根", gear:["pot"], time:"30 min", batch:true, flex:true,
+  ing:[["pork",100],["daikon",150]], rice:1, conds:["soy","mirin","sake","ginger","sesame"],
+  steps:["Per serving: peel 150 g daikon and cut into 2 cm half-moons. Cut 100 g pork bite-size.","Pot on medium, 5 ml (1 tsp) sesame oil. Pork first until it changes colour, then daikon, 2 min.","Add per serving: 200 ml water + 22 ml (1.5 tbsp) soy + 15 ml (1 tbsp) each mirin and sake + 2 cm ginger tube.","Lid slightly ajar, medium-low, 20 min. Done when the daikon is translucent and a chopstick slides through.","Heat off, rest 10 min — daikon drinks the sauce as it cools. Keeps 3 days and improves daily."]},
+ {id:"napolitan", n:"One-pot napolitan pasta", jp:"ナポリタン", gear:["pot"], time:"15 min", batch:false, flex:true,
+  ing:[["bacon",40],["onion",0.25],["pasta",100]], conds:["ketchup","torigara","oil"],
+  steps:["Per serving: cut 40 g bacon into strips, slice a quarter onion.","Pot on medium, 5 ml (1 tsp) oil. Bacon + onion, 2 min.","Add 250 ml water + 1 tsp chicken stock powder per serving. Boil, add 100 g pasta snapped in half.","Stir every 2 min for ~9 min until the water is nearly gone.","Add 45 ml (3 tbsp) ketchup per serving, toss 1 min on low until it goes from bright red to brick-orange — that colour change is the flavour developing. Kewpie drizzle optional."]}
 ];
 const EAT_OUT = 1000;
 const GEARICON = {rice:"🍚 rice cooker", pot:"🍲 pot", pan:"🍳 pan", air:"💨 air fryer"};
@@ -432,7 +464,7 @@ function renderCook(c){
   if (batchers[0]) sched += `<p><span class="day">Sunday batch (~45 min):</span> all ${c.servings[batchers[0].id]} servings of <b>${batchers[0].n}</b>${batchers[0].freeze?` — ${batchers[0].freeze}`:""}. Portion into containers.</p>`;
   if (batchers[1]) sched += `<p><span class="day">Wednesday top-up (~30 min):</span> batch <b>${batchers[1].n}</b>${batchers[1].freeze?` — ${batchers[1].freeze}`:""}.</p>`;
   batchers.slice(2).forEach(r=> sched += `<p><span class="day">Also batch:</span> <b>${r.n}</b> (${c.servings[r.id]} servings).</p>`);
-  quick.forEach(r=> sched += `<p><span class="day">Cook fresh (${r.time}):</span> <b>${r.n}</b> × ${c.servings[r.id]} — too quick to batch.</p>`);
+  quick.forEach(r=> sched += `<p><span class="day">Cook fresh (${r.time}):</span> <b>${r.n}</b> × ${c.servings[r.id]} — ${r.batch?"batchable, but at this size fresher is easier":"too quick to be worth batching"}.</p>`);
   sched += `<p><span class="day">Rice:</span> ${Math.ceil(c.riceGo)} rice-cooker cups (${Math.ceil(c.riceGo)*150} g dry) total in the Tiger — batch it, freeze flat portions, microwave to revive.</p>`;
   let h = `<div class="card sched">${sched}</div><h2>Recipes</h2>`;
   h += c.picks.map(r=>`
