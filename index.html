@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#faf9f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1b1a17" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Meals">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍚</text></svg>">
+<title>Lazy Meal Planner</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg:#faf9f5; --card:#ffffff; --ink:#1a1a17; --muted:#6b6a63; --line:#e8e6de;
+    --accent:#c96f4a; --accent-ink:#fff; --accent-soft:#f6e8e1;
+    --green:#3d7a4f; --green-soft:#e6f0e8; --blue:#3d5a7a; --blue-soft:#e5ebf2;
+    --gold:#8a6d1f; --gold-soft:#f5efdc; --press:#f3f1ea;
+    --shadow:0 1px 3px rgba(40,35,25,.06), 0 4px 14px rgba(40,35,25,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#1b1a17; --card:#26241f; --ink:#ece9e1; --muted:#a29e92; --line:#3a3730;
+      --accent:#d98a63; --accent-ink:#1b1a17; --accent-soft:#3d2e25;
+      --green:#7fbf92; --green-soft:#26362b; --blue:#8fabc9; --blue-soft:#252e38;
+      --gold:#cfb45e; --gold-soft:#37301c; --press:#2e2c26;
+      --shadow:0 1px 3px rgba(0,0,0,.3);
+    }
+  }
+  * { box-sizing:border-box; margin:0; -webkit-tap-highlight-color:transparent; }
+  html { height:100%; }
+  body { background:var(--bg); color:var(--ink); min-height:100%;
+    font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans",sans-serif;
+    padding-bottom:calc(76px + env(safe-area-inset-bottom)); }
+  header.top { padding:calc(14px + env(safe-area-inset-top)) 20px 6px; max-width:640px; margin:0 auto; }
+  header.top h1 { font-size:21px; letter-spacing:-.01em; }
+  .hsub { color:var(--muted); font-size:13.5px; margin-top:1px; }
+  main { max-width:640px; margin:0 auto; padding:10px 16px 24px; }
+  .tab { display:none; } .tab.on { display:block; animation:fade .18s ease; }
+  @keyframes fade { from{opacity:0; transform:translateY(4px)} to{opacity:1} }
+  h2 { font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:22px 4px 8px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:12px; box-shadow:var(--shadow); }
+  .hint { font-size:13.5px; color:var(--muted); background:var(--accent-soft); border-radius:12px; padding:10px 12px; margin-top:10px; line-height:1.45; }
+  .hint b { color:var(--ink); }
+  /* ---- controls ---- */
+  .rowb { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .lbl { font-size:15px; font-weight:600; }
+  .stepper { display:flex; align-items:center; gap:2px; }
+  .stepper button { width:44px; height:44px; border-radius:50%; border:1px solid var(--line); background:var(--card); color:var(--accent); font-size:24px; font-weight:600; cursor:pointer; }
+  .stepper button:active { background:var(--press); }
+  .stepper b { min-width:52px; text-align:center; font-size:22px; }
+  .seg { display:flex; background:var(--press); border-radius:12px; padding:3px; margin-top:8px; }
+  .seg button { flex:1; min-height:44px; border:none; border-radius:10px; background:transparent; color:var(--muted); font:600 13.5px/1.25 inherit; cursor:pointer; padding:6px 4px; }
+  .seg button.on { background:var(--card); color:var(--ink); box-shadow:var(--shadow); }
+  .cta { display:block; width:100%; min-height:52px; border:none; border-radius:14px; background:var(--accent); color:var(--accent-ink); font:700 17px inherit; cursor:pointer; margin-top:16px; }
+  .cta:active { filter:brightness(1.08); }
+  button.mini { min-height:44px; padding:8px 14px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--accent); font:600 14px inherit; cursor:pointer; }
+  button.mini:active { background:var(--press); }
+  button.mini.locked { color:var(--gold); border-color:var(--gold); background:var(--gold-soft); }
+  /* ---- chips ---- */
+  .chip { display:inline-block; font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:999px; margin:2px 4px 0 0; }
+  .gear { background:var(--blue-soft); color:var(--blue); }
+  .batch { background:var(--green-soft); color:var(--green); }
+  .fresh { background:var(--gold-soft); color:var(--gold); }
+  .flexchip { background:var(--gold-soft); color:var(--gold); }
+  /* ---- dish cards (plan) ---- */
+  .dish { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px 16px; margin-bottom:10px; box-shadow:var(--shadow); }
+  .dish .name { font-weight:700; font-size:16.5px; }
+  .dish .jp { color:var(--muted); font-size:12.5px; font-weight:400; }
+  .serv { float:right; background:var(--accent-soft); color:var(--accent); font-weight:700; font-size:13px; padding:4px 10px; border-radius:999px; }
+  @media (prefers-color-scheme: dark){ .serv{ color:var(--ink);} }
+  .dish .acts { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  /* ---- shop rows ---- */
+  .prog { height:10px; background:var(--press); border-radius:5px; overflow:hidden; margin:10px 0 6px; }
+  .prog i { display:block; height:100%; background:var(--green); border-radius:5px; transition:width .25s ease; }
+  .grow { display:flex; align-items:center; gap:12px; min-height:54px; padding:8px 4px; border-bottom:1px solid var(--line); cursor:pointer; user-select:none; -webkit-user-select:none; }
+  .grow:last-child { border-bottom:none; }
+  .grow:active { background:var(--press); }
+  .tick { flex:0 0 28px; height:28px; border-radius:50%; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; color:transparent; font-size:15px; font-weight:800; transition:all .15s; }
+  .grow.done .tick { background:var(--green); border-color:var(--green); color:#fff; }
+  .grow .what { flex:1; min-width:0; }
+  .grow .what b { font-size:15.5px; font-weight:600; }
+  .grow .what .jp { color:var(--muted); font-size:12.5px; }
+  .grow.done .what { opacity:.4; } .grow.done .what b { text-decoration:line-through; }
+  .grow .amt { text-align:right; font-size:13.5px; color:var(--muted); white-space:nowrap; line-height:1.35; }
+  .grow .amt b { display:block; color:var(--ink); font-size:14.5px; }
+  .grow.done .amt { opacity:.4; }
+  .ghead { font-size:12.5px; font-weight:700; color:var(--muted); padding:14px 4px 4px; text-transform:uppercase; letter-spacing:.05em; }
+  details.shelf summary { min-height:44px; display:flex; align-items:center; font-weight:600; color:var(--accent); cursor:pointer; list-style:none; }
+  details.shelf summary::-webkit-details-marker { display:none; }
+  /* ---- cook ---- */
+  details.rec { background:var(--card); border:1px solid var(--line); border-radius:16px; margin-bottom:10px; box-shadow:var(--shadow); overflow:hidden; }
+  details.rec summary { display:flex; align-items:center; gap:10px; min-height:60px; padding:12px 16px; cursor:pointer; list-style:none; }
+  details.rec summary::-webkit-details-marker { display:none; }
+  details.rec .rb { padding:2px 16px 16px; }
+  details.rec ol { padding-left:22px; margin:10px 0 4px; }
+  details.rec li { font-size:16.5px; line-height:1.55; margin-bottom:10px; }
+  .ing { color:var(--muted); font-size:14px; line-height:1.5; }
+  .sched p { margin-bottom:10px; font-size:15px; }
+  .sched .day { font-weight:700; color:var(--blue); }
+  /* ---- save ---- */
+  .stats { display:flex; gap:10px; }
+  .stat { flex:1; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px; box-shadow:var(--shadow); }
+  .stat b { display:block; font-size:19px; } .stat.sv b { color:var(--green); }
+  .stat span { font-size:11.5px; color:var(--muted); }
+  input[type=number] { min-height:48px; padding:6px 12px; border:1px solid var(--line); border-radius:12px; width:130px; font:16px inherit; background:var(--card); color:var(--ink); }
+  .logrow { display:flex; align-items:center; gap:8px; font-size:14px; min-height:44px; }
+  .bar { height:8px; background:var(--green); border-radius:4px; min-width:2px; }
+  .del { min-width:44px; min-height:44px; border:none; background:none; color:var(--muted); font-size:15px; cursor:pointer; }
+  .empty { text-align:center; color:var(--muted); padding:44px 16px; font-size:15px; }
+  /* ---- tab bar ---- */
+  nav.tabbar { position:fixed; left:0; right:0; bottom:0; display:flex; justify-content:center;
+    background:color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom); z-index:10; }
+  nav.tabbar .inner { display:flex; width:100%; max-width:640px; }
+  nav.tabbar button { flex:1; min-height:58px; border:none; background:none; color:var(--muted); font:600 11px inherit; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
+  nav.tabbar button .ic { font-size:22px; line-height:1; }
+  nav.tabbar button.on { color:var(--accent); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>Lazy Meal Planner</h1>
+  <div class="hsub" id="hsub">One pot · one pan · rice cooker · air fryer</div>
+</header>
+
+<main>
+  <div class="tab" id="tab-plan"></div>
+  <div class="tab" id="tab-shop"></div>
+  <div class="tab" id="tab-cook"></div>
+  <div class="tab" id="tab-save"></div>
+</main>
+
+<nav class="tabbar"><div class="inner" id="tabbar"></div></nav>
+
+<script>
+/* ============ CONDIMENT CORE ============ */
+const CONDS = {
+  soy:{n:"Soy sauce",jp:"醤油",p:250}, mirin:{n:"Mirin",jp:"みりん風調味料",p:300},
+  sake:{n:"Cooking sake",jp:"料理酒",p:250}, mentsuyu:{n:"Mentsuyu (3x)",jp:"めんつゆ 3倍濃縮",p:300},
+  sesame:{n:"Sesame oil",jp:"ごま油",p:350}, oyster:{n:"Oyster sauce",jp:"オイスターソース",p:250},
+  torigara:{n:"Chicken stock powder",jp:"鶏ガラスープの素",p:300}, dashi:{n:"Hondashi",jp:"ほんだし",p:350},
+  roux:{n:"Curry roux",jp:"カレールー",p:250}, miso:{n:"Miso",jp:"味噌",p:350},
+  mayo:{n:"Kewpie mayo",jp:"マヨネーズ",p:250}, garlic:{n:"Garlic tube",jp:"にんにくチューブ",p:150},
+  ginger:{n:"Ginger tube",jp:"生姜チューブ",p:150}, oil:{n:"Cooking oil",jp:"サラダ油",p:300},
+  katakuriko:{n:"Potato starch",jp:"片栗粉",p:200}
+};
+/* ============ INGREDIENTS ============ */
+const ING = {
+  chicken:{n:"Chicken thigh",jp:"鶏もも肉",u:"g",p:1.3,cat:"meat"},
+  pork:{n:"Pork komagire",jp:"豚こま切れ",u:"g",p:1.4,cat:"meat"},
+  beef:{n:"Beef komagire",jp:"牛こま切れ",u:"g",p:2.8,cat:"meat"},
+  gpork:{n:"Ground pork",jp:"豚ひき肉",u:"g",p:1.2,cat:"meat"},
+  bacon:{n:"Bacon",jp:"ベーコン",u:"g",p:2.0,cat:"meat"},
+  salmon:{n:"Salted salmon fillet",jp:"塩鮭切身",u:"pc",p:250,cat:"meat"},
+  egg:{n:"Eggs",jp:"卵",u:"pc",p:30,cat:"other"},
+  tofu:{n:"Tofu (block)",jp:"木綿豆腐",u:"pc",p:100,cat:"other"},
+  kimchi:{n:"Kimchi",jp:"キムチ",u:"g",p:0.9,cat:"other"},
+  onion:{n:"Onion",jp:"玉ねぎ",u:"pc",p:50,cat:"veg"},
+  carrot:{n:"Carrot",jp:"にんじん",u:"pc",p:60,cat:"veg"},
+  potato:{n:"Potato",jp:"じゃがいも",u:"pc",p:60,cat:"veg"},
+  cabbage:{n:"Cabbage",jp:"キャベツ",u:"g",p:0.4,cat:"veg"},
+  moyashi:{n:"Bean sprouts",jp:"もやし",u:"g",p:0.2,cat:"veg"},
+  shimeji:{n:"Shimeji mushrooms",jp:"しめじ",u:"g",p:1.0,cat:"veg"},
+  daikon:{n:"Daikon",jp:"大根",u:"g",p:0.35,cat:"veg"},
+  negi:{n:"Green onion",jp:"長ねぎ",u:"pc",p:120,cat:"veg"},
+  cucumber:{n:"Cucumber",jp:"きゅうり",u:"pc",p:60,cat:"veg"},
+  cantomato:{n:"Canned tomato",jp:"カットトマト缶",u:"g",p:0.3,cat:"dry"},
+  pasta:{n:"Pasta",jp:"スパゲッティ",u:"g",p:0.3,cat:"dry"},
+  fbroc:{n:"Frozen broccoli",jp:"冷凍ブロッコリー",u:"g",p:0.6,cat:"frozen"},
+  fveg:{n:"Frozen mixed veg",jp:"冷凍ミックスベジタブル",u:"g",p:0.5,cat:"frozen"}
+};
+const CATS = {meat:"🥩 Meat & fish 肉・魚", veg:"🥬 Produce 野菜", other:"🥚 Chilled 卵・豆腐", dry:"🍝 Dry & canned 乾物・缶", frozen:"🧊 Frozen 冷凍"};
+/* ============ RECIPES (qty per serving) ============ */
+const RECIPES = [
+ {id:"hainan", n:"Rice-cooker Hainanese chicken rice", jp:"炊飯器カオマンガイ", gear:["rice"], time:"5 min prep", batch:true,
+  ing:[["chicken",150],["cucumber",0.3]], rice:1, conds:["torigara","ginger","garlic","sesame","soy"],
+  steps:["Rinse 1 gō rice per serving, water slightly under the line, stir in 1 tsp chicken stock powder + squeeze of garlic & ginger tube.","Lay chicken thigh on top, skin up. Press cook.","Slice chicken, sauce = soy + sesame oil. Cucumber on the side."]},
+ {id:"takikomi", n:"Chicken & mushroom takikomi gohan", jp:"炊き込みご飯", gear:["rice"], time:"7 min prep", batch:true,
+  ing:[["chicken",80],["shimeji",50],["carrot",0.3]], rice:1, conds:["mentsuyu"],
+  steps:["Rinse rice; add water to the line minus 3 tbsp, add 3 tbsp mentsuyu per gō.","Scatter chicken bits, shimeji, thin carrot strips on top. Press cook.","Fluff and eat. Freezes well in onigiri form."]},
+ {id:"kimchirice", n:"Pork-kimchi rice cooker rice", jp:"豚キムチ炊き込みご飯", gear:["rice"], time:"5 min prep", batch:true, flex:true,
+  ing:[["pork",100],["kimchi",80]], rice:1, conds:["torigara","sesame"],
+  steps:["Rinse rice, water slightly under the line, 1 tsp chicken stock powder.","Pile pork and kimchi on top. Press cook.","Fluff, drizzle sesame oil. Belachan chilli on top if you're feeling it."]},
+ {id:"curry", n:"Japanese curry", jp:"カレーライス", gear:["pot","rice"], time:"30 min", batch:true, flex:true, freeze:"freeze without potato",
+  ing:[["chicken",120],["onion",0.5],["carrot",0.3],["potato",0.8]], rice:1, conds:["roux","oil"],
+  steps:["Brown meat and chunked veg in the pot with a little oil.","Cover with water, simmer 15 min.","Off heat, melt in 1 roux block per serving. Simmer 5 min. Rice from the rice cooker."]},
+ {id:"keema", n:"Keema curry", jp:"キーマカレー", gear:["pot","rice"], time:"20 min", batch:true, flex:true, freeze:"freezes perfectly",
+  ing:[["gpork",120],["onion",0.5],["cantomato",100],["fveg",50]], rice:1, conds:["roux","garlic","ginger","oil"],
+  steps:["Fry diced onion + garlic & ginger tube, add ground pork, brown.","Add canned tomato + frozen veg + splash of water, simmer 10 min.","Melt in roux. Done. Portion over rice all week."]},
+ {id:"nikujaga", n:"Nikujaga (meat & potato stew)", jp:"肉じゃが", gear:["pot"], time:"25 min", batch:true, flex:true,
+  ing:[["pork",100],["potato",1.2],["onion",0.5],["carrot",0.3]], rice:1, conds:["mentsuyu"],
+  steps:["Brown pork briefly, add chunked potato, onion, carrot.","Add water to almost cover + mentsuyu (1:4 with the water).","Simmer 15–20 min until potatoes are soft. Better next day."]},
+ {id:"tonjiru", n:"Tonjiru (pork miso soup) + rice", jp:"豚汁", gear:["pot","rice"], time:"20 min", batch:true,
+  ing:[["pork",80],["daikon",80],["carrot",0.3],["onion",0.3],["negi",0.2]], rice:1, conds:["miso","dashi","sesame"],
+  steps:["Fry pork + veg in sesame oil in the pot.","Add water + hondashi, simmer 10–15 min.","Off heat, dissolve miso. A meal with rice on the side."]},
+ {id:"oyakodon", n:"Oyakodon", jp:"親子丼", gear:["pan","rice"], time:"10 min", batch:false,
+  ing:[["chicken",120],["egg",2],["onion",0.5]], rice:1, conds:["mentsuyu"],
+  steps:["Simmer sliced onion + chicken in mentsuyu diluted 1:3 with water.","When cooked, pour beaten egg over, lid on 1 min.","Slide onto rice."]},
+ {id:"gyudon", n:"Gyudon", jp:"牛丼", gear:["pan","rice"], time:"12 min", batch:true, freeze:"topping freezes well",
+  ing:[["beef",120],["onion",0.5]], rice:1, conds:["soy","mirin","sake","dashi","ginger"],
+  steps:["Simmer sliced onion in water + soy + mirin + sake (2:2:2 tbsp) + dashi + ginger.","Add beef komagire, simmer 5 min, skim.","Over rice. Make 4 servings, chill/freeze the topping."]},
+ {id:"stirfry", n:"Pork & cabbage stir-fry", jp:"肉野菜炒め", gear:["pan","rice"], time:"10 min", batch:false, flex:true,
+  ing:[["pork",120],["cabbage",150],["moyashi",100]], rice:1, conds:["oyster","soy","garlic","oil"],
+  steps:["Hot pan, oil, pork until browned.","Add torn cabbage + moyashi, high heat 2 min.","Oyster sauce + soy + garlic tube. Over rice. Belachan makes this sing."]},
+ {id:"mapo", n:"Mapo tofu", jp:"麻婆豆腐", gear:["pan","rice"], time:"15 min", batch:true,
+  ing:[["tofu",0.5],["gpork",80],["negi",0.2]], rice:1, conds:["miso","soy","torigara","garlic","ginger","sesame","katakuriko"],
+  steps:["Fry ground pork with garlic & ginger tube.","Add 150 ml water + 1 tsp stock powder + 1 tbsp miso + soy. Add cubed tofu, simmer 3 min.","Thicken with katakuriko slurry, finish with sesame oil. Over rice."]},
+ {id:"tompasta", n:"One-pot tomato bacon pasta", jp:"ワンポットトマトパスタ", gear:["pot"], time:"15 min", batch:false,
+  ing:[["pasta",100],["bacon",50],["cantomato",200],["onion",0.3]], conds:["torigara","garlic","oil"],
+  steps:["In the pot: bacon + onion + garlic tube, fry 2 min.","Add canned tomato + 250 ml water + 1 tsp stock powder + halved dry pasta.","Simmer, stirring, until pasta is done and sauce clings (~10 min)."]},
+ {id:"wafupasta", n:"One-pot wafū mushroom pasta", jp:"和風きのこパスタ", gear:["pot"], time:"15 min", batch:false,
+  ing:[["pasta",100],["bacon",40],["shimeji",60]], conds:["mentsuyu","garlic"],
+  steps:["Fry bacon + shimeji + garlic tube in the pot.","Add 300 ml water + 2 tbsp mentsuyu + halved pasta.","Simmer until liquid is absorbed. Butter if you have it."]},
+ {id:"afteriyaki", n:"Air-fryer teriyaki chicken", jp:"照り焼きチキン", gear:["air","rice"], time:"5 min work", batch:true,
+  ing:[["chicken",150],["fbroc",80]], rice:1, conds:["soy","mirin","garlic"],
+  steps:["Toss chicken in soy + mirin + garlic tube (marinate a batch for the week).","Air fry 180°C 15 min, broccoli in for the last 5.","Rice cooker does the rest. Zero attention."]},
+ {id:"afsalmon", n:"Air-fryer salmon set", jp:"焼き鮭定食", gear:["air","rice"], time:"3 min work", batch:false,
+  ing:[["salmon",1],["fbroc",80]], rice:1, conds:["mayo"],
+  steps:["Salted salmon straight into the air fryer, 180°C 10–12 min.","Frozen broccoli alongside for the last 5, dab of mayo.","Rice from the cooker. The laziest real meal in Japan."]},
+ {id:"karaage", n:"Air-fryer karaage", jp:"唐揚げ", gear:["air","rice"], time:"10 min work", batch:true, freeze:"freeze marinated raw",
+  ing:[["chicken",150],["cabbage",50]], rice:1, conds:["soy","garlic","ginger","katakuriko"],
+  steps:["Cut chicken to chunks, marinate in soy + garlic + ginger (batch it: freeze extra portions raw in bags).","Toss in katakuriko, air fry 190°C 12–14 min, flip once.","Shredded cabbage + rice."]}
+];
+const EAT_OUT = 1000;
+const GEARICON = {rice:"🍚 rice cooker", pot:"🍲 pot", pan:"🍳 pan", air:"💨 air fryer"};
+const yen = x => "¥"+Math.round(x).toLocaleString();
+
+/* ============ STATE (schema-compatible with v2) ============ */
+const S = JSON.parse(localStorage.getItem("lmp")||"{}");
+S.owned = S.owned||{oil:true}; S.locked = S.locked||[];
+S.bought = S.bought||{}; S.protein = S.protein||{}; S.log = S.log||[];
+S.N = S.N||7; S.v = S.v||2; S.tab = S.tab||"plan";
+function save(){ localStorage.setItem("lmp", JSON.stringify(S)); }
+
+/* ============ ACTIONS ============ */
+function setTab(t){ S.tab=t; save(); render(); }
+function stepMeals(d){ S.N = Math.min(14, Math.max(3, S.N+d)); save(); if (S.plan) plan("keep"); else render(); }
+function setVariety(v){ S.v=v; save(); plan(true); }
+function eligible(){ return RECIPES; }
+function plan(reshuffle){
+  const N = S.N, v = S.v;
+  const k = v===1 ? 1 : v===2 ? Math.min(3, Math.max(2, Math.ceil(N/3))) : Math.min(N, 6);
+  let pool = eligible();
+  if (v===1) pool = pool.filter(r=>r.batch);
+  const locked = pool.filter(r=>S.locked.includes(r.id)).slice(0,k);
+  let picks = [...locked];
+  if (reshuffle!=="keep" || !S.plan) {
+    S.bought = {};
+    const rest = pool.filter(r=>!picks.some(p=>p.id===r.id)).sort(()=>Math.random()-.5);
+    rest.sort((a,b)=> (N/k>=3 ? (b.batch?1:0)-(a.batch?1:0) : 0));
+    while (picks.length<k && rest.length) picks.push(rest.shift());
+    S.plan = picks.map(r=>r.id);
+  }
+  save(); render();
+}
+function swap(id){
+  const pool = eligible().filter(r=>!S.plan.includes(r.id));
+  if (!pool.length) return;
+  const nu = pool[Math.floor(Math.random()*pool.length)];
+  S.plan = S.plan.map(x=>x===id?nu.id:x);
+  S.locked = S.locked.filter(x=>x!==id);
+  save(); render();
+}
+function lock(id){
+  S.locked = S.locked.includes(id) ? S.locked.filter(x=>x!==id) : [...S.locked, id];
+  save(); render();
+}
+function toggleCond(id){ S.owned[id]=!S.owned[id]; save(); render(); }
+function toggleBought(id){ S.bought[id]=!S.bought[id]; save(); render(); }
+function clearTicks(){ S.bought={}; save(); render(); }
+const MEATCYCLE = ["chicken","pork","beef","gpork"];
+const baseMeat = r => (r.ing.find(([id])=>ING[id].cat==="meat")||[null])[0];
+function ingsOf(r){ return r.ing.map(([id,q])=> (r.flex && S.protein[r.id] && id===baseMeat(r)) ? [S.protein[r.id],q] : [id,q]); }
+function cycleProtein(rid){
+  const r = RECIPES.find(x=>x.id===rid), b = baseMeat(r);
+  const cur = S.protein[rid]||b, nxt = MEATCYCLE[(MEATCYCLE.indexOf(cur)+1)%MEATCYCLE.length];
+  if (nxt===b) delete S.protein[rid]; else S.protein[rid]=nxt;
+  save(); render();
+}
+function logWeek(){
+  const v = +document.getElementById("spent").value;
+  if (!v || v<0) return;
+  S.log.push({d:new Date().toISOString().slice(0,10), spent:v, meals:S.N});
+  save(); render();
+}
+function delLog(i){ S.log.splice(i,1); save(); render(); }
+
+/* ============ DERIVED ============ */
+function compute(){
+  if (!S.plan) return null;
+  const picks = S.plan.map(id=>RECIPES.find(r=>r.id===id)).filter(Boolean);
+  if (!picks.length) return null;
+  const N = S.N, servings = {};
+  picks.forEach((r,i)=>{ servings[r.id] = Math.floor(N/picks.length) + (i < N%picks.length ? 1 : 0); });
+  const g = {}; let riceGo = 0;
+  picks.forEach(r=>{
+    const s = servings[r.id];
+    riceGo += (r.rice||0)*s;
+    ingsOf(r).forEach(([id,q])=>{ g[id]=(g[id]||0)+q*s; });
+  });
+  let food = 0;
+  const rows = Object.entries(g).map(([id,q])=>{
+    const it = ING[id];
+    const buy = it.u==="pc" ? Math.ceil(q) : Math.ceil(q/50)*50;
+    const cost = buy*it.p; food += cost;
+    return {id, cat:it.cat, n:it.n, jp:it.jp, disp: it.u==="pc" ? buy+(buy>1?" pcs":" pc") : buy+" g", cost};
+  });
+  const needed = [...new Set(picks.flatMap(r=>r.conds))];
+  return {picks, servings, N, rows, food, riceGo, needed};
+}
+
+/* ============ RENDER ============ */
+const EMPTY = t => `<div class="card"><div class="empty">${t}</div></div>`;
+function render(){
+  const c = compute();
+  document.getElementById("hsub").innerHTML = c
+    ? `${c.N} meals · ${yen(c.food)} groceries · <span style="color:var(--green);font-weight:600">saves ${yen(c.N*EAT_OUT-c.food)}</span>`
+    : "One pot · one pan · rice cooker · air fryer";
+  renderPlan(c); renderShop(c); renderCook(c); renderSave(c); renderTabs(c);
+  ["plan","shop","cook","save"].forEach(t=>{
+    document.getElementById("tab-"+t).className = "tab"+(S.tab===t?" on":"");
+  });
+}
+function renderTabs(c){
+  const done = c ? Object.keys(S.bought).filter(k=>S.bought[k]).length : 0;
+  const tabs = [["plan","🗓","Plan"],["shop","🛒","Shop"],["cook","🍳","Cook"],["save","📈","Save"]];
+  document.getElementById("tabbar").innerHTML = tabs.map(([t,ic,l])=>
+    `<button class="${S.tab===t?"on":""}" onclick="setTab('${t}')"><span class="ic">${ic}</span>${l}${t==="shop"&&c&&done?` ${done}/${c.rows.length}`:""}</button>`).join("");
+}
+function renderPlan(c){
+  const V = {1:"1 dish<br>max batch",2:"2–3 dishes",3:"Different<br>most days"};
+  let h = `<div class="card">
+    <div class="rowb"><span class="lbl">Meals at home this week</span>
+      <div class="stepper"><button onclick="stepMeals(-1)" aria-label="fewer">−</button><b>${S.N}</b><button onclick="stepMeals(1)" aria-label="more">+</button></div>
+    </div>
+    <div class="seg">${[1,2,3].map(v=>`<button class="${S.v===v?"on":""}" onclick="setVariety(${v})">${V[v]}</button>`).join("")}</div>
+    <button class="cta" onclick="plan(true)">🎲 Generate my week</button>
+  </div>`;
+  if (c) {
+    h += `<h2>This week</h2>` + c.picks.map(r=>`
+      <div class="dish">
+        <span class="serv">×${c.servings[r.id]}</span>
+        <div class="name">${r.n}</div><div class="jp">${r.jp}</div>
+        <div style="margin-top:6px">${r.gear.map(x=>`<span class="chip gear">${GEARICON[x]}</span>`).join("")}<span class="chip ${r.batch?"batch":"fresh"}">${r.batch?"batchable":"cook fresh"}</span>${r.flex?`<span class="chip flexchip">🏷️ any stickered meat</span>`:""}</div>
+        <div class="acts">
+          <button class="mini" onclick="swap('${r.id}')">↺ Swap</button>
+          <button class="mini ${S.locked.includes(r.id)?"locked":""}" onclick="lock('${r.id}')">${S.locked.includes(r.id)?"🔒 Locked":"🔓 Lock"}</button>
+          ${r.flex?`<button class="mini" onclick="cycleProtein('${r.id}')">↔ ${ING[S.protein[r.id]||baseMeat(r)].n}</button>`:""}
+        </div>
+      </div>`).join("");
+  } else h += EMPTY("Tap <b>Generate my week</b> to get dishes, a grocery list, and a cook schedule.");
+  document.getElementById("tab-plan").innerHTML = h;
+}
+function renderShop(c){
+  if (!c) { document.getElementById("tab-shop").innerHTML = EMPTY("No plan yet — generate one in 🗓 Plan."); return; }
+  const done = c.rows.filter(r=>S.bought[r.id]);
+  const left = c.rows.filter(r=>!S.bought[r.id]).reduce((a,r)=>a+r.cost,0);
+  let h = `<div class="card">
+    <div class="rowb"><span class="lbl">${done.length} of ${c.rows.length} in the basket</span>
+    ${done.length?`<button class="mini" onclick="clearTicks()">Clear</button>`:""}</div>
+    <div class="prog"><i style="width:${c.rows.length?Math.round(done.length/c.rows.length*100):0}%"></i></div>
+    <div style="color:var(--muted);font-size:14px">${left?`~${yen(left)} left to pick up`:"Basket complete 🎉"}</div>
+  </div><div class="card" style="padding:4px 16px">`;
+  ["meat","veg","other","dry","frozen"].forEach(cat=>{
+    const items = c.rows.filter(r=>r.cat===cat);
+    if (!items.length) return;
+    h += `<div class="ghead">${CATS[cat]}</div>`;
+    items.forEach(r=>{
+      h += `<div class="grow ${S.bought[r.id]?"done":""}" onclick="toggleBought('${r.id}')">
+        <span class="tick">✓</span>
+        <div class="what"><b>${r.n}</b><div class="jp">${r.jp}</div></div>
+        <div class="amt"><b>${r.disp}</b>${yen(r.cost)}</div>
+      </div>`;
+    });
+  });
+  h += `</div>`;
+  const toBuy = c.needed.filter(x=>!S.owned[x]);
+  if (toBuy.length) {
+    h += `<h2>Condiments to grab (one-time)</h2><div class="card" style="padding:4px 16px">` +
+      toBuy.map(x=>`<div class="grow" onclick="toggleCond('${x}')">
+        <span class="tick">✓</span>
+        <div class="what"><b>${CONDS[x].n}</b><div class="jp">${CONDS[x].jp}</div></div>
+        <div class="amt"><b>${yen(CONDS[x].p)}</b></div>
+      </div>`).join("") + `</div>`;
+  }
+  const shelf = Object.keys(CONDS).filter(x=>S.owned[x]);
+  h += `<div class="card"><details class="shelf"><summary>🧂 Your shelf (${shelf.length}) — tap to manage</summary>` +
+    (shelf.length?shelf.map(x=>`<div class="grow done" onclick="toggleCond('${x}')"><span class="tick">✓</span><div class="what"><b>${CONDS[x].n}</b><div class="jp">${CONDS[x].jp}</div></div></div>`).join(""):`<div class="empty">Nothing yet</div>`) +
+    `</details></div>
+  <div class="hint">🕖 LIFE marks meat & fish down 20–50% in the evening (割引 stickers). 🏷️ dishes take whatever protein is cheapest — swap it in Plan.</div>
+  <div class="hint">🌶️ Your stash: <b>belachan</b> lifts the stir-fry & kimchi rice; <b>chinchalok</b> + eggs = bonus 5-min omelette, or dip for the Hainanese chicken.</div>`;
+  document.getElementById("tab-shop").innerHTML = h;
+}
+function renderCook(c){
+  if (!c) { document.getElementById("tab-cook").innerHTML = EMPTY("No plan yet — generate one in 🗓 Plan."); return; }
+  const batchers = c.picks.filter(r=>r.batch && c.servings[r.id]>=3);
+  const quick = c.picks.filter(r=>!batchers.includes(r));
+  let sched = "";
+  if (batchers[0]) sched += `<p><span class="day">Sunday batch (~45 min):</span> all ${c.servings[batchers[0].id]} servings of <b>${batchers[0].n}</b>${batchers[0].freeze?` — ${batchers[0].freeze}`:""}. Portion into containers.</p>`;
+  if (batchers[1]) sched += `<p><span class="day">Wednesday top-up (~30 min):</span> batch <b>${batchers[1].n}</b>${batchers[1].freeze?` — ${batchers[1].freeze}`:""}.</p>`;
+  batchers.slice(2).forEach(r=> sched += `<p><span class="day">Also batch:</span> <b>${r.n}</b> (${c.servings[r.id]} servings).</p>`);
+  quick.forEach(r=> sched += `<p><span class="day">Cook fresh (${r.time}):</span> <b>${r.n}</b> × ${c.servings[r.id]} — too quick to batch.</p>`);
+  sched += `<p><span class="day">Rice:</span> ${Math.ceil(c.riceGo)} gō total in the Tiger — batch it, freeze flat portions, microwave to revive.</p>`;
+  let h = `<div class="card sched">${sched}</div><h2>Recipes</h2>`;
+  h += c.picks.map(r=>`
+    <details class="rec">
+      <summary><div style="flex:1"><b>${r.n}</b> <span class="jp" style="color:var(--muted);font-size:12.5px">${r.jp}</span><div style="color:var(--muted);font-size:13px">${r.time} · ×${c.servings[r.id]} servings</div></div><span style="color:var(--muted)">▾</span></summary>
+      <div class="rb">
+        <div class="ing"><b>Per serving:</b> ${ingsOf(r).map(([id,q])=>{const it=ING[id];return `${it.n} ${it.u==="pc"?(q<1?q:q)+" pc":q+" g"}`}).join(" · ")}${r.rice?` · rice 1 gō`:""}<br><b>Shelf:</b> ${r.conds.map(x=>CONDS[x].n).join(", ")}</div>
+        <ol>${r.steps.map(s=>`<li>${s}</li>`).join("")}</ol>
+      </div>
+    </details>`).join("");
+  document.getElementById("tab-cook").innerHTML = h;
+}
+function renderSave(c){
+  const totSpent = S.log.reduce((a,l)=>a+l.spent,0);
+  const totSaved = S.log.reduce((a,l)=>a+(l.meals*EAT_OUT-l.spent),0);
+  let h = `<div class="stats">
+    <div class="stat"><b>${S.log.length}</b><span>weeks logged</span></div>
+    <div class="stat"><b>${yen(totSpent)}</b><span>total spent</span></div>
+    <div class="stat sv"><b>${yen(totSaved)}</b><span>saved vs eating out</span></div>
+  </div>
+  <div class="card" style="margin-top:12px">
+    <div class="lbl" style="margin-bottom:8px">What did this week actually cost?</div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <input type="number" id="spent" inputmode="numeric" placeholder="${c?Math.round(c.food):"e.g. 1700"}">
+      <button class="mini" style="color:var(--accent-ink);background:var(--accent);border:none;flex:1" onclick="logWeek()">Log week</button>
+    </div>`;
+  if (S.log.length) {
+    const maxSaved = Math.max(1,...S.log.map(l=>l.meals*EAT_OUT-l.spent));
+    h += `<div style="margin-top:14px">` + S.log.map((l,i)=>{
+      const sv = l.meals*EAT_OUT-l.spent;
+      return `<div class="logrow"><span style="width:84px;color:var(--muted)">${l.d.slice(5)}</span><span style="width:66px">${yen(l.spent)}</span><div class="bar" style="width:${Math.max(2,Math.round(sv/maxSaved*36))}%"></div><span style="color:var(--green);font-weight:600">+${yen(sv)}</span><button class="del" onclick="delLog(${i})" aria-label="remove">✕</button></div>`;
+    }).join("") + `</div>`;
+  } else h += `<div class="hint">Log your real LIFE receipt each week and watch the savings stack up.</div>`;
+  h += `</div>`;
+  document.getElementById("tab-save").innerHTML = h;
+}
+
+render();
+</script>
+</body>
+</html>
