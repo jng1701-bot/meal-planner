@@ -121,7 +121,14 @@
   nav.tabbar button { flex:1; min-height:58px; border:none; background:none; color:var(--muted); font:600 11px inherit; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
   nav.tabbar button .ic { font-size:22px; line-height:1; }
   nav.tabbar button.on { color:var(--accent); }
-  button:focus-visible, input:focus-visible, summary:focus-visible, .grow:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:8px; }
+  button:focus-visible, input:focus-visible, summary:focus-visible, .grow:focus-visible, details.rec li:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:8px; }
+  #undobar { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(72px + env(safe-area-inset-bottom)); background:var(--ink); color:var(--bg); border-radius:10px; padding:10px 8px 10px 16px; font-size:14px; display:none; align-items:center; gap:4px; z-index:30; box-shadow:0 4px 16px rgba(0,0,0,.3); max-width:92vw; white-space:nowrap; }
+  #undobar.show { display:flex; animation:fade .18s ease; }
+  #undobar button { border:none; background:none; color:inherit; font:700 14px inherit; cursor:pointer; min-height:44px; padding:0 12px; text-decoration:underline; }
+  details.rec li { cursor:pointer; user-select:none; -webkit-user-select:none; }
+  details.rec li.done { opacity:.45; text-decoration:line-through; }
+  .prices .logrow input { width:88px; min-height:44px; }
+  .prices .logrow { border-bottom:1px solid var(--line); } .prices .logrow:last-of-type { border-bottom:none; }
   @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
 </style>
 </head>
@@ -139,6 +146,8 @@
   <div class="tab" id="tab-cook"></div>
   <div class="tab" id="tab-save"></div>
 </main>
+
+<div id="undobar" role="status"><span id="undomsg"></span><button onclick="undoNow()">↩ Undo</button></div>
 
 <nav class="tabbar"><div class="inner" id="tabbar"></div></nav>
 
@@ -304,8 +313,34 @@ S.log = Array.isArray(S.log) ? S.log.filter(l=>isObj(l)&&typeof l.spent==="numbe
 S.N = Number.isInteger(S.N) && S.N>=1 && S.N<=14 ? S.N : 7;
 S.v = [1,2,3].includes(S.v) ? S.v : 2;
 S.tab = ["plan","shop","cook","save"].includes(S.tab) ? S.tab : "plan";
+S.stepdone = isObj(S.stepdone) ? S.stepdone : {};
+S.price = isObj(S.price) ? Object.fromEntries(Object.entries(S.price).filter(([k,v])=>ING[k] && typeof v==="number" && isFinite(v) && v>0)) : {};
+S.aircap = Number.isInteger(S.aircap) && S.aircap>=1 && S.aircap<=6 ? S.aircap : 2;
 if (S.plan !== undefined) { S.plan = Array.isArray(S.plan) ? S.plan.filter(x=>typeof x==="string") : undefined; if (S.plan && !S.plan.length) S.plan = undefined; }
 function save(){ try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {} }
+const priceOf = id => S.price[id] !== undefined ? S.price[id] : ING[id].p;
+const capOf = r => (r.gear && r.gear.includes("air") && r.cap) ? S.aircap : r.cap;
+
+/* ============ UNDO (1 level, session only) ============ */
+let UNDO = null, undoTimer = null, priceOpen = false;
+function snapUndo(msg){
+  UNDO = { msg, s: JSON.parse(JSON.stringify({ plan:S.plan||null, locked:S.locked, protein:S.protein, bought:S.bought, stepdone:S.stepdone })) };
+}
+function showUndo(){
+  if (!UNDO) return;
+  const el = document.getElementById("undobar");
+  document.getElementById("undomsg").textContent = UNDO.msg;
+  el.classList.add("show");
+  clearTimeout(undoTimer); undoTimer = setTimeout(hideUndo, 6000);
+}
+function hideUndo(){ document.getElementById("undobar").classList.remove("show"); UNDO = null; }
+function undoNow(){
+  if (!UNDO) return;
+  const u = UNDO.s;
+  if (u.plan) S.plan = u.plan; else delete S.plan;
+  S.locked = u.locked; S.protein = u.protein; S.bought = u.bought; S.stepdone = u.stepdone;
+  hideUndo(); save(); render();
+}
 
 /* ============ ACTIONS ============ */
 function setTab(t){ S.tab=t; save(); render(); }
@@ -321,14 +356,17 @@ function plan(reshuffle){
   else if (v===1) pool = pool.filter(r=>r.batch);
   const locked = pool.filter(r=>S.locked.includes(r.id)).slice(0,k);
   let picks = [...locked];
+  let undid = false;
   if (reshuffle!=="keep" || !S.plan) {
-    S.bought = {};
+    if (S.plan) { snapUndo("New week generated"); undid = true; }
+    S.bought = {}; S.stepdone = {};
     const rest = pool.filter(r=>!picks.some(p=>p.id===r.id)).sort(()=>Math.random()-.5);
     rest.sort((a,b)=> (N/k>=3 ? (b.batch?1:0)-(a.batch?1:0) : 0));
     while (picks.length<k && rest.length) picks.push(rest.shift());
     S.plan = picks.map(r=>r.id);
   }
   save(); render();
+  if (undid) showUndo();
 }
 function swap(id){
   let pool = eligible().filter(r=>!S.plan.includes(r.id));
@@ -336,9 +374,10 @@ function swap(id){
   else if (S.v===1) pool = pool.filter(r=>r.batch);
   if (!pool.length) return;
   const nu = pool[Math.floor(Math.random()*pool.length)];
+  snapUndo(`Swapped in ${nu.n}`);
   S.plan = S.plan.map(x=>x===id?nu.id:x);
   S.locked = S.locked.filter(x=>x!==id);
-  save(); render();
+  save(); render(); showUndo();
 }
 function lock(id){
   S.locked = S.locked.includes(id) ? S.locked.filter(x=>x!==id) : [...S.locked, id];
@@ -365,6 +404,40 @@ function logWeek(){
 }
 function delLog(i){ if(!confirm("Remove this logged week?")) return; S.log.splice(i,1); save(); render(); }
 function kb(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); e.currentTarget.click(); } }
+function toggleStep(el, rid, i){
+  const d = S.stepdone[rid] = S.stepdone[rid] || {};
+  if (d[i]) delete d[i]; else d[i] = true;
+  if (!Object.keys(d).length) delete S.stepdone[rid];
+  save();
+  if (el) { el.classList.toggle("done", !!d[i]); el.setAttribute("aria-checked", String(!!d[i])); }
+}
+function stepAir(d){ S.aircap = Math.min(6, Math.max(1, S.aircap+d)); save(); render(); }
+function setPrice(id, v){
+  v = +v;
+  const it = ING[id];
+  if (!it || !isFinite(v) || v<=0) { render(); return; }
+  const p = it.u==="pc" ? v : v/100;
+  if (Math.abs(p-it.p) < 1e-9) delete S.price[id]; else S.price[id] = p;
+  save(); render();
+}
+function resetPrices(){ if(!confirm("Reset all prices to defaults?")) return; S.price = {}; save(); render(); }
+let wlock = null, wakeWanted = false;
+async function toggleWake(){
+  wakeWanted = !wakeWanted;
+  try {
+    if (!wakeWanted && wlock) { await wlock.release(); wlock = null; }
+    else if (wakeWanted) {
+      wlock = await navigator.wakeLock.request("screen");
+      wlock.addEventListener("release", ()=>{ wlock = null; });
+    }
+  } catch(e) { wakeWanted = false; wlock = null; }
+  render();
+}
+document.addEventListener("visibilitychange", async ()=>{
+  if (document.visibilityState==="visible" && wakeWanted && !wlock) {
+    try { wlock = await navigator.wakeLock.request("screen"); wlock.addEventListener("release", ()=>{ wlock = null; }); } catch(e){}
+  }
+});
 
 /* ============ DERIVED ============ */
 function compute(){
@@ -383,7 +456,7 @@ function compute(){
   const rows = Object.entries(g).map(([id,q])=>{
     const it = ING[id];
     const buy = it.u==="pc" ? Math.ceil(q) : Math.ceil(q/50)*50;
-    const cost = buy*it.p; food += cost;
+    const cost = buy*priceOf(id); food += cost;
     return {id, cat:it.cat, n:it.n, jp:it.jp, disp: it.u==="pc" ? buy+(buy>1?" pcs":" pc") : buy+" g", cost};
   });
   const needed = [...new Set(picks.flatMap(r=>r.conds))];
@@ -394,9 +467,10 @@ function compute(){
 const EMPTY = t => `<div class="card"><div class="empty">${t}</div></div>`;
 function gearTips(r, s){
   const t = [];
-  if (r.cap && s>r.cap) t.push(r.cap===1
+  const cp = capOf(r);
+  if (cp && s>cp) t.push(cp===1
     ? `⚙️ This dish only works one serving at a time — do ${s} quick rounds back-to-back.`
-    : `⚙️ ×${s} servings won&#39;t fit in one go — cook ${Math.ceil(s/r.cap)} rounds of ~${r.cap}.`);
+    : `⚙️ ×${s} servings won&#39;t fit in one go — cook ${Math.ceil(s/cp)} rounds of ~${cp}.`);
   if (r.kettle) t.push("⚡ Boil the 0.8 L kettle first, pour into the pot — saves ~5 min.");
   if (r.crowd) t.push("🍳 Doing 2+ servings at once? Split into rounds — a crowded 26 cm pan steams instead of sears.");
   return t;
@@ -477,7 +551,16 @@ function renderShop(c){
   const shelf = Object.keys(CONDS).filter(x=>S.owned[x]);
   h += `<div class="card"><details class="shelf"><summary>🧂 Your shelf (${shelf.length}) — tap to manage</summary>` +
     (shelf.length?shelf.map(x=>`<div class="grow done" role="checkbox" aria-checked="true" tabindex="0" onkeydown="kb(event)" onclick="toggleCond('${x}')"><span class="tick">✓</span><div class="what"><b>${CONDS[x].n}</b><div class="jp">${CONDS[x].jp}</div></div></div>`).join(""):`<div class="empty">Nothing yet</div>`) +
-    `</details></div>
+    `</details></div>`;
+  const edited = Object.keys(S.price).length;
+  h += `<div class="card prices"><details class="shelf"${priceOpen?" open":""} ontoggle="priceOpen=this.open"><summary>💴 Tune prices to your receipts${edited?` (${edited} edited)`:""}</summary>
+    <div style="color:var(--muted);font-size:13px;margin:4px 0 6px">Match these to what LIFE actually charges — every cost and saving updates. ¥ per 100 g, or ¥ per piece/pack/can.</div>` +
+    Object.entries(ING).map(([id,it])=>{
+      const cur = priceOf(id), disp = Math.round(it.u==="pc" ? cur : cur*100), ed = S.price[id]!==undefined;
+      return `<div class="logrow"><span style="flex:1;min-width:0"><b>${it.n}</b>${ed?" ✏️":""}<span class="jp" style="color:var(--muted);font-size:12px"> ${it.jp}</span></span><span style="color:var(--muted);font-size:12.5px">${it.u==="pc"?"¥/pc":"¥/100g"}</span><input type="number" inputmode="numeric" min="1" value="${disp}" aria-label="price of ${it.n}" onchange="setPrice('${id}',this.value)"></div>`;
+    }).join("") +
+    `${edited?`<button class="mini" style="margin-top:10px" onclick="resetPrices()">Reset all to defaults</button>`:""}
+  </details></div>
   <div class="hint">🕖 LIFE marks meat & fish down 20–50% in the evening (割引 stickers). 🏷️ dishes take whatever protein is cheapest — swap it in Plan.</div>
   <div class="hint">🌶️ Your stash: <b>belachan</b> lifts the stir-fry & kimchi rice; <b>chinchalok</b> + eggs = bonus 5-min omelette, or dip for the Hainanese chicken.</div>`;
   document.getElementById("tab-shop").innerHTML = h;
@@ -487,21 +570,28 @@ function renderCook(c){
   const batchers = c.picks.filter(r=>r.batch && c.servings[r.id]>=3);
   const quick = c.picks.filter(r=>!batchers.includes(r));
   let sched = "";
-  const rounds = r => r.cap && c.servings[r.id]>r.cap ? ` Your gear fits ~${r.cap} servings per run — do ${Math.ceil(c.servings[r.id]/r.cap)} rounds back-to-back.` : "";
+  const rounds = r => { const cp = capOf(r); return cp && c.servings[r.id]>cp ? ` Your gear fits ~${cp} servings per run — do ${Math.ceil(c.servings[r.id]/cp)} rounds back-to-back.` : ""; };
   if (batchers[0]) sched += `<p><span class="day">Sunday batch (~45 min):</span> all ${c.servings[batchers[0].id]} servings of <b>${batchers[0].n}</b>${batchers[0].freeze?` — ${batchers[0].freeze}`:""}. Portion into containers.${rounds(batchers[0])}</p>`;
   if (batchers[1]) sched += `<p><span class="day">Wednesday top-up (~30 min):</span> batch <b>${batchers[1].n}</b>${batchers[1].freeze?` — ${batchers[1].freeze}`:""}.${rounds(batchers[1])}</p>`;
   batchers.slice(2).forEach(r=> sched += `<p><span class="day">Also batch:</span> <b>${r.n}</b> (${c.servings[r.id]} servings).${rounds(r)}</p>`);
   quick.forEach(r=> sched += `<p><span class="day">Cook fresh (${r.time}):</span> <b>${r.n}</b> × ${c.servings[r.id]} — ${r.batch?"batchable, but at this size fresher is easier":"too quick to be worth batching"}.</p>`);
   const rruns = Math.ceil(Math.ceil(c.riceGo)/3);
   sched += `<p><span class="day">Rice:</span> ${Math.ceil(c.riceGo)} rice-cooker cups (${Math.ceil(c.riceGo)*150} g dry) total. Your 3-cup JAJ-A550 maxes at 3 cups per run${rruns>1?` — that is ${rruns} runs; start the next one while you eat`:""}. Freeze flat portions, microwave to revive. Bonus: the tacook plate steams veg or a chicken thigh over plain rice while it cooks — a free side.</p>`;
-  let h = `<div class="card sched">${sched}</div><h2>Recipes</h2>`;
+  let h = `<div class="card">
+    <div class="rowb"><span class="lbl">💨 Air fryer fits</span>
+      <div class="stepper"><button onclick="stepAir(-1)" aria-label="fewer air-fryer servings per run">−</button><b style="font-size:18px">${S.aircap}</b><button onclick="stepAir(1)" aria-label="more air-fryer servings per run">+</button></div></div>
+    <div style="color:var(--muted);font-size:13px;margin-top:4px">servings per run — sets the round counts on air-fryer dishes</div>
+    ${"wakeLock" in navigator ? `<button class="mini${wakeWanted?" locked":""}" aria-pressed="${wakeWanted}" style="width:100%;margin-top:12px" onclick="toggleWake()">${wakeWanted?"☀️ Screen staying awake — tap to stop":"🌙 Keep screen awake while cooking"}</button>` : ""}
+  </div>`;
+  h += `<div class="card sched">${sched}</div><h2>Recipes</h2>
+  <div class="hint">👆 Tap a step to check it off as you cook — step ticks clear when you generate a new week.</div>`;
   h += c.picks.map(r=>`
     <details class="rec">
       <summary><div style="flex:1"><b>${r.n}</b> <span class="jp" style="color:var(--muted);font-size:12.5px">${r.jp}</span><div style="color:var(--muted);font-size:13px">${r.time} · ×${c.servings[r.id]} servings</div></div><span style="color:var(--muted)">▾</span></summary>
       <div class="rb">
         ${gearTips(r,c.servings[r.id]).map(t=>`<div class="gtip">${t}</div>`).join("")}
         <div class="ing"><b>Per serving:</b> ${ingsOf(r).map(([id,q])=>{const it=ING[id];return `${it.n} ${it.u==="pc"?(q<1?q:q)+" pc":q+" g"}`}).join(" · ")}${r.rice?` · rice 150 g (1 cup)`:""}<br><b>Shelf:</b> ${r.conds.map(x=>CONDS[x].n).join(", ")}</div>
-        <ol>${r.steps.map(s=>`<li>${s}</li>`).join("")}</ol>
+        <ol>${r.steps.map((s,i)=>{const dn=!!(S.stepdone[r.id]&&S.stepdone[r.id][i]);return `<li class="${dn?"done":""}" role="checkbox" aria-checked="${dn}" tabindex="0" onkeydown="kb(event)" onclick="toggleStep(this,'${r.id}',${i})">${s}</li>`}).join("")}</ol>
       </div>
     </details>`).join("");
   document.getElementById("tab-cook").innerHTML = h;
