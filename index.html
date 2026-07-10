@@ -17,7 +17,7 @@
     --bg:#f2f5f7; --card:#ffffff; --ink:#15212e; --muted:#5b6b7b; --line:#d9e1e9;
     --accent:#2a5c8f; --accent-ink:#fff; --accent-soft:#e7eef6;
     --green:#1e7a4d; --green-soft:#e2f0e8; --blue:#2a5c8f; --blue-soft:#e7eef6;
-    --gold:#b34725; --gold-soft:#f8e9e2; --press:#e9eef3;
+    --gold:#b34725; --gold-soft:#f8e9e2; --press:#e9eef3; --ctrl:#7f909f;
     --shadow:0 1px 2px rgba(21,33,46,.05);
   }
   @media (prefers-color-scheme: dark) {
@@ -25,7 +25,7 @@
       --bg:#0f141a; --card:#171e26; --ink:#e7edf3; --muted:#93a2b1; --line:#2a3542;
       --accent:#7aa7d8; --accent-ink:#0f141a; --accent-soft:#1e2c3d;
       --green:#69bd8c; --green-soft:#1c2f24; --blue:#7aa7d8; --blue-soft:#1e2c3d;
-      --gold:#d98a70; --gold-soft:#33241d; --press:#212a35;
+      --gold:#d98a70; --gold-soft:#33241d; --press:#212a35; --ctrl:#576a80;
       --shadow:0 1px 2px rgba(0,0,0,.35);
     }
   }
@@ -50,7 +50,7 @@
   .rowb { display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .lbl { font-size:15px; font-weight:600; }
   .stepper { display:flex; align-items:center; gap:2px; }
-  .stepper button { width:44px; height:44px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--accent); font-size:24px; font-weight:600; cursor:pointer; }
+  .stepper button { width:44px; height:44px; border-radius:10px; border:1px solid var(--ctrl); background:var(--card); color:var(--accent); font-size:24px; font-weight:600; cursor:pointer; }
   .stepper button:active { background:var(--press); }
   .stepper b { min-width:52px; text-align:center; font-size:22px; }
   .seg { display:flex; background:var(--press); border-radius:8px; padding:3px; margin-top:8px; }
@@ -80,7 +80,7 @@
   .grow { display:flex; align-items:center; gap:12px; min-height:54px; padding:8px 4px; border-bottom:1px solid var(--line); cursor:pointer; user-select:none; -webkit-user-select:none; }
   .grow:last-child { border-bottom:none; }
   .grow:active { background:var(--press); }
-  .tick { flex:0 0 28px; height:28px; border-radius:8px; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; color:transparent; font-size:15px; font-weight:800; transition:all .15s; }
+  .tick { flex:0 0 28px; height:28px; border-radius:8px; border:2px solid var(--ctrl); display:flex; align-items:center; justify-content:center; color:transparent; font-size:15px; font-weight:800; transition:all .15s; }
   .grow.done .tick { background:var(--green); border-color:var(--green); color:#fff; }
   .grow .what { flex:1; min-width:0; }
   .grow .what b { font-size:15.5px; font-weight:600; }
@@ -108,7 +108,7 @@
   .stat { flex:1; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px; box-shadow:var(--shadow); }
   .stat b { display:block; font-size:19px; } .stat.sv b { color:var(--green); }
   .stat span { font-size:11.5px; color:var(--muted); }
-  input[type=number] { min-height:48px; padding:6px 12px; border:1px solid var(--line); border-radius:8px; width:130px; font:16px inherit; background:var(--card); color:var(--ink); }
+  input[type=number] { min-height:48px; padding:6px 12px; border:1px solid var(--ctrl); border-radius:8px; width:130px; font:16px inherit; background:var(--card); color:var(--ink); }
   .logrow { display:flex; align-items:center; gap:8px; font-size:14px; min-height:44px; }
   .bar { height:8px; background:var(--green); border-radius:4px; min-width:2px; }
   .del { min-width:44px; min-height:44px; border:none; background:none; color:var(--muted); font-size:15px; cursor:pointer; }
@@ -124,7 +124,8 @@
   button:focus-visible, input:focus-visible, summary:focus-visible, .grow:focus-visible, details.rec li:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:8px; }
   #undobar { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(72px + env(safe-area-inset-bottom)); background:var(--ink); color:var(--bg); border-radius:10px; padding:10px 8px 10px 16px; font-size:14px; display:none; align-items:center; gap:4px; z-index:30; box-shadow:0 4px 16px rgba(0,0,0,.3); max-width:92vw; white-space:nowrap; }
   #undobar.show { display:flex; animation:fade .18s ease; }
-  #undobar button { border:none; background:none; color:inherit; font:700 14px inherit; cursor:pointer; min-height:44px; padding:0 12px; text-decoration:underline; }
+  #undobar button { border:none; background:none; color:inherit; font:700 14px inherit; cursor:pointer; min-height:44px; padding:0 12px; text-decoration:underline; flex:0 0 auto; }
+  #undomsg { min-width:0; overflow:hidden; text-overflow:ellipsis; }
   details.rec li { cursor:pointer; user-select:none; -webkit-user-select:none; }
   details.rec li.done { opacity:.45; text-decoration:line-through; }
   .prices .logrow input { width:88px; min-height:44px; }
@@ -343,7 +344,7 @@ function undoNow(){
 }
 
 /* ============ ACTIONS ============ */
-function setTab(t){ S.tab=t; save(); render(); }
+function setTab(t){ S.tab=t; save(); render(); try{ scrollTo(0,0); }catch(e){} }
 function stepMeals(d){ S.N = Math.min(14, Math.max(1, S.N+d)); save(); if (S.plan) plan(S.N<=2?true:"keep"); else render(); }
 function setVariety(v){ S.v=v; save(); plan(true); }
 function eligible(){ return RECIPES; }
@@ -385,7 +386,7 @@ function lock(id){
 }
 function toggleCond(id){ S.owned[id]=!S.owned[id]; save(); render(); }
 function toggleBought(id){ S.bought[id]=!S.bought[id]; save(); render(); }
-function clearTicks(){ S.bought={}; save(); render(); }
+function clearTicks(){ snapUndo("Basket ticks cleared"); S.bought={}; save(); render(); showUndo(); }
 const MEATCYCLE = ["chicken","pork","beef","gpork"];
 const baseMeat = r => (r.ing.find(([id])=>ING[id].cat==="meat")||[null])[0];
 function ingsOf(r){ return r.ing.map(([id,q])=> (r.flex && S.protein[r.id] && id===baseMeat(r)) ? [S.protein[r.id],q] : [id,q]); }
@@ -465,6 +466,7 @@ function compute(){
 
 /* ============ RENDER ============ */
 const EMPTY = t => `<div class="card"><div class="empty">${t}</div></div>`;
+const EMPTYGO = t => `<div class="card"><div class="empty">${t}<br><button class="mini" style="margin-top:14px" onclick="setTab('plan')">🗓 Go to Plan</button></div></div>`;
 function gearTips(r, s){
   const t = [];
   const cp = capOf(r);
@@ -517,7 +519,7 @@ function renderPlan(c){
   document.getElementById("tab-plan").innerHTML = h;
 }
 function renderShop(c){
-  if (!c) { document.getElementById("tab-shop").innerHTML = EMPTY("No plan yet — generate one in 🗓 Plan."); return; }
+  if (!c) { document.getElementById("tab-shop").innerHTML = EMPTYGO("No plan yet — your grocery list appears here once you generate a week."); return; }
   const done = c.rows.filter(r=>S.bought[r.id]);
   const left = c.rows.filter(r=>!S.bought[r.id]).reduce((a,r)=>a+r.cost,0);
   let h = `<div class="card">
@@ -566,7 +568,7 @@ function renderShop(c){
   document.getElementById("tab-shop").innerHTML = h;
 }
 function renderCook(c){
-  if (!c) { document.getElementById("tab-cook").innerHTML = EMPTY("No plan yet — generate one in 🗓 Plan."); return; }
+  if (!c) { document.getElementById("tab-cook").innerHTML = EMPTYGO("No plan yet — recipes and your cook schedule appear here once you generate a week."); return; }
   const batchers = c.picks.filter(r=>r.batch && c.servings[r.id]>=3);
   const quick = c.picks.filter(r=>!batchers.includes(r));
   let sched = "";
@@ -614,7 +616,7 @@ function renderSave(c){
     const maxSaved = Math.max(1,...S.log.map(l=>l.meals*EAT_OUT-l.spent));
     h += `<div style="margin-top:14px">` + S.log.map((l,i)=>{
       const sv = l.meals*EAT_OUT-l.spent;
-      return `<div class="logrow"><span style="width:84px;color:var(--muted)">${l.d.slice(5)}</span><span style="width:66px">${yen(l.spent)}</span><div class="bar" style="width:${Math.max(2,Math.round(Math.max(0,sv)/maxSaved*36))}%"></div><span style="color:${sv>=0?"var(--green)":"var(--gold)"};font-weight:600">${sv>=0?"+":""}${yen(sv)}</span><button class="del" onclick="delLog(${i})" aria-label="remove">✕</button></div>`;
+      return `<div class="logrow"><span style="width:84px;color:var(--muted)">${l.d.slice(5)}</span><span style="width:66px">${yen(l.spent)}</span><div class="bar" style="width:${Math.max(2,Math.round(Math.max(0,sv)/maxSaved*36))}%"></div><span style="color:${sv>=0?"var(--green)":"var(--gold)"};font-weight:600;white-space:nowrap">${sv>=0?"+":""}${yen(sv)}</span><button class="del" onclick="delLog(${i})" aria-label="remove">✕</button></div>`;
     }).join("") + `</div>`;
   } else h += `<div class="hint">Log your real LIFE receipt each week and watch the savings stack up.</div>`;
   h += `</div>`;
