@@ -583,10 +583,10 @@ function renderCook(c){
     <div class="rowb"><span class="lbl">💨 Air fryer fits</span>
       <div class="stepper"><button onclick="stepAir(-1)" aria-label="fewer air-fryer servings per run">−</button><b style="font-size:18px">${S.aircap}</b><button onclick="stepAir(1)" aria-label="more air-fryer servings per run">+</button></div></div>
     <div style="color:var(--muted);font-size:13px;margin-top:4px">servings per run — sets the round counts on air-fryer dishes</div>
-    ${"wakeLock" in navigator ? `<button class="mini${wakeWanted?" locked":""}" aria-pressed="${wakeWanted}" style="width:100%;margin-top:12px" onclick="toggleWake()">${wakeWanted?"☀️ Screen staying awake — tap to stop":"🌙 Keep screen awake while cooking"}</button>` : ""}
   </div>`;
-  h += `<div class="card sched">${sched}</div><h2>Recipes</h2>
-  <div class="hint">👆 Tap a step to check it off as you cook — step ticks clear when you generate a new week.</div>`;
+  h += `<div class="card sched">${sched}</div><h2>Recipes</h2>`;
+  if ("wakeLock" in navigator) h += `<div class="card"><button class="mini${wakeWanted?" locked":""}" aria-pressed="${wakeWanted}" style="width:100%" onclick="toggleWake()">${wakeWanted?"☀️ Screen staying awake — tap to stop":"🌙 Keep screen awake while cooking"}</button></div>`;
+  h += `<div class="hint">👆 Tap a step to check it off as you cook — step ticks clear when you generate a new week.</div>`;
   h += c.picks.map(r=>`
     <details class="rec">
       <summary><div style="flex:1"><b>${r.n}</b> <span class="jp" style="color:var(--muted);font-size:12.5px">${r.jp}</span><div style="color:var(--muted);font-size:13px">${r.time} · ×${c.servings[r.id]} servings</div></div><span style="color:var(--muted)">▾</span></summary>
