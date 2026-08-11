@@ -176,8 +176,11 @@ eq("cook-in-only plan needs no barley", onlyCookin.mugiCups, 0);
 ok("cook-in-only plan has no barley row", !onlyCookin.rows.some(r => r.id === "mugi"));
 S.mugi = false;
 
-/* ---------- price editing ---------- */
-freshPlan();
+/* ---------- price editing ----------
+ * Pinned to a plan that definitely contains onion; a generated plan may not,
+ * which made this assertion flaky. */
+S.plan = ["curry"]; S.N = 4;
+ok("pinned plan contains onion", ev("compute()").rows.some(r => r.id === "onion"));
 const base = ev("compute()").food;
 ev("setPrice('onion', 999)");
 ok("price edit changes the bill", ev("compute()").food !== base);
@@ -195,6 +198,38 @@ R.forEach(r => {
   const html = D.getElementById("tab-cook").innerHTML + D.getElementById("tab-shop").innerHTML;
   ok("solo plan renders clean: " + r.id, !/undefined|NaN|\[object Object\]/.test(html));
 });
+
+/* ---------- rice portion: 75 g dry per serving, cook-in dishes keep a full cup ---------- */
+R.filter(r => r.rice !== undefined).forEach(r => {
+  if (r.cookin) eq("cook-in keeps a full cup: " + r.id, r.rice, 1);
+  else eq("standard portion is half a cup: " + r.id, r.rice, 0.5);
+});
+ok("no recipe still quotes 200 g cooked rice",
+  !R.some(r => r.steps.some(s => /200 g cooked/.test(s))));
+R.filter(r => r.cookin).forEach(r =>
+  ok("cook-in still measures 150 g dry: " + r.id, r.steps.some(s => /150 g rice/.test(s))));
+
+/* ---------- air-fryer capacity is fixed per recipe (stepper removed) ---------- */
+ok("stepAir is gone", ev("typeof stepAir") === "undefined");
+ok("capOf ignores any saved aircap", R.filter(r => r.gear.includes("air"))
+  .every(r => ev("capOf(RECIPES.find(x=>x.id==='" + r.id + "'))") === r.cap));
+S.aircap = 6; // a legacy value from an older save must not change anything
+ok("legacy aircap is inert", R.filter(r => r.gear.includes("air"))
+  .every(r => ev("capOf(RECIPES.find(x=>x.id==='" + r.id + "'))") === r.cap));
+delete S.aircap;
+ev("setTab('cook')");
+ok("cook view no longer offers an air-fryer stepper",
+  !/Air fryer fits/.test(D.getElementById("tab-cook").innerHTML));
+
+/* ---------- barley cost tracks the smaller portion ---------- */
+S.plan = ["curry"]; S.N = 4; S.mugi = false;
+const plainFood = ev("compute()").food;
+S.mugi = true;
+const mugiFood = ev("compute()").food;
+const perServing = (mugiFood - plainFood) / 4;
+ok("barley adds roughly ¥20 a serving, not ¥40", perServing > 8 && perServing < 32, Math.round(perServing));
+ok("mugi card copy no longer claims ¥40", !/about ¥40 a serving/.test(D.body.innerHTML));
+S.mugi = false;
 
 /* ---------- state survives a reload ---------- */
 S.plan = ["curry", "keema"]; S.mugi = true; S.N = 7; ev("save()");
