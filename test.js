@@ -282,6 +282,98 @@ const parsed = JSON.parse(raw || "{}");
 eq("mugi persisted", parsed.mugi, true);
 ok("plan persisted", Array.isArray(parsed.plan) && parsed.plan.length === 2);
 
+
+/* ---------- protein swap: a stale key here blanks the whole app ---------- */
+const MEATCYCLE = ev("MEATCYCLE");
+ok("every MEATCYCLE entry exists in the pantry", MEATCYCLE.every(k => ING[k]),
+  MEATCYCLE.filter(k => !ING[k]).join(","));
+R.filter(r => r.flex).forEach(r => {
+  S.plan = [r.id]; S.N = r.cap || 2; delete S.protein[r.id];
+  let threw = null;
+  for (let i = 0; i < MEATCYCLE.length + 2; i++) {
+    try { ev("cycleProtein('" + r.id + "')"); ev("compute()"); ev("render()"); }
+    catch (e) { threw = e.message; break; }
+  }
+  ok("protein cycle survives a full loop: " + r.id, !threw, threw);
+  ok("protein swap resolves in the pantry: " + r.id,
+    S.protein[r.id] === undefined || !!ING[S.protein[r.id]], S.protein[r.id]);
+  delete S.protein[r.id];
+});
+
+/* a save poisoned by an older build must heal on load, not blank the page */
+{
+  const poisoned = JSON.stringify({ plan: ["curry"], N: 4, protein: { curry: "beef" }, tab: "plan" });
+  const bootErrors = [];
+  const vc2 = new VirtualConsole();
+  vc2.on("jsdomError", e => bootErrors.push(String((e && e.message) || e)));
+  const d2 = new JSDOM(fs.readFileSync(HTML, "utf8"), {
+    runScripts: "dangerously", pretendToBeVisual: true, url: "https://localhost/", virtualConsole: vc2,
+    beforeParse(w) { w.localStorage.setItem("lmp", poisoned); }
+  });
+  ok("poisoned save boots without error", bootErrors.length === 0, bootErrors[0]);
+  const plan2 = d2.window.document.getElementById("tab-plan");
+  ok("poisoned save still renders the plan tab", plan2 && plan2.innerHTML.trim().length > 50);
+  eq("poisoned protein key is dropped on load", d2.window.eval("S.protein.curry"), undefined);
+  d2.window.close();
+}
+
+/* ---------- pan reality ---------- */
+R.filter(r => r.gear.includes("pan") && (r.cap || 0) > 2).forEach(r =>
+  ok("pan dish above cap 2 warns about crowding: " + r.id, !!r.crowd));
+{
+  const bd = R.find(r => r.id === "butadon");
+  S.plan = ["butadon"]; S.N = 4; ev("render()");
+  ok("brim-full pan warning reaches the cook view",
+    /brim-full in a 26 cm pan/.test(D.getElementById("tab-cook").innerHTML));
+  ok("butadon is flagged, not mislabelled as searing", bd.crowd === "full");
+}
+
+/* ---------- leftovers must not outlive food safety ---------- */
+ok("no step claims a week in the fridge",
+  !R.some(r => r.steps.some(s => /a week in the fridge|keeps a week/i.test(s))),
+  R.filter(r => r.steps.some(s => /a week in the fridge|keeps a week/i.test(s))).map(r => r.id).join(","));
+
+/* ---------- every air dish tells you how to know it is cooked ---------- */
+{
+  const DONE = /juices (run )?clear|no pink|75 °C|flakes apart|blistered gold|golden and firm|deep gold|chopstick slides/i;
+  const air = R.filter(r => r.gear.includes("air"));
+  ok("every air dish has a doneness cue", air.every(r => r.steps.some(s => DONE.test(s))),
+    air.filter(r => !r.steps.some(s => DONE.test(s))).map(r => r.id).join(","));
+}
+
+/* ---------- max-batch mode should not pick a 2-serving basket ---------- */
+{
+  S.locked = []; S.N = 7; S.v = 1;
+  const batchCaps = R.filter(r => r.batch).map(r => r.cap || 0);
+  const best = Math.max(...batchCaps);
+  let low = [];
+  for (let i = 0; i < 60; i++) {
+    S.plan = undefined; ev("plan(true)");
+    S.plan.map(id => R.find(r => r.id === id)).forEach(r => { if ((r.cap || 0) < best) low.push(r.id); });
+  }
+  ok("v=1 picks the largest-capacity batch dish", low.length === 0, [...new Set(low)].join(","));
+  S.v = 2;
+}
+
+/* ---------- accessibility: focus survives a re-render, Japanese is tagged ---------- */
+{
+  S.plan = ["curry"]; S.N = 4; S.bought = {}; ev("setTab('shop')");
+  const row = D.querySelector('#tab-shop [data-k]');
+  ok("shopping rows carry a stable focus key", !!row);
+  if (row) {
+    const key = row.getAttribute("data-k");
+    row.focus();
+    ev("render()");
+    const now = D.activeElement;
+    ok("focus survives a re-render", !!now && now.getAttribute && now.getAttribute("data-k") === key,
+      now && now.getAttribute ? String(now.getAttribute("data-k")) : "body");
+  }
+  const jp = [...D.querySelectorAll(".jp")];
+  ok("Japanese text is present to tag", jp.length > 0);
+  ok("every .jp is marked lang=ja", jp.every(el => el.getAttribute("lang") === "ja"),
+    jp.filter(el => el.getAttribute("lang") !== "ja").length + " untagged");
+}
+
 /* ---------- report ---------- */
 console.log("\n" + "=".repeat(52));
 console.log("  PASS " + pass + "   FAIL " + fail + "   (" + (pass + fail) + " assertions)");

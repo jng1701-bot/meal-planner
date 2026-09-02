@@ -212,7 +212,7 @@ const RECIPES = [
  {id:"butadaikon", tier:"A", n:"Pork & daikon simmer", jp:"豚バラ大根", gear:["pot"], time:"30 min", batch:true, cap:4, flex:true,
   ing:[["pork",100],["daikon",150]], rice:0.5, conds:["soy","mirin","sake","ginger","sesame"],
   steps:["Per serving: peel 150 g daikon and cut into 2 cm half-moons. Cut 100 g pork bite-size.","Pot on medium, 5 ml (1 tsp) sesame oil. Pork first until it changes colour, then daikon, 2 min.","Add per serving: 200 ml water + 22 ml (1.5 tbsp) soy + 15 ml (1 tbsp) each mirin and sake + 2 cm ginger tube.","Lid slightly ajar, medium-low, 20 min. Done when the daikon is translucent and a chopstick slides through.","Heat off, rest 10 min — daikon drinks the sauce as it cools. Keeps 3 days and improves daily."]},
- {id:"butadon", tier:"A", n:"Butadon (pork bowl)", jp:"豚丼", gear:["pan","rice"], time:"12 min", batch:true, cap:4, freeze:"topping freezes well",
+ {id:"butadon", tier:"A", n:"Butadon (pork bowl)", jp:"豚丼", gear:["pan","rice"], time:"12 min", batch:true, cap:4, crowd:"full", freeze:"topping freezes well",
   ing:[["pork",120],["onion",0.5]], rice:0.5, conds:["soy","mirin","sake","dashi","ginger"],
   steps:["Slice half an onion per serving into thin wedges.","In the pan, per serving: 100 ml water + 30 ml (2 tbsp) each of soy, mirin, and sake + half a tsp hondashi + 2 cm ginger tube. Bring to a boil.","Add the onion, medium heat 3 min until soft and see-through.","Add 120 g pork, separating the slices with chopsticks so they do not clump. 4–5 min, spooning off the grey foam.","Over rice. Make 3–4 servings of topping at once: 3 days fridge, 1 month freezer. Identical method to gyudon at roughly half the cost — beef is the priciest protein there is."]},
  {id:"curry", tier:"A", n:"Japanese curry", jp:"カレーライス", gear:["pot","rice"], time:"30 min", batch:true, cap:4, flex:true, freeze:"freeze without potato",
@@ -224,9 +224,9 @@ const RECIPES = [
  {id:"nikujaga", tier:"A", n:"Nikujaga (meat & potato stew)", jp:"肉じゃが", gear:["pot"], time:"25 min", batch:true, cap:4, flex:true,
   ing:[["pork",100],["potato",1.2],["onion",0.5],["carrot",0.3]], rice:0.5, conds:["mentsuyu"],
   steps:["Cut, per serving: 1 potato into quarters, half an onion into wedges, a third of a carrot into chunks.","Pot on medium-high, 5 ml (1 tsp) oil, brown 100 g pork per serving for about 1 min.","Add the vegetables, then water to ALMOST cover (~150 ml per serving) plus 40 ml mentsuyu per serving (ratio: 1 part mentsuyu to 4 parts water).","Bring to a boil, skim the foam, then lid slightly ajar and simmer medium-low 15–20 min until a fork goes into the potato with no resistance.","Heat off and rest 10 min before eating — it soaks up flavour as it cools. Genuinely better tomorrow."]},
- {id:"soboro", tier:"A", n:"Soboro don (meat & egg)", jp:"そぼろ丼", gear:["pan","rice"], time:"12 min", batch:true, cap:4, flex:true, freeze:"soboro freezes well",
+ {id:"soboro", tier:"A", n:"Soboro don (meat & egg)", jp:"そぼろ丼", gear:["pan","rice"], time:"12 min", batch:true, cap:4, flex:true, crowd:true, freeze:"soboro freezes well",
   ing:[["gpork",120],["egg",2]], rice:0.5, conds:["soy","mirin","sake","ginger"],
-  steps:["Start with a COLD pan: add 120 g ground meat + 15 ml (1 tbsp) each soy, mirin, sake + 2 cm ginger tube per serving. Mix it all together before turning on the heat — this is the no-clump trick.","Now medium heat, stirring constantly with chopsticks (2 or 3 held together work best) until the meat is fine, crumbly, and the liquid has cooked off — about 5 min. Scoop out.","Eggs: beat 2 per serving, same pan on LOW, stir gently into soft scrambled curds, ~1 min.","Rice bowl: meat over one half, egg over the other. The meat soboro keeps a week in the fridge — future-you eats in 2 minutes."]},
+  steps:["Start with a COLD pan: add 120 g ground meat + 15 ml (1 tbsp) each soy, mirin, sake + 2 cm ginger tube per serving. Mix it all together before turning on the heat — this is the no-clump trick.","Now medium heat, stirring constantly with chopsticks (2 or 3 held together work best) until the meat is fine, crumbly, and the liquid has cooked off — about 5 min. Scoop out.","Eggs: beat 2 per serving, same pan on LOW, stir gently into soft scrambled curds, ~1 min.","Rice bowl: meat over one half, egg over the other. The meat soboro keeps 3 days in the fridge, or a month in the freezer — future-you eats in 2 minutes. Cooked ground meat is the one leftover not to push past 3 days."]},
  {id:"tonjiru", tier:"A", n:"Tonjiru (pork miso soup) + rice", jp:"豚汁", gear:["pot","rice"], time:"20 min", batch:true, cap:4,
   ing:[["pork",80],["daikon",80],["carrot",0.3],["onion",0.3],["negi",0.2]], rice:0.5, conds:["miso","dashi","sesame"],
   steps:["Cut, per serving: 80 g pork into bite-size pieces, 80 g daikon into thin quarter-slices, a third each of carrot (half-moons) and onion (wedges).","Pot on medium, 5 ml (1 tsp) sesame oil. Fry the pork first, then the vegetables, 2–3 min.","Add 300 ml water + half a tsp hondashi per serving. Simmer 10–15 min until the daikon turns translucent.","Heat OFF. Put 18 g (1 tbsp) miso per serving in a ladle, dissolve it in the ladle with some broth, then stir through — boiling miso kills its flavour, so always off-heat.","Sliced green onion on top. Serve with a bowl of rice — this is a full meal."]},
@@ -256,10 +256,10 @@ const RECIPES = [
   steps:["Per serving: cut 150 g chicken thigh into 4 big chunks, 1 potato into 2 cm cubes, half an onion into thick wedges. Leave the potato skin on — it is where the crisp comes from.","In a bowl, toss all of it with 5 ml (1 tsp) oil, 15 ml (1 tbsp) soy sauce and a heavy grind of black pepper. Coat the potato properly or it turns leathery.","Preheat 3 min at 200 °C. Tip everything in as one layer — two servings is the honest limit of the 4.2 L basket.","200 °C for 20 min. Pull the basket out at the 10-minute mark and shake it once, then watch the potato edges go gold through the window.","Done when a chopstick slides into a potato and the chicken juices run clear. No rice needed, the potato is the carb — and the only thing to wash is the basket, which goes in the dishwasher."]},
  {id:"afbreast", tier:"C", n:"Air-fryer pepper chicken breast", jp:"鶏むね肉の胡椒焼き", gear:["air","rice"], time:"3 min work", batch:true, cap:2,
   ing:[["chickenbreast",150],["fbroc",80]], rice:0.5, conds:["oil","pepper","soy"],
-  steps:["Per serving: cut 150 g chicken breast into 3 cm slabs. Thick pieces stay juicy; thin ones turn to chalk.","Rub each piece with 5 ml (1 tsp) oil and a lot of black pepper. That is the entire prep.","Preheat 3 min at 180 °C. Breast in one layer, 12 min, flipping once at 6 min. 180 °C and not 200 °C — breast is lean and high heat dries it out.","Scatter 80 g frozen broccoli around it for the last 5 min, straight from the freezer.","Rest 3 min before slicing, then 5 ml (1 tsp) soy over the top. Rice from the cooker. Breast is the cheapest protein in the shop, and this is the leanest dinner in the roster."]},
+  steps:["Per serving: cut 150 g chicken breast into 3 cm slabs. Thick pieces stay juicy; thin ones turn to chalk.","Rub each piece with 5 ml (1 tsp) oil and a lot of black pepper. That is the entire prep.","Preheat 3 min at 180 °C. Breast in one layer, 12 min, flipping once at 6 min. 180 °C and not 200 °C — breast is lean and high heat dries it out.","Cut into the thickest slab to check: no pink anywhere and the juices run clear (75 °C inside). Thicker pieces want another 2–3 min — every machine runs slightly differently.","Scatter 80 g frozen broccoli around it for the last 5 min, straight from the freezer.","Rest 3 min before slicing, then 5 ml (1 tsp) soy over the top. Rice from the cooker. Breast is the cheapest protein in the shop, and this is the leanest dinner in the roster."]},
  {id:"afkatsu", tier:"C", n:"Air-fryer chicken katsu", jp:"鶏カツ", gear:["air","rice"], time:"10 min work", batch:true, cap:1, freeze:"freeze breaded, uncooked",
   ing:[["chicken",150],["egg",0.5],["cabbage",50]], rice:0.5, conds:["katakuriko","panko","oil","mayo","soy"],
-  steps:["Per serving: butterfly 150 g chicken thigh open so it lies flat and even. Even thickness is what makes or breaks a katsu.","Set out three stations: potato starch on a plate, a beaten egg in a bowl, 30 g panko on a second plate. Dust with starch, dip in egg, then press the panko on hard — pressing is what stops it falling off in the basket.","Pat 5 ml (1 tsp) oil over the crumbs with your fingers until no white powder is left. Never aerosol spray: it strips the ceramic coating, and dry panko stays pale.","Preheat 3 min at 190 °C. One cutlet, flat, with nothing touching it: 8 min, flip, 5 min more. Breaded food is the one dish that needs the basket to itself — a second serving is a second round.","Slice into 2 cm strips, shredded cabbage alongside, rice from the cooker. Mayo and soy sauce mixed 1:1 is a passable tonkatsu sauce."]},
+  steps:["Per serving: butterfly 150 g chicken thigh open so it lies flat and even. Even thickness is what makes or breaks a katsu.","Set out three stations: potato starch on a plate, a beaten egg in a bowl, 30 g panko on a second plate. Dust with starch, dip in egg, then press the panko on hard — pressing is what stops it falling off in the basket.","Pat 5 ml (1 tsp) oil over the crumbs with your fingers until no white powder is left. Never aerosol spray: it strips the ceramic coating, and dry panko stays pale.","Preheat 3 min at 190 °C. One cutlet, flat, with nothing touching it: 8 min, flip, 5 min more. Breaded food is the one dish that needs the basket to itself — a second serving is a second round.","Done when the crumb is deep gold and the juices run clear where you cut into the thickest part (75 °C inside). Pale crumb means it needs longer, not hotter.","Slice into 2 cm strips, shredded cabbage alongside, rice from the cooker. Mayo and soy sauce mixed 1:1 is a passable tonkatsu sauce."]},
  {id:"afgyoza", tier:"C", n:"Air-fryer frozen gyoza set", jp:"冷凍餃子（エアフライヤー）", gear:["air","rice"], time:"5 min work", batch:false, cap:2,
   ing:[["gyoza",300],["cabbage",50]], rice:0.5, conds:["oil","soy","sesame"],
   steps:["10–12 frozen gyoza per serving, straight from the freezer into the basket, flat side down, in one layer with gaps. No thawing, no water, no lid.","Wipe about 5 ml (1 tsp) oil over the tops so the wrappers blister instead of drying out.","Preheat 3 min at 190 °C, then 10 min. No flipping, no steaming step, no pan to scrub — this is why the fryer earns its counter space.","From minute 8, watch through the window: done when the wrappers are blistered gold and the edges have gone crisp.","Dip: 15 ml (1 tbsp) soy + a drop of sesame oil, and belachan if you want fire. Shredded cabbage and rice on the side."]},
@@ -321,7 +321,7 @@ const isObj = x => x && typeof x === "object" && !Array.isArray(x);
 S.owned = isObj(S.owned) ? S.owned : {oil:true};
 S.locked = Array.isArray(S.locked) ? S.locked : [];
 S.bought = isObj(S.bought) ? S.bought : {};
-S.protein = isObj(S.protein) ? S.protein : {};
+S.protein = isObj(S.protein) ? Object.fromEntries(Object.entries(S.protein).filter(([k,v])=>typeof v==="string" && ING[v])) : {};
 S.log = Array.isArray(S.log) ? S.log.filter(l=>isObj(l)&&typeof l.spent==="number"&&typeof l.meals==="number") : [];
 S.N = Number.isInteger(S.N) && S.N>=1 && S.N<=14 ? S.N : 7;
 S.v = [1,2,3].includes(S.v) ? S.v : 2;
@@ -359,7 +359,13 @@ function undoNow(){
 
 /* ============ ACTIONS ============ */
 function setTab(t){ S.tab=t; save(); render(); try{ scrollTo(0,0); }catch(e){} }
-function stepMeals(d){ S.N = Math.min(14, Math.max(1, S.N+d)); save(); if (S.plan) plan(S.N<=2?true:"keep"); else render(); }
+function stepMeals(d){
+  S.N = Math.min(14, Math.max(1, S.N+d)); save();
+  if (!S.plan) { render(); return; }
+  /* only force a reshuffle if short-week mode would actually exclude something already picked */
+  const mustReshuffle = S.N<=2 && S.plan.some(id=>{ const r = RECIPES.find(x=>x.id===id); return r && r.batch; });
+  plan(mustReshuffle ? true : "keep");
+}
 function setVariety(v){ S.v=v; save(); plan(true); }
 function eligible(){ return RECIPES; }
 function plan(reshuffle){
@@ -377,6 +383,7 @@ function plan(reshuffle){
     S.bought = {}; S.stepdone = {};
     const rest = pool.filter(r=>!picks.some(p=>p.id===r.id)).sort(()=>Math.random()-.5);
     rest.sort((a,b)=> (N/k>=3 ? (b.batch?1:0)-(a.batch?1:0) : 0));
+    if (v===1) rest.sort((a,b)=> (b.cap||0)-(a.cap||0)); /* one dish for the week: fewest rounds wins */
     while (picks.length<k && rest.length) picks.push(rest.shift());
     S.plan = picks.map(r=>r.id);
   }
@@ -402,7 +409,8 @@ function toggleCond(id){ S.owned[id]=!S.owned[id]; save(); render(); }
 function toggleKit(id){ S.kit[id]=!S.kit[id]; save(); render(); }
 function toggleBought(id){ S.bought[id]=!S.bought[id]; save(); render(); }
 function clearTicks(){ snapUndo("Basket ticks cleared"); S.bought={}; save(); render(); showUndo(); }
-const MEATCYCLE = ["chicken","pork","beef","gpork"];
+/* every entry must exist in ING - a stale key here poisons S.protein and blanks the app */
+const MEATCYCLE = ["chicken","pork","gpork"];
 const baseMeat = r => (r.ing.find(([id])=>ING[id].cat==="meat")||[null])[0];
 function ingsOf(r){ return r.ing.map(([id,q])=> (r.flex && S.protein[r.id] && id===baseMeat(r)) ? [S.protein[r.id],q] : [id,q]); }
 function cycleProtein(rid){
@@ -491,10 +499,14 @@ function gearTips(r, s){
     ? `⚙️ This dish only works one serving at a time — do ${s} quick rounds back-to-back.`
     : `⚙️ ×${s} servings won&#39;t fit in one go — cook ${Math.ceil(s/cp)} rounds of ~${cp}.`);
   if (r.kettle) t.push("⚡ Boil the 0.8 L kettle first, pour into the pot — saves ~5 min.");
-  if (r.crowd) t.push("🍳 Doing 2+ servings at once? Split into rounds — a crowded 26 cm pan steams instead of sears.");
+  if (r.crowd === "full") t.push("🍳 Four servings is brim-full in a 26 cm pan — if it looks like it will slop over the side, do two rounds.");
+  else if (r.crowd) t.push("🍳 Doing 2+ servings at once? Split into rounds — a crowded 26 cm pan steams instead of sears.");
   return t;
 }
 function render(){
+  /* whole tabs are replaced via innerHTML, so remember what had focus and put it back */
+  const ae = document.activeElement;
+  const fk = ae && ae.dataset ? ae.dataset.k : null;
   const c = compute();
   document.getElementById("hsub").innerHTML = c
     ? `${c.N} meals · ${yen(c.food)} groceries · <span style="color:var(--green);font-weight:600">saves ${yen(c.N*EAT_OUT-c.food)}</span>`
@@ -503,6 +515,8 @@ function render(){
   ["plan","shop","cook","save"].forEach(t=>{
     document.getElementById("tab-"+t).className = "tab"+(S.tab===t?" on":"");
   });
+  document.querySelectorAll(".jp").forEach(el=>el.setAttribute("lang","ja"));
+  if (fk) { const el = document.querySelector('[data-k="'+fk+'"]'); if (el && el.focus) el.focus(); }
 }
 function renderTabs(c){
   const done = c ? c.rows.filter(r=>S.bought[r.id]).length : 0;
@@ -550,7 +564,7 @@ function renderShop(c){
     if (!items.length) return;
     h += `<div class="ghead">${CATS[cat]}</div>`;
     items.forEach(r=>{
-      h += `<div class="grow ${S.bought[r.id]?"done":""}" role="checkbox" aria-checked="${!!S.bought[r.id]}" tabindex="0" onkeydown="kb(event)" onclick="toggleBought('${r.id}')">
+      h += `<div class="grow ${S.bought[r.id]?"done":""}" data-k="g:${r.id}" role="checkbox" aria-checked="${!!S.bought[r.id]}" tabindex="0" onkeydown="kb(event)" onclick="toggleBought('${r.id}')">
         <span class="tick">✓</span>
         <div class="what"><b>${r.n}</b><div class="jp">${r.jp}</div></div>
         <div class="amt"><b>${r.disp}</b>${yen(r.cost)}</div>
@@ -561,7 +575,7 @@ function renderShop(c){
   const toBuy = c.needed.filter(x=>!S.owned[x]);
   if (toBuy.length) {
     h += `<h2>Condiments to grab (one-time)</h2><div class="card" style="padding:4px 16px">` +
-      toBuy.map(x=>`<div class="grow" role="checkbox" aria-checked="false" tabindex="0" onkeydown="kb(event)" onclick="toggleCond('${x}')">
+      toBuy.map(x=>`<div class="grow" data-k="c:${x}" role="checkbox" aria-checked="false" tabindex="0" onkeydown="kb(event)" onclick="toggleCond('${x}')">
         <span class="tick">✓</span>
         <div class="what"><b>${CONDS[x].n}</b><div class="jp">${CONDS[x].jp}</div></div>
         <div class="amt"><b>${yen(CONDS[x].p)}</b></div>
@@ -569,7 +583,7 @@ function renderShop(c){
   }
   const kitLeft = Object.keys(KIT).filter(k=>!S.kit[k]);
   h += `<h2>Meal-prep kit (one-time, Daiso)</h2><div class="card" style="padding:4px 16px">` +
-    Object.entries(KIT).map(([k,it])=>`<div class="grow ${S.kit[k]?"done":""}" role="checkbox" aria-checked="${!!S.kit[k]}" tabindex="0" onkeydown="kb(event)" onclick="toggleKit('${k}')">
+    Object.entries(KIT).map(([k,it])=>`<div class="grow ${S.kit[k]?"done":""}" data-k="k:${k}" role="checkbox" aria-checked="${!!S.kit[k]}" tabindex="0" onkeydown="kb(event)" onclick="toggleKit('${k}')">
       <span class="tick">\u2713</span>
       <div class="what"><b>${it.n} \u00d7${it.q}</b><div class="jp">${it.jp} \u00b7 ${it.ml} ml</div><div style="color:var(--muted);font-size:12.5px;margin-top:3px">${it.why}</div></div>
       <div class="amt"><b>${yen(it.p*it.q)}</b>${yen(it.p)}/ea</div>
@@ -578,7 +592,7 @@ function renderShop(c){
   <div class="hint">\u26a0\ufe0f Buy the \u30a8\u30a2\u5f01 (air-vent) lids so the lid can stay on in the microwave. Skip the \u30af\u30ec\u30eb\u30d1\u30c3\u30af clear packs for anything frozen \u2014 they crack. Curry and kimchi stain plastic permanently, so give those two their own containers and stop caring.</div>`;
   const shelf = Object.keys(CONDS).filter(x=>S.owned[x]);
   h += `<div class="card"><details class="shelf"><summary>🧂 Your shelf (${shelf.length}) — tap to manage</summary>` +
-    (shelf.length?shelf.map(x=>`<div class="grow done" role="checkbox" aria-checked="true" tabindex="0" onkeydown="kb(event)" onclick="toggleCond('${x}')"><span class="tick">✓</span><div class="what"><b>${CONDS[x].n}</b><div class="jp">${CONDS[x].jp}</div></div></div>`).join(""):`<div class="empty">Nothing yet</div>`) +
+    (shelf.length?shelf.map(x=>`<div class="grow done" data-k="s:${x}" role="checkbox" aria-checked="true" tabindex="0" onkeydown="kb(event)" onclick="toggleCond('${x}')"><span class="tick">✓</span><div class="what"><b>${CONDS[x].n}</b><div class="jp">${CONDS[x].jp}</div></div></div>`).join(""):`<div class="empty">Nothing yet</div>`) +
     `</details></div>`;
   const edited = Object.keys(S.price).length;
   h += `<div class="card prices"><details class="shelf"${priceOpen?" open":""} ontoggle="priceOpen=this.open"><summary>💴 Tune prices to your receipts${edited?` (${edited} edited)`:""}</summary>
@@ -667,7 +681,14 @@ function renderSave(c){
   document.getElementById("tab-save").innerHTML = h;
 }
 
-render();
+/* last resort: a corrupt save must never leave a blank app with no way back */
+try { render(); } catch (e) {
+  delete S.plan; S.protein = {}; S.stepdone = {}; S.bought = {}; S.tab = "plan"; save();
+  try { render(); } catch (e2) {
+    document.getElementById("tab-plan").className = "tab on";
+    document.getElementById("tab-plan").innerHTML = '<div class="card"><div class="empty">Something went wrong, so your saved week was cleared. Reload and tap Generate my week.</div></div>';
+  }
+}
 </script>
 </body>
 </html>
