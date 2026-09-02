@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="Meals">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍚</text></svg>">
 <title>Lazy Meal Planner</title>
-<meta name="description" content="One pot, one pan, a rice cooker and an air fryer: plan a week of beginner-friendly Japanese meals, shop at LIFE, cook, and track what you save.">
+<meta name="description" content="One pot, one pan, a rice cooker and a 4.2 L air fryer: plan a week of beginner-friendly Japanese meals, shop at LIFE, cook, and track what you save.">
 <style>
   :root {
     color-scheme: light dark;
@@ -163,6 +163,8 @@ const CONDS = {
   mayo:{n:"Kewpie mayo",jp:"マヨネーズ",p:280}, garlic:{n:"Garlic tube",jp:"にんにくチューブ",p:170},
   ginger:{n:"Ginger tube",jp:"生姜チューブ",p:170}, oil:{n:"Cooking oil",jp:"サラダ油",p:450},
   katakuriko:{n:"Potato starch",jp:"片栗粉",p:200},
+  panko:{n:"Panko breadcrumbs",jp:"パン粉",p:150},
+  pepper:{n:"Black pepper",jp:"ブラックペッパー",p:130},
   ponzu:{n:"Ponzu",jp:"ポン酢",p:342}
 };
 /* ============ INGREDIENTS ============ */
@@ -238,17 +240,32 @@ const RECIPES = [
   ing:[["chicken",80],["shimeji",50],["carrot",0.3]], rice:1, conds:["mentsuyu"],
   steps:["Per serving: rinse 150 g rice until the water runs mostly clear, drain, into the cooker.","Add water to the 1-cup line, then scoop OUT 45 ml (3 tbsp). Add 45 ml (3 tbsp) mentsuyu in its place.","Cut 80 g chicken into 2 cm pieces. Cut the tough base off the shimeji and tear the clump apart by hand. Slice a third of a carrot into thin half-moons.","Scatter chicken, shimeji, and carrot on TOP of the rice — do not stir, sitting on top is correct. Press cook.","When it beeps, fluff with the paddle and let it rest 5 min with the lid open a crack. Leftovers: press into balls while warm, wrap, freeze."]},
  {id:"tomatorice", tier:"B", cookin:true, n:"Rice-cooker tomato & tuna rice", jp:"炊飯器トマトツナご飯", gear:["rice"], time:"5 min prep", batch:true, cap:2,
-  ing:[["tomato",1],["tuna",0.5],["onion",0.25]], rice:1, conds:["torigara","soy"],
+  ing:[["tomato",1],["tuna",0.5],["onion",0.25]], rice:1, conds:["torigara","soy","pepper"],
   steps:["Per serving: rinse 150 g rice, into the cooker, water to just UNDER the 1-cup line (the tomato adds liquid).","Stir in 1 tsp chicken stock powder + half a drained tuna can + a quarter onion, diced.","Core the tomato (cut a small cone out of the stem end) and sit it whole in the middle of the rice. It looks wrong; it is right.","Press cook. When it beeps, smash the tomato with the paddle and mix everything through.","Season: 5 ml (1 tsp) soy + black pepper. Freezes well in portions."]},
  {id:"afsalmon", tier:"C", n:"Air-fryer salmon set", jp:"焼き鮭定食", gear:["air","rice"], time:"3 min work", batch:false, cap:2,
   ing:[["salmon",1],["fbroc",80]], rice:0.5, conds:["mayo"],
-  steps:["Put the salted salmon fillet straight into the basket, skin side down. No oil, no seasoning — 塩鮭 is pre-salted. Frozen salted fillets cost less than the fresh counter and behave identically here.","180 °C for 10–12 min. Done when the thickest part flakes apart when pushed with a fork.","For the last 5 min, drop 80 g frozen broccoli next to it.","Plate with rice and a dab of Kewpie. The laziest real meal in Japan."]},
+  steps:["Put the salted salmon fillet straight into the basket, skin side down. No oil, no seasoning — 塩鮭 is pre-salted. Frozen salted fillets cost less than the fresh counter and behave identically here.","Preheat 3 min at 180 °C, then 10–12 min. Done when the thickest part flakes apart when pushed with a fork — check through the window, because opening the drawer pauses the timer and drops the heat.","For the last 5 min, drop 80 g frozen broccoli next to it.","Plate with rice and a dab of Kewpie. The laziest real meal in Japan."]},
  {id:"afteriyaki", tier:"C", n:"Air-fryer teriyaki chicken", jp:"照り焼きチキン", gear:["air","rice"], time:"5 min work", batch:true, cap:2,
   ing:[["chicken",150],["fbroc",80]], rice:0.5, conds:["soy","mirin","garlic"],
-  steps:["Cut 150 g chicken thigh per serving into 4–5 big chunks.","Marinade, per serving: 15 ml (1 tbsp) soy + 15 ml (1 tbsp) mirin + 2 cm garlic tube. Toss the chicken in it — 10 min minimum, overnight is better. Batch extra portions in freezer bags now, thank yourself later.","Air fryer 180 °C. Chicken in a single layer, skin up, 15 min total.","At the 10-minute mark, scatter 80 g frozen broccoli around the chicken (straight from frozen).","Done when the juices run clear when you poke the thickest piece (or 75 °C inside). Rice from the cooker."]},
+  steps:["Cut 150 g chicken thigh per serving into 4–5 big chunks.","Marinade, per serving: 15 ml (1 tbsp) soy + 15 ml (1 tbsp) mirin + 2 cm garlic tube. Toss the chicken in it — 10 min minimum, overnight is better. Batch extra portions in freezer bags now, thank yourself later.","Preheat 3 min at 180 °C. Chicken in a single layer, skin up, 15 min total. Two servings fills the 4.2 L basket properly; a third would stack and steam.","At the 10-minute mark, scatter 80 g frozen broccoli around the chicken (straight from frozen).","Done when the juices run clear when you poke the thickest piece (or 75 °C inside). Rice from the cooker."]},
  {id:"karaage", tier:"C", n:"Air-fryer karaage", jp:"唐揚げ", gear:["air","rice"], time:"10 min work", batch:true, cap:2, freeze:"freeze marinated raw",
-  ing:[["chicken",150],["cabbage",50]], rice:0.5, conds:["soy","garlic","ginger","katakuriko"],
-  steps:["Cut 150 g chicken thigh per serving into 4 cm chunks — keep the skin on.","Marinade, per serving: 15 ml (1 tbsp) soy + 2 cm each garlic and ginger tube. 15 min minimum. Extra portions: freeze raw in the marinade, in bags; thaw overnight in the fridge.","Tip ~15 g potato starch onto a plate. Roll each chunk until it is dusted white on every side.","Air fryer 190 °C, single layer with gaps: 8 min, flip every piece, 5 more min. Golden outside, juices clear inside = done.","Shredded cabbage + rice. Squeeze of mayo optional but encouraged."]},
+  ing:[["chicken",150],["cabbage",50]], rice:0.5, conds:["soy","garlic","ginger","katakuriko","oil"],
+  steps:["Cut 150 g chicken thigh per serving into 4 cm chunks — keep the skin on.","Marinade, per serving: 15 ml (1 tbsp) soy + 2 cm each garlic and ginger tube. 15 min minimum. Extra portions: freeze raw in the marinade, in bags; thaw overnight in the fridge.","Tip ~15 g potato starch onto a plate. Roll each chunk until it is dusted white on every side.","Pat 5 ml (1 tsp) oil over the dusted pieces with your fingers — never aerosol spray, it strips the ceramic coating. Dry starch stays pale and floury.","Preheat 3 min at 190 °C. Single layer with gaps: 8 min, flip every piece, 5 more min. Golden outside, juices clear inside = done. Two servings is the honest limit of the 4.2 L basket.","Shredded cabbage + rice. Squeeze of mayo optional but encouraged."]},
+ {id:"afroast", tier:"C", n:"Air-fryer chicken & potato roast", jp:"鶏とじゃがいものバスケットロースト", gear:["air"], time:"5 min work", batch:true, cap:2, freeze:"freeze raw in the marinade",
+  ing:[["chicken",150],["potato",1],["onion",0.5]], conds:["oil","soy","pepper"],
+  steps:["Per serving: cut 150 g chicken thigh into 4 big chunks, 1 potato into 2 cm cubes, half an onion into thick wedges. Leave the potato skin on — it is where the crisp comes from.","In a bowl, toss all of it with 5 ml (1 tsp) oil, 15 ml (1 tbsp) soy sauce and a heavy grind of black pepper. Coat the potato properly or it turns leathery.","Preheat 3 min at 200 °C. Tip everything in as one layer — two servings is the honest limit of the 4.2 L basket.","200 °C for 20 min. Pull the basket out at the 10-minute mark and shake it once, then watch the potato edges go gold through the window.","Done when a chopstick slides into a potato and the chicken juices run clear. No rice needed, the potato is the carb — and the only thing to wash is the basket, which goes in the dishwasher."]},
+ {id:"afbreast", tier:"C", n:"Air-fryer pepper chicken breast", jp:"鶏むね肉の胡椒焼き", gear:["air","rice"], time:"3 min work", batch:true, cap:2,
+  ing:[["chickenbreast",150],["fbroc",80]], rice:0.5, conds:["oil","pepper","soy"],
+  steps:["Per serving: cut 150 g chicken breast into 3 cm slabs. Thick pieces stay juicy; thin ones turn to chalk.","Rub each piece with 5 ml (1 tsp) oil and a lot of black pepper. That is the entire prep.","Preheat 3 min at 180 °C. Breast in one layer, 12 min, flipping once at 6 min. 180 °C and not 200 °C — breast is lean and high heat dries it out.","Scatter 80 g frozen broccoli around it for the last 5 min, straight from the freezer.","Rest 3 min before slicing, then 5 ml (1 tsp) soy over the top. Rice from the cooker. Breast is the cheapest protein in the shop, and this is the leanest dinner in the roster."]},
+ {id:"afkatsu", tier:"C", n:"Air-fryer chicken katsu", jp:"鶏カツ", gear:["air","rice"], time:"10 min work", batch:true, cap:1, freeze:"freeze breaded, uncooked",
+  ing:[["chicken",150],["egg",0.5],["cabbage",50]], rice:0.5, conds:["katakuriko","panko","oil","mayo","soy"],
+  steps:["Per serving: butterfly 150 g chicken thigh open so it lies flat and even. Even thickness is what makes or breaks a katsu.","Set out three stations: potato starch on a plate, a beaten egg in a bowl, 30 g panko on a second plate. Dust with starch, dip in egg, then press the panko on hard — pressing is what stops it falling off in the basket.","Pat 5 ml (1 tsp) oil over the crumbs with your fingers until no white powder is left. Never aerosol spray: it strips the ceramic coating, and dry panko stays pale.","Preheat 3 min at 190 °C. One cutlet, flat, with nothing touching it: 8 min, flip, 5 min more. Breaded food is the one dish that needs the basket to itself — a second serving is a second round.","Slice into 2 cm strips, shredded cabbage alongside, rice from the cooker. Mayo and soy sauce mixed 1:1 is a passable tonkatsu sauce."]},
+ {id:"afgyoza", tier:"C", n:"Air-fryer frozen gyoza set", jp:"冷凍餃子（エアフライヤー）", gear:["air","rice"], time:"5 min work", batch:false, cap:2,
+  ing:[["gyoza",300],["cabbage",50]], rice:0.5, conds:["oil","soy","sesame"],
+  steps:["10–12 frozen gyoza per serving, straight from the freezer into the basket, flat side down, in one layer with gaps. No thawing, no water, no lid.","Wipe about 5 ml (1 tsp) oil over the tops so the wrappers blister instead of drying out.","Preheat 3 min at 190 °C, then 10 min. No flipping, no steaming step, no pan to scrub — this is why the fryer earns its counter space.","From minute 8, watch through the window: done when the wrappers are blistered gold and the edges have gone crisp.","Dip: 15 ml (1 tbsp) soy + a drop of sesame oil, and belachan if you want fire. Shredded cabbage and rice on the side."]},
+ {id:"aftofu", tier:"C", n:"Air-fryer crispy tofu with ponzu", jp:"揚げ出し豆腐風", gear:["air","rice"], time:"5 min work", batch:false, cap:2,
+  ing:[["tofu",1],["negi",0.2]], rice:0.5, conds:["katakuriko","oil","ponzu","sesame"],
+  steps:["Per serving: press one block of firm tofu — wrap it in kitchen paper, sit a plate on top, leave it 10 min. Wet tofu steams, pressed tofu crisps. That is the whole recipe.","Cut it into 8 cubes and roll them in about 15 g potato starch until dusted white on every side. Handle them like eggs, they break.","Preheat 3 min at 200 °C. Cubes in one layer, not touching, with 5 ml (1 tsp) oil patted over the tops.","200 °C for 12 min, shaking the basket gently at the 8-minute mark.","Golden and firm outside means done. Onto rice, ponzu poured over, sliced green onion and a drop of sesame oil on top. Under ¥200 a serving with no meat at all."]},
  {id:"butashabu", tier:"D", n:"Pork shabu & cabbage with ponzu", jp:"豚しゃぶポン酢", gear:["pot"], time:"12 min", kettle:true, batch:false, cap:2,
   ing:[["pork",100],["cabbage",150],["moyashi",100]], rice:0.5, conds:["ponzu","sesame"],
   steps:["Tear 150 g cabbage per serving into pieces, rinse the bean sprouts. Boil water in the pot, drop both in for 2 min, scoop out onto your plate as a bed.","Turn the heat DOWN until the water barely bubbles — a rolling boil makes pork tough; small lazy bubbles keep it tender.","Lower 100 g pork slices in one at a time. Each needs only 30–40 seconds — when no pink remains, it is done.","Lift the pork onto the cabbage bed. Pour ponzu over everything + 5 ml (1 tsp) sesame oil.","Rice on the side. No oil, no frying, and the pot only touched water — easiest washing-up in the database."]},
@@ -285,6 +302,15 @@ const RECIPES = [
 ];
 const EAT_OUT = 1000;
 const GEARICON = {rice:"🍚 rice cooker", pot:"🍲 pot", pan:"🍳 pan", air:"💨 air fryer"};
+/* ============ MEAL-PREP KIT (one-time, Daiso) ============ */
+const KIT = {
+  rice355:{n:"Rice-portion freezer container",jp:"冷凍保存容器（ごはん一膳・二重構造）",p:110,q:6,ml:355,
+    why:"One cooked rice portion each. Air-vent lid stays on in the microwave, and the double base stops the bottom going hard. This is what makes the freeze-flat rice habit actually work."},
+  main500:{n:"Air-vent storage box",jp:"保存容器としても使えるお弁当箱（エア弁付）",p:220,q:5,ml:500,
+    why:"The workhorse. One serving of curry, keema, nikujaga, soboro or butadon topping lands at 350–450 ml, so 500 ml fills without spilling. Rated −20 to 140 °C, so freezer and microwave both."},
+  soup800:{n:"Air-vent silicone container",jp:"エア弁付シリコーン保存容器",p:330,q:2,ml:800,
+    why:"For tonjiru, the bean soup and nabe leftovers, where 500 ml is brim-full. Silicone takes −20 to 220 °C and squashes flat in the freezer."}
+};
 const yen = x => (x<0?"−":"")+"¥"+Math.abs(Math.round(x)).toLocaleString();
 
 /* ============ STATE (schema-compatible with v2) ============ */
@@ -303,6 +329,7 @@ S.tab = ["plan","shop","cook","save"].includes(S.tab) ? S.tab : "plan";
 S.stepdone = isObj(S.stepdone) ? S.stepdone : {};
 S.price = isObj(S.price) ? Object.fromEntries(Object.entries(S.price).filter(([k,v])=>ING[k] && typeof v==="number" && isFinite(v) && v>0)) : {};
 S.mugi = S.mugi === true;
+S.kit = isObj(S.kit) ? S.kit : {};
 /* legacy S.aircap from older saves is accepted but ignored; capacity is per-recipe */
 if (S.plan !== undefined) { S.plan = Array.isArray(S.plan) ? S.plan.filter(x=>typeof x==="string") : undefined; if (S.plan && !S.plan.length) S.plan = undefined; }
 function save(){ try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {} }
@@ -372,6 +399,7 @@ function lock(id){
   save(); render();
 }
 function toggleCond(id){ S.owned[id]=!S.owned[id]; save(); render(); }
+function toggleKit(id){ S.kit[id]=!S.kit[id]; save(); render(); }
 function toggleBought(id){ S.bought[id]=!S.bought[id]; save(); render(); }
 function clearTicks(){ snapUndo("Basket ticks cleared"); S.bought={}; save(); render(); showUndo(); }
 const MEATCYCLE = ["chicken","pork","beef","gpork"];
@@ -539,6 +567,15 @@ function renderShop(c){
         <div class="amt"><b>${yen(CONDS[x].p)}</b></div>
       </div>`).join("") + `</div>`;
   }
+  const kitLeft = Object.keys(KIT).filter(k=>!S.kit[k]);
+  h += `<h2>Meal-prep kit (one-time, Daiso)</h2><div class="card" style="padding:4px 16px">` +
+    Object.entries(KIT).map(([k,it])=>`<div class="grow ${S.kit[k]?"done":""}" role="checkbox" aria-checked="${!!S.kit[k]}" tabindex="0" onkeydown="kb(event)" onclick="toggleKit('${k}')">
+      <span class="tick">\u2713</span>
+      <div class="what"><b>${it.n} \u00d7${it.q}</b><div class="jp">${it.jp} \u00b7 ${it.ml} ml</div><div style="color:var(--muted);font-size:12.5px;margin-top:3px">${it.why}</div></div>
+      <div class="amt"><b>${yen(it.p*it.q)}</b>${yen(it.p)}/ea</div>
+    </div>`).join("") + `</div>`;
+  h += `<div class="hint">\ud83d\udce6 <b>Not 1000 ml.</b> A single serving of curry, keema or nikujaga is 350\u2013450 ml, so 500 ml is the size you will actually reach for \u2014 and Daiso\u0027s big ~900 ml clear boxes are not rated for the microwave or the freezer at all. Rice goes in its own 355 ml pots, not in with the sauce.</div>
+  <div class="hint">\u26a0\ufe0f Buy the \u30a8\u30a2\u5f01 (air-vent) lids so the lid can stay on in the microwave. Skip the \u30af\u30ec\u30eb\u30d1\u30c3\u30af clear packs for anything frozen \u2014 they crack. Curry and kimchi stain plastic permanently, so give those two their own containers and stop caring.</div>`;
   const shelf = Object.keys(CONDS).filter(x=>S.owned[x]);
   h += `<div class="card"><details class="shelf"><summary>🧂 Your shelf (${shelf.length}) — tap to manage</summary>` +
     (shelf.length?shelf.map(x=>`<div class="grow done" role="checkbox" aria-checked="true" tabindex="0" onkeydown="kb(event)" onclick="toggleCond('${x}')"><span class="tick">✓</span><div class="what"><b>${CONDS[x].n}</b><div class="jp">${CONDS[x].jp}</div></div></div>`).join(""):`<div class="empty">Nothing yet</div>`) +
@@ -561,17 +598,35 @@ function renderCook(c){
   const batchers = c.picks.filter(r=>r.batch && c.servings[r.id]>=3);
   const quick = c.picks.filter(r=>!batchers.includes(r));
   let sched = "";
-  const rounds = r => { const cp = capOf(r); return cp && c.servings[r.id]>cp ? ` Your gear fits ~${cp} servings per run — do ${Math.ceil(c.servings[r.id]/cp)} rounds back-to-back.` : ""; };
+  const rounds = r => { const cp = capOf(r); if (!cp || c.servings[r.id] <= cp) return "";
+    return cp === 1 ? ` One serving per run — ${c.servings[r.id]} quick rounds back-to-back.`
+      : ` Your gear fits ~${cp} servings per run — do ${Math.ceil(c.servings[r.id]/cp)} rounds back-to-back.`; };
   if (batchers[0]) sched += `<p><span class="day">Sunday batch (~45 min):</span> all ${c.servings[batchers[0].id]} servings of <b>${batchers[0].n}</b>${batchers[0].freeze?` — ${batchers[0].freeze}`:""}. Portion into containers.${rounds(batchers[0])}</p>`;
   if (batchers[1]) sched += `<p><span class="day">Wednesday top-up (~30 min):</span> batch <b>${batchers[1].n}</b>${batchers[1].freeze?` — ${batchers[1].freeze}`:""}.${rounds(batchers[1])}</p>`;
   batchers.slice(2).forEach(r=> sched += `<p><span class="day">Also batch:</span> <b>${r.n}</b> (${c.servings[r.id]} servings).${rounds(r)}</p>`);
-  quick.forEach(r=> sched += `<p><span class="day">Cook fresh (${r.time}):</span> <b>${r.n}</b> × ${c.servings[r.id]} — ${r.batch?"batchable, but at this size fresher is easier":"too quick to be worth batching"}.</p>`);
+  quick.forEach(r=> sched += `<p><span class="day">Cook fresh (${r.time}):</span> <b>${r.n}</b> × ${c.servings[r.id]} — ${r.batch?"batchable, but at this size fresher is easier":"too quick to be worth batching"}.${rounds(r)}</p>`);
   const rruns = Math.ceil(Math.ceil(c.riceGo)/3);
   sched += `<p><span class="day">Rice:</span> ${Math.ceil(c.riceGo)} rice-cooker cups (${Math.ceil(c.riceGo)*150} g dry) total. Your 3-cup JAJ-A550 maxes at 3 cups per run${rruns>1?` — that is ${rruns} runs; start the next one while you eat`:""}. Freeze flat portions, microwave to revive.${S.mugi&&c.mugiCups>0?` <b>Mochi-mugi on:</b> ${Math.round(c.mugiCups*10)/10} of those cups are plain rice — add ${Math.round(c.mugiCups*50)} g barley to those (50 g per cup) plus an extra 100 ml water per cup, same cycle. The cook-in cooker dishes are excluded, which is why this is less than the total above.`:""} Bonus: the tacook plate steams veg or a chicken thigh over plain rice while it cooks — a free side.</p>`;
   let h = `<div class="card">
     <div class="rowb"><span class="lbl">🌾 Mochi-mugi rice</span>
       <button class="mini${S.mugi?" on":""}" onclick="toggleMugi()" aria-pressed="${S.mugi}">${S.mugi?"ON":"OFF"}</button></div>
     <div style="color:var(--muted);font-size:13px;margin-top:4px">Blends barley into the plain rice at 3:1 — 50 g per cooker-cup, so about ¥20 on a normal serving. Takes the rice from roughly 0.3 g of fibre to 3 g and puts ~1.5 g of beta-glucan in the bowl; two rice meals a day clears the ~3 g linked to lower LDL. Same cycle, same effort. The four cook-in cooker dishes stay white rice.</div>
+  </div>`;
+  h += `<div class="card">
+    <div class="lbl">\ud83d\udca8 Your air fryer \u2014 Amazon Basics 4.2 L</div>
+    <div style="color:var(--muted);font-size:13px;margin-top:4px">1200 W \u00b7 60\u2013200 \u00b0C \u00b7 60 min max \u00b7 8 presets \u00b7 viewing window \u00b7 ceramic non-stick basket, dishwasher-safe.<br><br>
+    <b>Preheat 3 min</b> at the target temperature for anything with skin or a coating. Skip it when you are only reheating.<br><br>
+    <b>One layer, gaps between the pieces.</b> That is why every air dish here caps at 2 servings and katsu caps at 1 \u2014 stacked food steams instead of crisping, and no setting fixes that.<br><br>
+    <b>Pat oil on, never spray it.</b> Aerosol propellant strips ceramic coatings. Fingers or a brush, 1 tsp is plenty.<br><br>
+    <b>Use the window.</b> Opening the drawer pauses the timer and dumps the heat; looking through it costs nothing.<br><br>
+    <b>Ignore the 8 presets.</b> They are just temperature-and-time shortcuts \u2014 the recipes here set both directly, which is one less thing to learn.</div>
+  </div>`;
+  h += `<div class="card">
+    <div class="lbl">\u2668\ufe0f Reheating the batch</div>
+    <div style="color:var(--muted);font-size:13px;margin-top:4px">
+    <b>Microwave</b> \u2014 anything wet: rice, curry, keema, nikujaga, tonjiru, soboro, butadon topping. Lid on if it has an air vent. Roughly 2\u20133 min from the fridge, 4\u20135 min from frozen, stirred once halfway.<br><br>
+    <b>Air fryer at 180 \u00b0C, no oil</b> \u2014 anything that was crisp: karaage, katsu, gyoza, tofu, salmon skin. 4\u20135 min from the fridge, 8\u201310 min from frozen. This is the one thing a microwave genuinely cannot do, and it is most of the reason the fryer pays for itself.<br><br>
+    Food goes from the container onto the basket. The container never goes in \u2014 140 \u00b0C plastic in a 180 \u00b0C basket ends badly.</div>
   </div>`;
   h += `<div class="card sched">${sched}</div><h2>Recipes</h2>`;
   if ("wakeLock" in navigator) h += `<div class="card"><button class="mini${wakeWanted?" locked":""}" aria-pressed="${wakeWanted}" style="width:100%" onclick="toggleWake()">${wakeWanted?"☀️ Screen staying awake — tap to stop":"🌙 Keep screen awake while cooking"}</button></div>`;

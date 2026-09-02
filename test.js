@@ -47,17 +47,17 @@ ok("CONDS reachable", CONDS && typeof CONDS === "object");
 ok("S reachable", S && typeof S === "object");
 
 /* ---------- roster shape ---------- */
-eq("roster count is 27", R.length, 27);
+eq("roster count is 32", R.length, 32);
 eq("unique ids", new Set(R.map(r => r.id)).size, R.length);
 
-const TIERS = { A: 9, B: 4, C: 3, D: 6, E: 4, F: 1 };
+const TIERS = { A: 9, B: 4, C: 8, D: 6, E: 4, F: 1 };
 const tierCount = R.reduce((a, r) => (a[r.tier] = (a[r.tier] || 0) + 1, a), {});
 Object.entries(TIERS).forEach(([t, n]) => eq("tier " + t + " count", tierCount[t], n));
 ok("no recipe missing a tier", R.every(r => "ABCDEF".includes(r.tier)));
 
 ["omurice", "katsu", "mapo", "stirfry", "oyakodon", "yakisoba", "chahan", "napolitan", "gyudon"]
   .forEach(id => ok("cut recipe absent: " + id, !R.some(r => r.id === id)));
-["iwashi", "belachan", "beansoup", "butadon"]
+["iwashi", "belachan", "beansoup", "butadon", "afroast", "afbreast", "afkatsu", "afgyoza", "aftofu"]
   .forEach(id => ok("added recipe present: " + id, R.some(r => r.id === id)));
 
 /* ---------- per-recipe invariants ---------- */
@@ -88,9 +88,10 @@ Object.keys(CONDS).forEach(k => ok("COND used: " + k, usedCond.has(k)));
 const anchors = R.filter(r => r.tier === "A");
 ok("every tier-A anchor is cap 4", anchors.every(r => r.cap === 4), anchors.filter(r => r.cap !== 4).map(r => r.id).join(","));
 ok("every tier-A anchor is batchable", anchors.every(r => r.batch === true));
+/* cap 1 = the tier-E escape hatch, plus breaded air-fryer work, which needs the basket to itself */
 ok("no cap-1 recipe outside the escape hatch",
-  R.filter(r => r.cap === 1).every(r => r.tier === "E"),
-  R.filter(r => r.cap === 1 && r.tier !== "E").map(r => r.id).join(","));
+  R.filter(r => r.cap === 1).every(r => r.tier === "E" || r.gear.includes("air")),
+  R.filter(r => r.cap === 1 && r.tier !== "E" && !r.gear.includes("air")).map(r => r.id).join(","));
 ok("at least one legume recipe", R.some(r => r.ing.some(([i]) => i === "lentil" || i === "mixedbeans")));
 ok("chicken breast is used", R.some(r => r.ing.some(([i]) => i === "chickenbreast")));
 ok("beef is gone from the pantry", ING.beef === undefined);
@@ -208,6 +209,48 @@ ok("no recipe still quotes 200 g cooked rice",
   !R.some(r => r.steps.some(s => /200 g cooked/.test(s))));
 R.filter(r => r.cookin).forEach(r =>
   ok("cook-in still measures 150 g dry: " + r.id, r.steps.some(s => /150 g rice/.test(s))));
+
+/* ---------- the real machine: Amazon Basics 4.2 L, 1200 W, 60-200 C ---------- */
+const AIR = R.filter(r => r.gear.includes("air"));
+eq("air-fryer roster size", AIR.length, 8);
+ok("no air dish exceeds the 4.2 L basket", AIR.every(r => r.cap >= 1 && r.cap <= 2),
+  AIR.filter(r => r.cap > 2).map(r => r.id).join(","));
+ok("every air dish names a temperature", AIR.every(r => r.steps.some(s => /\d{2,3}\s*\u00b0C/.test(s))),
+  AIR.filter(r => !r.steps.some(s => /\d{2,3}\s*\u00b0C/.test(s))).map(r => r.id).join(","));
+ok("no air dish asks for more than 200 C", !AIR.some(r => r.steps.some(s => {
+  const m = s.match(/(\d{2,3})\s*\u00b0C/g) || [];
+  return m.some(x => parseInt(x, 10) > 200);
+})));
+ok("breaded dishes get the basket to themselves", R.filter(r => r.conds.includes("panko")).every(r => r.cap === 1));
+ok("no recipe tells you to spray aerosol oil into the basket",
+  !R.some(r => r.steps.some(s => /spray/i.test(s) && !/never (aerosol )?spray/i.test(s))));
+
+/* ---------- Daiso meal-prep kit ---------- */
+const KIT = ev("KIT");
+ok("KIT reachable", KIT && typeof KIT === "object");
+ok("kit entries are sane", Object.values(KIT).every(k =>
+  k.n && k.jp && k.ml > 0 && k.p > 0 && k.q > 0 && typeof k.why === "string" && k.why.length > 20));
+ok("no 1000 ml container in the kit", Object.values(KIT).every(k => k.ml < 1000));
+ok("kit toggle persists", (function () {
+  const k = Object.keys(KIT)[0];
+  ev("toggleKit('" + k + "')");
+  const on = JSON.parse(W.localStorage.getItem("lmp") || "{}").kit || {};
+  ev("toggleKit('" + k + "')");
+  return on[k] === true;
+})());
+ev("setTab('shop')");
+ok("shop view lists the kit", /Meal-prep kit/.test(D.getElementById("tab-shop").innerHTML));
+ok("shop view talks you out of 1000 ml", /Not 1000 ml/.test(D.getElementById("tab-shop").innerHTML));
+ev("setTab('cook')");
+const cookHTML = () => D.getElementById("tab-cook").innerHTML;
+ok("cook view states the machine", /Amazon Basics 4.2 L/.test(cookHTML()));
+ok("cook view gives the reheat split", /Reheating the batch/.test(cookHTML()));
+
+/* a cap-1 dish must warn about rounds in the schedule, not only inside the recipe */
+S.plan = ["afkatsu"]; S.N = 3; ev("render()");
+ok("schedule warns when a cap-1 dish is planned more than once",
+  /quick rounds back-to-back/.test(cookHTML()));
+ok("no plural-of-one grammar in the schedule", !/~1 servings per run/.test(cookHTML()));
 
 /* ---------- air-fryer capacity is fixed per recipe (stepper removed) ---------- */
 ok("stepAir is gone", ev("typeof stepAir") === "undefined");
