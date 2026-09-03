@@ -231,6 +231,10 @@ ok("KIT reachable", KIT && typeof KIT === "object");
 ok("kit entries are sane", Object.values(KIT).every(k =>
   k.n && k.jp && k.ml > 0 && k.p > 0 && k.q > 0 && typeof k.why === "string" && k.why.length > 20));
 ok("no 1000 ml container in the kit", Object.values(KIT).every(k => k.ml < 1000));
+eq("kit is the two sizes actually bought", Object.keys(KIT).sort().join(","), "main600,rice355");
+eq("four mains", KIT.main600.q, 4);
+eq("three rice pots", KIT.rice355.q, 3);
+eq("kit costs \u00a5770", Object.values(KIT).reduce((a, k) => a + k.p * k.q, 0), 770);
 ok("kit toggle persists", (function () {
   const k = Object.keys(KIT)[0];
   ev("toggleKit('" + k + "')");
@@ -240,11 +244,27 @@ ok("kit toggle persists", (function () {
 })());
 ev("setTab('shop')");
 ok("shop view lists the kit", /Meal-prep kit/.test(D.getElementById("tab-shop").innerHTML));
-ok("shop view talks you out of 1000 ml", /Not 1000 ml/.test(D.getElementById("tab-shop").innerHTML));
+ok("shop view states the batch rhythm the count comes from",
+  /Sunday\/Wednesday batch rhythm/.test(D.getElementById("tab-shop").innerHTML));
 ev("setTab('cook')");
 const cookHTML = () => D.getElementById("tab-cook").innerHTML;
 ok("cook view states the machine", /Amazon Basics 4.2 L/.test(cookHTML()));
-ok("cook view gives the reheat split", /Reheating the batch/.test(cookHTML()));
+ok("cook view gives the reheat split", /Air fryer and reheating/.test(cookHTML()));
+
+/* clutter budget: advice that does not change what you do this week stays out */
+{
+  S.plan = ["udon", "curry"]; S.N = 4; ev("render()");
+  const cook = cookHTML(), shop = D.getElementById("tab-shop").innerHTML;
+  ok("no kettle tip", !/Boil the 0.8 L kettle/.test(cook));
+  ok("no permanent tap-a-step hint", !/Tap a step to check it off/.test(cook));
+  ok("no tacook side-dish aside", !/tacook plate steams/.test(cook));
+  ok("no belachan flavour aside in shop", !/Your stash/.test(shop));
+  ok("air-fryer reference is collapsed, not four open cards",
+    /<details[^>]*>\s*<summary>[^<]*Air fryer and reheating/.test(cook));
+  ok("the tips that change what you cook are still there",
+    /rounds back-to-back|only works one serving at a time/.test(
+      (function () { S.plan = ["afkatsu"]; S.N = 3; ev("render()"); return cookHTML(); })()));
+}
 
 /* a cap-1 dish must warn about rounds in the schedule, not only inside the recipe */
 S.plan = ["afkatsu"]; S.N = 3; ev("render()");

@@ -304,12 +304,10 @@ const EAT_OUT = 1000;
 const GEARICON = {rice:"🍚 rice cooker", pot:"🍲 pot", pan:"🍳 pan", air:"💨 air fryer"};
 /* ============ MEAL-PREP KIT (one-time, Daiso) ============ */
 const KIT = {
-  rice355:{n:"Rice-portion freezer container",jp:"冷凍保存容器（ごはん一膳・二重構造）",p:110,q:6,ml:355,
-    why:"One cooked rice portion each. Air-vent lid stays on in the microwave, and the double base stops the bottom going hard. This is what makes the freeze-flat rice habit actually work."},
-  main500:{n:"Air-vent storage box",jp:"保存容器としても使えるお弁当箱（エア弁付）",p:220,q:5,ml:500,
-    why:"The workhorse. One serving of curry, keema, nikujaga, soboro or butadon topping lands at 350–450 ml, so 500 ml fills without spilling. Rated −20 to 140 °C, so freezer and microwave both."},
-  soup800:{n:"Air-vent silicone container",jp:"エア弁付シリコーン保存容器",p:330,q:2,ml:800,
-    why:"For tonjiru, the bean soup and nabe leftovers, where 500 ml is brim-full. Silicone takes −20 to 220 °C and squashes flat in the freezer."}
+  main600:{n:"600 mL storage box",jp:"楽ちんパック 600 mL（inomata・日本製）",p:110,q:4,ml:600,
+    why:"The workhorse. Lid stays on in the microwave and the rim is flat, so nothing hides in a groove. 600 ml swallows every batch dish, tonjiru and nabe included."},
+  rice355:{n:"One-bowl rice pot",jp:"冷凍保存容器 ごはん一膳・二重構造",p:110,q:3,ml:355,
+    why:"約170 g of cooked rice each, which is exactly the portion this planner uses. The raised inner tray is what stops the bottom going gluey."}
 };
 const yen = x => (x<0?"−":"")+"¥"+Math.abs(Math.round(x)).toLocaleString();
 
@@ -498,7 +496,6 @@ function gearTips(r, s){
   if (cp && s>cp) t.push(cp===1
     ? `⚙️ This dish only works one serving at a time — do ${s} quick rounds back-to-back.`
     : `⚙️ ×${s} servings won&#39;t fit in one go — cook ${Math.ceil(s/cp)} rounds of ~${cp}.`);
-  if (r.kettle) t.push("⚡ Boil the 0.8 L kettle first, pour into the pot — saves ~5 min.");
   if (r.crowd === "full") t.push("🍳 Four servings is brim-full in a 26 cm pan — if it looks like it will slop over the side, do two rounds.");
   else if (r.crowd) t.push("🍳 Doing 2+ servings at once? Split into rounds — a crowded 26 cm pan steams instead of sears.");
   return t;
@@ -588,8 +585,7 @@ function renderShop(c){
       <div class="what"><b>${it.n} \u00d7${it.q}</b><div class="jp">${it.jp} \u00b7 ${it.ml} ml</div><div style="color:var(--muted);font-size:12.5px;margin-top:3px">${it.why}</div></div>
       <div class="amt"><b>${yen(it.p*it.q)}</b>${yen(it.p)}/ea</div>
     </div>`).join("") + `</div>`;
-  h += `<div class="hint">\ud83d\udce6 <b>Not 1000 ml.</b> A single serving of curry, keema or nikujaga is 350\u2013450 ml, so 500 ml is the size you will actually reach for \u2014 and Daiso\u0027s big ~900 ml clear boxes are not rated for the microwave or the freezer at all. Rice goes in its own 355 ml pots, not in with the sauce.</div>
-  <div class="hint">\u26a0\ufe0f Buy the \u30a8\u30a2\u5f01 (air-vent) lids so the lid can stay on in the microwave. Skip the \u30af\u30ec\u30eb\u30d1\u30c3\u30af clear packs for anything frozen \u2014 they crack. Curry and kimchi stain plastic permanently, so give those two their own containers and stop caring.</div>`;
+  h += `<div class="hint">\ud83d\udce6 Four boxes covers the Sunday/Wednesday batch rhythm \u2014 three in the fridge at the peak, one in the sink. Only \u201c1 dish, max batch\u201d needs more: that is seven.</div>`;
   const shelf = Object.keys(CONDS).filter(x=>S.owned[x]);
   h += `<div class="card"><details class="shelf"><summary>🧂 Your shelf (${shelf.length}) — tap to manage</summary>` +
     (shelf.length?shelf.map(x=>`<div class="grow done" data-k="s:${x}" role="checkbox" aria-checked="true" tabindex="0" onkeydown="kb(event)" onclick="toggleCond('${x}')"><span class="tick">✓</span><div class="what"><b>${CONDS[x].n}</b><div class="jp">${CONDS[x].jp}</div></div></div>`).join(""):`<div class="empty">Nothing yet</div>`) +
@@ -603,8 +599,7 @@ function renderShop(c){
     }).join("") +
     `${edited?`<button class="mini" style="margin-top:10px" onclick="resetPrices()">Reset all to defaults</button>`:""}
   </details></div>
-  <div class="hint">🕖 LIFE marks meat & fish down 20–50% in the evening (割引 stickers). 🏷️ dishes take whatever protein is cheapest — swap it in Plan.</div>
-  <div class="hint">🌶️ Your stash: <b>belachan</b> lifts the stir-fry & kimchi rice; <b>chinchalok</b> + eggs = bonus 5-min omelette, or dip for the Hainanese chicken.</div>`;
+  <div class="hint">🕖 LIFE marks meat & fish down 20–50% in the evening (割引 stickers). 🏷️ dishes take whatever protein is cheapest — swap it in Plan.</div>`;
   document.getElementById("tab-shop").innerHTML = h;
 }
 function renderCook(c){
@@ -620,31 +615,20 @@ function renderCook(c){
   batchers.slice(2).forEach(r=> sched += `<p><span class="day">Also batch:</span> <b>${r.n}</b> (${c.servings[r.id]} servings).${rounds(r)}</p>`);
   quick.forEach(r=> sched += `<p><span class="day">Cook fresh (${r.time}):</span> <b>${r.n}</b> × ${c.servings[r.id]} — ${r.batch?"batchable, but at this size fresher is easier":"too quick to be worth batching"}.${rounds(r)}</p>`);
   const rruns = Math.ceil(Math.ceil(c.riceGo)/3);
-  sched += `<p><span class="day">Rice:</span> ${Math.ceil(c.riceGo)} rice-cooker cups (${Math.ceil(c.riceGo)*150} g dry) total. Your 3-cup JAJ-A550 maxes at 3 cups per run${rruns>1?` — that is ${rruns} runs; start the next one while you eat`:""}. Freeze flat portions, microwave to revive.${S.mugi&&c.mugiCups>0?` <b>Mochi-mugi on:</b> ${Math.round(c.mugiCups*10)/10} of those cups are plain rice — add ${Math.round(c.mugiCups*50)} g barley to those (50 g per cup) plus an extra 100 ml water per cup, same cycle. The cook-in cooker dishes are excluded, which is why this is less than the total above.`:""} Bonus: the tacook plate steams veg or a chicken thigh over plain rice while it cooks — a free side.</p>`;
+  sched += `<p><span class="day">Rice:</span> ${Math.ceil(c.riceGo)} rice-cooker cups (${Math.ceil(c.riceGo)*150} g dry) total. Your 3-cup JAJ-A550 maxes at 3 cups per run${rruns>1?` — that is ${rruns} runs; start the next one while you eat`:""}. Freeze flat portions, microwave to revive.${S.mugi&&c.mugiCups>0?` <b>Mochi-mugi on:</b> ${Math.round(c.mugiCups*10)/10} of those cups are plain rice — add ${Math.round(c.mugiCups*50)} g barley to those (50 g per cup) plus an extra 100 ml water per cup, same cycle.`:""}</p>`;
   let h = `<div class="card">
     <div class="rowb"><span class="lbl">🌾 Mochi-mugi rice</span>
       <button class="mini${S.mugi?" on":""}" onclick="toggleMugi()" aria-pressed="${S.mugi}">${S.mugi?"ON":"OFF"}</button></div>
-    <div style="color:var(--muted);font-size:13px;margin-top:4px">Blends barley into the plain rice at 3:1 — 50 g per cooker-cup, so about ¥20 on a normal serving. Takes the rice from roughly 0.3 g of fibre to 3 g and puts ~1.5 g of beta-glucan in the bowl; two rice meals a day clears the ~3 g linked to lower LDL. Same cycle, same effort. The four cook-in cooker dishes stay white rice.</div>
+    <div style="color:var(--muted);font-size:13px;margin-top:4px">Barley into the plain rice at 3:1 — 50 g per cooker-cup, about ¥20 a serving, ten times the fibre. Same cycle, same effort. Cook-in cooker dishes stay white.</div>
   </div>`;
-  h += `<div class="card">
-    <div class="lbl">\ud83d\udca8 Your air fryer \u2014 Amazon Basics 4.2 L</div>
-    <div style="color:var(--muted);font-size:13px;margin-top:4px">1200 W \u00b7 60\u2013200 \u00b0C \u00b7 60 min max \u00b7 8 presets \u00b7 viewing window \u00b7 ceramic non-stick basket, dishwasher-safe.<br><br>
-    <b>Preheat 3 min</b> at the target temperature for anything with skin or a coating. Skip it when you are only reheating.<br><br>
-    <b>One layer, gaps between the pieces.</b> That is why every air dish here caps at 2 servings and katsu caps at 1 \u2014 stacked food steams instead of crisping, and no setting fixes that.<br><br>
-    <b>Pat oil on, never spray it.</b> Aerosol propellant strips ceramic coatings. Fingers or a brush, 1 tsp is plenty.<br><br>
-    <b>Use the window.</b> Opening the drawer pauses the timer and dumps the heat; looking through it costs nothing.<br><br>
-    <b>Ignore the 8 presets.</b> They are just temperature-and-time shortcuts \u2014 the recipes here set both directly, which is one less thing to learn.</div>
-  </div>`;
-  h += `<div class="card">
-    <div class="lbl">\u2668\ufe0f Reheating the batch</div>
-    <div style="color:var(--muted);font-size:13px;margin-top:4px">
-    <b>Microwave</b> \u2014 anything wet: rice, curry, keema, nikujaga, tonjiru, soboro, butadon topping. Lid on if it has an air vent. Roughly 2\u20133 min from the fridge, 4\u20135 min from frozen, stirred once halfway.<br><br>
-    <b>Air fryer at 180 \u00b0C, no oil</b> \u2014 anything that was crisp: karaage, katsu, gyoza, tofu, salmon skin. 4\u20135 min from the fridge, 8\u201310 min from frozen. This is the one thing a microwave genuinely cannot do, and it is most of the reason the fryer pays for itself.<br><br>
-    Food goes from the container onto the basket. The container never goes in \u2014 140 \u00b0C plastic in a 180 \u00b0C basket ends badly.</div>
-  </div>`;
+  h += `<div class="card"><details class="shelf"><summary>\ud83d\udca8 Air fryer and reheating \u2014 the rules</summary>
+    <div style="color:var(--muted);font-size:13px;margin-top:8px">
+    <b>Reheat wet</b> \u2014 rice, curry, keema, nikujaga, tonjiru, soboro. Microwave, lid on: 2\u20133 min from the fridge, 4\u20135 from frozen.<br><br>
+    <b>Reheat crisp</b> \u2014 karaage, katsu, gyoza, tofu, salmon. Air fryer 180 \u00b0C, no oil: 4\u20135 min from the fridge, 8\u201310 from frozen. Food onto the basket; the container never goes in.<br><br>
+    <b>Cooking</b> \u2014 preheat 3 min for skin or coating, one layer with gaps, pat the oil on rather than spraying it. Amazon Basics 4.2 L, 60\u2013200 \u00b0C.
+    </div></details></div>`;
   h += `<div class="card sched">${sched}</div><h2>Recipes</h2>`;
   if ("wakeLock" in navigator) h += `<div class="card"><button class="mini${wakeWanted?" locked":""}" aria-pressed="${wakeWanted}" style="width:100%" onclick="toggleWake()">${wakeWanted?"☀️ Screen staying awake — tap to stop":"🌙 Keep screen awake while cooking"}</button></div>`;
-  h += `<div class="hint">👆 Tap a step to check it off as you cook — step ticks clear when you generate a new week.</div>`;
   h += c.picks.map(r=>`
     <details class="rec">
       <summary><div style="flex:1"><b>${r.n}</b> <span class="jp" style="color:var(--muted);font-size:12.5px">${r.jp}</span><div style="color:var(--muted);font-size:13px">${r.time} · ×${c.servings[r.id]} servings</div></div><span style="color:var(--muted)">▾</span></summary>
