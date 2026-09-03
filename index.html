@@ -302,13 +302,6 @@ const RECIPES = [
 ];
 const EAT_OUT = 1000;
 const GEARICON = {rice:"🍚 rice cooker", pot:"🍲 pot", pan:"🍳 pan", air:"💨 air fryer"};
-/* ============ MEAL-PREP KIT (one-time, Daiso) ============ */
-const KIT = {
-  main600:{n:"600 mL storage box",jp:"楽ちんパック 600 mL（inomata・日本製）",p:110,q:4,ml:600,
-    why:"The workhorse. Lid stays on in the microwave and the rim is flat, so nothing hides in a groove. 600 ml swallows every batch dish, tonjiru and nabe included."},
-  rice355:{n:"One-bowl rice pot",jp:"冷凍保存容器 ごはん一膳・二重構造",p:110,q:3,ml:355,
-    why:"約170 g of cooked rice each, which is exactly the portion this planner uses. The raised inner tray is what stops the bottom going gluey."}
-};
 const yen = x => (x<0?"−":"")+"¥"+Math.abs(Math.round(x)).toLocaleString();
 
 /* ============ STATE (schema-compatible with v2) ============ */
@@ -327,8 +320,8 @@ S.tab = ["plan","shop","cook","save"].includes(S.tab) ? S.tab : "plan";
 S.stepdone = isObj(S.stepdone) ? S.stepdone : {};
 S.price = isObj(S.price) ? Object.fromEntries(Object.entries(S.price).filter(([k,v])=>ING[k] && typeof v==="number" && isFinite(v) && v>0)) : {};
 S.mugi = S.mugi === true;
-S.kit = isObj(S.kit) ? S.kit : {};
-/* legacy S.aircap from older saves is accepted but ignored; capacity is per-recipe */
+/* legacy S.aircap and S.kit from older saves are accepted but ignored: capacity is per-recipe,
+   and the one-time container kit has been bought */
 if (S.plan !== undefined) { S.plan = Array.isArray(S.plan) ? S.plan.filter(x=>typeof x==="string") : undefined; if (S.plan && !S.plan.length) S.plan = undefined; }
 function save(){ try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {} }
 const priceOf = id => S.price[id] !== undefined ? S.price[id] : ING[id].p;
@@ -404,7 +397,6 @@ function lock(id){
   save(); render();
 }
 function toggleCond(id){ S.owned[id]=!S.owned[id]; save(); render(); }
-function toggleKit(id){ S.kit[id]=!S.kit[id]; save(); render(); }
 function toggleBought(id){ S.bought[id]=!S.bought[id]; save(); render(); }
 function clearTicks(){ snapUndo("Basket ticks cleared"); S.bought={}; save(); render(); showUndo(); }
 /* every entry must exist in ING - a stale key here poisons S.protein and blanks the app */
@@ -578,14 +570,6 @@ function renderShop(c){
         <div class="amt"><b>${yen(CONDS[x].p)}</b></div>
       </div>`).join("") + `</div>`;
   }
-  const kitLeft = Object.keys(KIT).filter(k=>!S.kit[k]);
-  h += `<h2>Meal-prep kit (one-time, Daiso)</h2><div class="card" style="padding:4px 16px">` +
-    Object.entries(KIT).map(([k,it])=>`<div class="grow ${S.kit[k]?"done":""}" data-k="k:${k}" role="checkbox" aria-checked="${!!S.kit[k]}" tabindex="0" onkeydown="kb(event)" onclick="toggleKit('${k}')">
-      <span class="tick">\u2713</span>
-      <div class="what"><b>${it.n} \u00d7${it.q}</b><div class="jp">${it.jp} \u00b7 ${it.ml} ml</div><div style="color:var(--muted);font-size:12.5px;margin-top:3px">${it.why}</div></div>
-      <div class="amt"><b>${yen(it.p*it.q)}</b>${yen(it.p)}/ea</div>
-    </div>`).join("") + `</div>`;
-  h += `<div class="hint">\ud83d\udce6 Four boxes covers the Sunday/Wednesday batch rhythm \u2014 three in the fridge at the peak, one in the sink. Only \u201c1 dish, max batch\u201d needs more: that is seven.</div>`;
   const shelf = Object.keys(CONDS).filter(x=>S.owned[x]);
   h += `<div class="card"><details class="shelf"><summary>🧂 Your shelf (${shelf.length}) — tap to manage</summary>` +
     (shelf.length?shelf.map(x=>`<div class="grow done" data-k="s:${x}" role="checkbox" aria-checked="true" tabindex="0" onkeydown="kb(event)" onclick="toggleCond('${x}')"><span class="tick">✓</span><div class="what"><b>${CONDS[x].n}</b><div class="jp">${CONDS[x].jp}</div></div></div>`).join(""):`<div class="empty">Nothing yet</div>`) +
@@ -621,11 +605,12 @@ function renderCook(c){
       <button class="mini${S.mugi?" on":""}" onclick="toggleMugi()" aria-pressed="${S.mugi}">${S.mugi?"ON":"OFF"}</button></div>
     <div style="color:var(--muted);font-size:13px;margin-top:4px">Barley into the plain rice at 3:1 — 50 g per cooker-cup, about ¥20 a serving, ten times the fibre. Same cycle, same effort. Cook-in cooker dishes stay white.</div>
   </div>`;
-  h += `<div class="card"><details class="shelf"><summary>\ud83d\udca8 Air fryer and reheating \u2014 the rules</summary>
+  h += `<div class="card"><details class="shelf"><summary>\ud83d\udca8 Air fryer, reheating and portioning \u2014 the rules</summary>
     <div style="color:var(--muted);font-size:13px;margin-top:8px">
     <b>Reheat wet</b> \u2014 rice, curry, keema, nikujaga, tonjiru, soboro. Microwave, lid on: 2\u20133 min from the fridge, 4\u20135 from frozen.<br><br>
     <b>Reheat crisp</b> \u2014 karaage, katsu, gyoza, tofu, salmon. Air fryer 180 \u00b0C, no oil: 4\u20135 min from the fridge, 8\u201310 from frozen. Food onto the basket; the container never goes in.<br><br>
-    <b>Cooking</b> \u2014 preheat 3 min for skin or coating, one layer with gaps, pat the oil on rather than spraying it. Amazon Basics 4.2 L, 60\u2013200 \u00b0C.
+    <b>Cooking</b> \u2014 preheat 3 min for skin or coating, one layer with gaps, pat the oil on rather than spraying it. Amazon Basics 4.2 L, 60\u2013200 \u00b0C.<br><br>
+    <b>Portioning</b> \u2014 one serving goes in a 600 mL box: curry, keema and nikujaga land at 400\u2013430 ml, tonjiru and the bean soup at ~520, nabe fills it. Rice goes in its own 355 ml one-bowl pot (\u7d04170 g, the portion this planner uses), never in with the sauce. Four boxes and three rice pots covers the Sunday/Wednesday rhythm; only \u201c1 dish, max batch\u201d needs more.
     </div></details></div>`;
   h += `<div class="card sched">${sched}</div><h2>Recipes</h2>`;
   if ("wakeLock" in navigator) h += `<div class="card"><button class="mini${wakeWanted?" locked":""}" aria-pressed="${wakeWanted}" style="width:100%" onclick="toggleWake()">${wakeWanted?"☀️ Screen staying awake — tap to stop":"🌙 Keep screen awake while cooking"}</button></div>`;

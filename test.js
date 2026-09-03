@@ -225,31 +225,34 @@ ok("breaded dishes get the basket to themselves", R.filter(r => r.conds.includes
 ok("no recipe tells you to spray aerosol oil into the basket",
   !R.some(r => r.steps.some(s => /spray/i.test(s) && !/never (aerosol )?spray/i.test(s))));
 
-/* ---------- Daiso meal-prep kit ---------- */
-const KIT = ev("KIT");
-ok("KIT reachable", KIT && typeof KIT === "object");
-ok("kit entries are sane", Object.values(KIT).every(k =>
-  k.n && k.jp && k.ml > 0 && k.p > 0 && k.q > 0 && typeof k.why === "string" && k.why.length > 20));
-ok("no 1000 ml container in the kit", Object.values(KIT).every(k => k.ml < 1000));
-eq("kit is the two sizes actually bought", Object.keys(KIT).sort().join(","), "main600,rice355");
-eq("four mains", KIT.main600.q, 4);
-eq("three rice pots", KIT.rice355.q, 3);
-eq("kit costs \u00a5770", Object.values(KIT).reduce((a, k) => a + k.p * k.q, 0), 770);
-ok("kit toggle persists", (function () {
-  const k = Object.keys(KIT)[0];
-  ev("toggleKit('" + k + "')");
-  const on = JSON.parse(W.localStorage.getItem("lmp") || "{}").kit || {};
-  ev("toggleKit('" + k + "')");
-  return on[k] === true;
-})());
+/* ---------- the one-time container kit is bought and gone ---------- */
+ok("KIT catalogue removed", ev("typeof KIT") === "undefined");
+ok("toggleKit removed", ev("typeof toggleKit") === "undefined");
+ok("S.kit is not initialised", S.kit === undefined);
+S.plan = ["curry"]; S.N = 4;
 ev("setTab('shop')");
-ok("shop view lists the kit", /Meal-prep kit/.test(D.getElementById("tab-shop").innerHTML));
-ok("shop view states the batch rhythm the count comes from",
-  /Sunday\/Wednesday batch rhythm/.test(D.getElementById("tab-shop").innerHTML));
+ok("shop view no longer sells containers",
+  !/Meal-prep kit|Daiso/.test(D.getElementById("tab-shop").innerHTML));
+{
+  /* a save from the version that had the kit must not throw or resurrect it */
+  S.kit = { main600: true };
+  let threw = null;
+  try { ev("render()"); } catch (e) { threw = e.message; }
+  ok("a legacy S.kit in an old save is inert", !threw, threw);
+  ok("legacy kit does not render", !/Meal-prep kit/.test(D.getElementById("tab-shop").innerHTML));
+  delete S.kit;
+}
+
 ev("setTab('cook')");
 const cookHTML = () => D.getElementById("tab-cook").innerHTML;
 ok("cook view states the machine", /Amazon Basics 4.2 L/.test(cookHTML()));
-ok("cook view gives the reheat split", /Air fryer and reheating/.test(cookHTML()));
+ok("cook view gives the reheat split", /Reheat wet/.test(cookHTML()) && /Reheat crisp/.test(cookHTML()));
+
+/* the measurements outlive the shopping list - they say which box a portion goes in */
+ok("portioning rule kept: the 600 mL box", /600 mL box/.test(cookHTML()));
+ok("portioning rule kept: the rice pot", /355 ml one-bowl pot/.test(cookHTML()));
+ok("portioning rule kept: the volumes", /400\u2013430 ml/.test(cookHTML()));
+ok("portioning rule kept: how many of each", /Four boxes and three rice pots/.test(cookHTML()));
 
 /* clutter budget: advice that does not change what you do this week stays out */
 {
@@ -259,8 +262,8 @@ ok("cook view gives the reheat split", /Air fryer and reheating/.test(cookHTML()
   ok("no permanent tap-a-step hint", !/Tap a step to check it off/.test(cook));
   ok("no tacook side-dish aside", !/tacook plate steams/.test(cook));
   ok("no belachan flavour aside in shop", !/Your stash/.test(shop));
-  ok("air-fryer reference is collapsed, not four open cards",
-    /<details[^>]*>\s*<summary>[^<]*Air fryer and reheating/.test(cook));
+  ok("the reference row is collapsed, not a stack of open cards",
+    /<details[^>]*>\s*<summary>[^<]*Air fryer, reheating and portioning/.test(cook));
   ok("the tips that change what you cook are still there",
     /rounds back-to-back|only works one serving at a time/.test(
       (function () { S.plan = ["afkatsu"]; S.N = 3; ev("render()"); return cookHTML(); })()));

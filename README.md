@@ -15,9 +15,18 @@ a cook schedule that respects what the gear can actually hold, and a savings log
 | Tiger JAJ-A550 rice cooker (3-cup tacook) | 3 cups per run; 2 servings for cook-in dishes |
 | Amazon Basics air fryer 4.2 L (1200 W, 60–200 °C, 60 min, ceramic non-stick) | 2 servings per basket; 1 for anything breaded |
 | 0.8 L kettle, microwave, toaster | — |
+| Storage: 4 × 600 mL boxes, 3 × 355 ml rice pots | one serving per box; peak 3 boxes in circulation |
 
 Every recipe carries a `cap` = servings per cooking round on its gear. The cook view turns
 that into "do N rounds back-to-back" rather than pretending one pan does everything.
+
+Container counts come from the same logic. Simulated against the app's own Sunday/Wednesday
+batch schedule, a default week (7 meals, 2–3 dishes) peaks at 3 main containers in
+circulation, so four covers it with one in the sink. Rice pots are set by how many portions
+you freeze per cooker run: 1.5 cups twice a week needs three, one 3-cup run needs five. Only
+"1 dish, max batch" mode needs seven mains. Portion volumes: curry, keema and nikujaga
+400–430 ml, tonjiru and bean soup ~520 ml, nabe ~600 ml — which is why 600 mL is one size for
+everything, and why rice keeps its own 355 ml pot.
 
 ## Files
 
