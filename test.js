@@ -397,6 +397,34 @@ ok("no step claims a week in the fridge",
     jp.filter(el => el.getAttribute("lang") !== "ja").length + " untagged");
 }
 
+/* ---------- shelf prices are the ones on the LIFE receipt, 2026-09-05 ---------- */
+eq("mirin is hon-mirin, not the mirin-style seasoning", CONDS.mirin.jp, "本みりん 1L");
+eq("mirin priced from the receipt", CONDS.mirin.p, 416);
+eq("cooking sake priced from the receipt", CONDS.sake.p, 225);
+eq("garlic priced from the receipt", CONDS.garlic.p, 376);
+eq("ginger priced from the receipt", CONDS.ginger.p, 376);
+ok("garlic and ginger are the value bottles, not tubes",
+  /お徳用/.test(CONDS.garlic.jp) && /お徳用/.test(CONDS.ginger.jp));
+
+/* ---------- bottles dispense by spoon; no step may still measure a tube ---------- */
+ok("no recipe step mentions a tube",
+  !R.some(r => r.steps.some(s => /tube/i.test(s))),
+  R.filter(r => r.steps.some(s => /tube/i.test(s))).map(r => r.id).join(","));
+{
+  const DOSE = /\d\s*cm\s*(squeeze\s*)?(of\s*)?(each\s*)?(garlic|ginger)/i;
+  ok("no step doses garlic or ginger in centimetres",
+    !R.some(r => r.steps.some(s => DOSE.test(s))),
+    R.filter(r => r.steps.some(s => DOSE.test(s))).map(r => r.id).join(","));
+}
+{
+  const users = R.filter(r => r.conds.includes("garlic") || r.conds.includes("ginger"));
+  ok("every garlic/ginger dish gives a spoon measure",
+    users.every(r => r.steps.some(s => /tsp[^.]{0,30}(garlic|ginger) paste/i.test(s))),
+    users.filter(r => !r.steps.some(s => /tsp[^.]{0,30}(garlic|ginger) paste/i.test(s))).map(r => r.id).join(","));
+}
+/* knife measurements in cm are untouched - they are not doses */
+ok("knife cuts still measured in cm", R.some(r => r.steps.some(s => /\d\s*cm (chunks|cubes|strips|half-moons|pieces|slabs)/.test(s))));
+
 /* ---------- report ---------- */
 console.log("\n" + "=".repeat(52));
 console.log("  PASS " + pass + "   FAIL " + fail + "   (" + (pass + fail) + " assertions)");
