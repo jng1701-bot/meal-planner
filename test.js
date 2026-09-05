@@ -403,6 +403,10 @@ eq("mirin priced from the receipt", CONDS.mirin.p, 416);
 eq("cooking sake priced from the receipt", CONDS.sake.p, 225);
 eq("garlic priced from the receipt", CONDS.garlic.p, 376);
 eq("ginger priced from the receipt", CONDS.ginger.p, 376);
+/* per-100g items: pack total incl. tax divided by the weight on the label */
+eq("chicken thigh priced from the receipt", ING.chicken.p, 1.07);   // 618 +8% over 625 g
+eq("frozen broccoli priced from the receipt", ING.fbroc.p, 1.42);   // 459 +8% over 350 g
+ok("soy is still the unverified estimate", CONDS.soy.p === 300);
 ok("garlic and ginger are the value bottles, not tubes",
   /お徳用/.test(CONDS.garlic.jp) && /お徳用/.test(CONDS.ginger.jp));
 
