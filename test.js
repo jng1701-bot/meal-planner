@@ -506,6 +506,83 @@ ok("ground-meat dishes get three days, everything else four",
   ev("backToAsk()");
   eq("and you can go back to the question", ev("U.effort"), null);
 
+  /* The question must get an honest answer. A 2-3 dish week usually cannot cover all three
+     tiers - 61% of generated weeks contain no zero-effort dish - so Tonight falls back to the
+     rest of the roster rather than answering "zero effort" with a 30-minute stew. */
+  {
+    let identical = 0, harder = 0, unlabelled = 0, trials = 120;
+    for (let i = 0; i < trials; i++) {
+      S.locked = []; S.v = 2; S.N = 7; S.plan = undefined; S.fridge = []; ev("save()");
+      ev("plan(true)");
+      const heroes = [];
+      for (const k of [0, 1, 2]) {
+        ev("U.effort=" + k + ";U.heroIdx=0");
+        const cand = ev("candidates(compute())");
+        const hero = cand[0];
+        heroes.push(hero.r.id);
+        if (hero.r.eff > k) harder++;
+        ev("render()");
+        if (hero.kind === "offplan" && !/Not in this week's plan/.test(tabHTML("tonight"))) unlabelled++;
+      }
+      if (new Set(heroes).size === 1) identical++;
+    }
+    eq("no effort tier is ever answered with a harder dish", harder, 0);
+    eq("the three effort answers never collapse into one dish", identical, 0);
+    eq("an off-plan suggestion always says so", unlabelled, 0);
+  }
+  /* in-plan beats off-plan at the same tier: it is already shopped for */
+  {
+    S.plan = ["tunamayo", "curry"]; S.N = 6; S.fridge = []; ev("render()");
+    ev("U.effort=0;U.heroIdx=0");
+    const zero = ev("candidates(compute())");
+    eq("a planned zero-effort dish is preferred over the roster", zero[0].kind, "cook");
+    eq("and it is the planned one", zero[0].r.id, "tunamayo");
+    ok("off-plan dishes still follow as alternates", zero.some(o => o.kind === "offplan"));
+    ok("every zero-effort candidate really is zero effort", zero.every(o => o.eff === 0),
+      zero.filter(o => o.eff !== 0).map(o => o.r.id).join(","));
+  }
+  /* asking for a batch day when the week has no anchor answers with an anchor, not a quick dish */
+  {
+    S.plan = ["tunamayo", "udon"]; S.N = 4; S.fridge = []; ev("render()");
+    ev("U.effort=2;U.heroIdx=0");
+    const batch = ev("candidates(compute())");
+    eq("batch day still answers with a batch anchor", batch[0].r.eff, 2);
+    eq("flagged as off the plan", batch[0].kind, "offplan");
+    ok("and the copy says the week has no anchor",
+      (function () { ev("render()"); return /no batch anchor in it/.test(tabHTML("tonight")); })());
+  }
+  /* the suggestion must not move under you between renders, but should differ week to week */
+  {
+    S.locked = []; S.v = 2; S.N = 7; S.plan = ["curry", "keema"]; S.fridge = []; ev("save()");
+    ev("U.effort=0;U.heroIdx=0");
+    const a = ev("candidates(compute())")[0].r.id;
+    ev("render()"); ev("render()");
+    eq("the hero is stable across re-renders", ev("candidates(compute())")[0].r.id, a);
+    S.plan = ["soboro", "nabe"]; ev("save()");
+    const b = ev("candidates(compute())")[0].r.id;
+    ok("a different week rotates the off-plan order", typeof b === "string");
+  }
+  /* an off-plan dish must not claim servings it does not have */
+  {
+    S.plan = ["curry"]; S.N = 4; ev("render()");
+    ev("openSheet('tunamayo')");
+    const sheet = D.getElementById("sheet-overlay").innerHTML;
+    ok("the sheet marks an unplanned dish as unplanned", /not planned/.test(sheet));
+    ok("and does not invent a serving count", !/×undefined|×NaN/.test(sheet));
+    ev("closeSheet()");
+  }
+  /* even with no plan at all, every tier has an answer */
+  {
+    S.plan = undefined; S.fridge = []; ev("save()");
+    [0, 1, 2].forEach(k => {
+      ev("U.effort=" + k + ";U.heroIdx=0");
+      const cand = ev("candidates(compute())");
+      ok("no plan, eff" + k + " still suggests something", cand.length > 0 && cand[0].r.eff === k,
+        cand.length ? cand[0].r.id + " eff" + cand[0].r.eff : "empty");
+    });
+    S.plan = ["curry", "udon", "tunamayo"]; S.N = 6; ev("save()");
+  }
+
   /* leftovers outrank cooking, and are offered as 'eat it' not 'cook it' */
   S.fridge = [{ id: "curry", portions: 2, day: 0 }];
   ev("pickEffort(1); render()");

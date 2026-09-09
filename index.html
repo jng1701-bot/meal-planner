@@ -488,6 +488,7 @@ function plan(reshuffle){
     if (v===1) rest.sort((a,b)=> (b.cap||0)-(a.cap||0));
     while (picks.length<k && rest.length) picks.push(rest.shift());
     S.plan = picks.map(r=>r.id);
+    U.heroIdx = 0; /* a new week means the old "Nah" position means nothing */
   }
   save(); render();
   if (undid) flash("New week generated", ()=>{ S.plan=prevPlan.plan; S.bought=prevPlan.bought; save(); render(); });
@@ -652,18 +653,41 @@ function compute(){
   return {picks, servings, N, rows, food, riceGo, mugiCups, needed};
 }
 
+/* A week is only 2–3 dishes, so it usually cannot answer all three effort questions —
+   61% of generated weeks contain no zero-effort dish at all. Tonight therefore falls back
+   to the rest of the roster rather than answering "zero effort" with a 30-minute stew.
+   Off-plan dishes are always ranked last and always labelled, because they have not been
+   shopped for. The order is stable for a given week so the suggestion does not move
+   under you between renders, but differs from week to week. */
+function planSeed(){
+  const s = (S.plan||[]).join(",") + "|" + S.N + "|" + S.v;
+  let h = 0;
+  for (let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+function rotated(list, salt){
+  if (list.length < 2) return list;
+  const k = (planSeed()+salt) % list.length;
+  return list.slice(k).concat(list.slice(0,k));
+}
 function candidates(c){
   const eff = U.effort;
-  const out = [];
+  const fridge = [];
   S.fridge.forEach((f,i)=>{ const r=rec(f.id); if (!r) return;
-    out.push({kind:"fridge", r, idx:i, age:S.day-f.day, portions:f.portions, eff:0}); });
-  const plan = c ? c.picks : [];
-  plan.forEach(r=>out.push({kind:"cook", r, eff:r.eff, serv:c.servings[r.id]}));
-  let list = out.filter(o=>o.eff<=eff);
-  if (eff===2) list = out.filter(o=>o.kind==="cook"&&o.r.eff===2).concat(out.filter(o=>!(o.kind==="cook"&&o.r.eff===2)));
-  else list.sort((a,b)=>(a.kind==="fridge"?-1:1)-(b.kind==="fridge"?-1:1) || b.eff-a.eff);
-  if (!list.length) list = out;
-  return list;
+    fridge.push({kind:"fridge", r, idx:i, age:S.day-f.day, portions:f.portions, eff:0}); });
+  const planned = c ? c.picks : [];
+  const inPlan = planned.filter(r=>r.eff<=eff).map(r=>({kind:"cook", r, eff:r.eff, serv:c.servings[r.id]}));
+  const offPlan = rotated(RECIPES.filter(r=>r.eff===eff && !planned.some(p=>p.id===r.id)), eff)
+    .map(r=>({kind:"offplan", r, eff:r.eff}));
+  if (eff===2) {
+    /* asked for a batch day: answer with an anchor. If the week has none, an off-plan
+       anchor is a better answer than a 12-minute pan dish — batching is the whole request. */
+    const anchors = inPlan.filter(o=>o.r.eff===2);
+    const others = inPlan.filter(o=>o.r.eff!==2);
+    return [...anchors, ...offPlan, ...fridge, ...others];
+  }
+  /* asked for something easy: what is already cooked wins, then the plan, hardest first */
+  return [...fridge, ...inPlan.sort((a,b)=>b.eff-a.eff), ...offPlan];
 }
 
 function gearTips(r, s){
@@ -742,10 +766,14 @@ function heroHTML(hero){
     cta = "Eat it";
     go = "eatFridge("+hero.idx+")";
   } else {
-    tag = (r.eff===2?"Batch anchor · ":"Cook fresh · ")+r.time;
+    const off = hero.kind==="offplan";
+    tag = off ? "Not in this week's plan · "+r.time : (r.eff===2?"Batch anchor · ":"Cook fresh · ")+r.time;
     const gearTxt = r.gear.map(g=>GEARLABEL[g]).join(" + ");
     const perRound = r.cap ? Math.min(hero.serv||r.cap, r.cap) : (hero.serv||1);
-    why = gearTxt+". "+(r.batch ? "Makes "+perRound+" at a time"+(r.freeze?", "+r.freeze:"")+"." : "Too quick to be worth batching.");
+    why = cap1(gearTxt)+". "+(off
+      ? (U.effort===2 ? "This week has no batch anchor in it, so this one is off the plan — you will need to shop for it."
+                      : "Nothing this easy is in this week's plan, so this one is off it — check the cupboard first.")
+      : (r.batch ? "Makes "+perRound+" at a time"+(r.freeze?", "+r.freeze:"")+"." : "Too quick to be worth batching."));
     cta = "Cook it";
     go = "openCookFromHero('"+r.id+"')";
   }
@@ -760,7 +788,7 @@ function heroHTML(hero){
 }
 function altRowHTML(o,i){
   const meta = o.kind==="fridge" ? "in the fridge · "+o.portions+" left" : o.r.time+" · "+o.r.gear.map(g=>GEARLABEL[g]).join(" + ");
-  const badge = o.kind==="fridge" ? "ready" : (o.r.eff===2?"batch":"cook");
+  const badge = o.kind==="fridge" ? "ready" : o.kind==="offplan" ? "off plan" : (o.r.eff===2?"batch":"cook");
   const tint = o.kind==="fridge" ? "mint" : "muted";
   const go = o.kind==="fridge" ? "eatFridge("+o.idx+")" : "openSheet('"+o.r.id+"')";
   return '<button class="altrow" data-k="alt'+i+'" onclick="'+go+'">'
@@ -950,8 +978,9 @@ function saveHTML(){
 function sheetHTML(c){
   if (!U.sheet) return {show:false, html:""};
   const r = rec(U.sheet); if (!r) { U.sheet=null; return {show:false, html:""}; }
-  const serv = c && c.servings[r.id] ? c.servings[r.id] : 1;
-  const facts = [[r.time,"hands on"], ["×"+serv,"this week"], [r.gear.map(g=>GEARLABEL[g]).join(" + "),"gear"]];
+  const planned = !!(c && c.servings[r.id]);
+  const serv = planned ? c.servings[r.id] : 1;
+  const facts = [[r.time,"hands on"], planned ? ["×"+serv,"this week"] : ["—","not planned"], [r.gear.map(g=>GEARLABEL[g]).join(" + "),"gear"]];
   const tips = gearTips(r, serv);
   const ingText = ingsOf(r).map(([id,q])=>{ const it=ING[id]; return it.n+" "+(it.u==="pc"?q+" pc":q+" g"); }).join(" · ")+(r.rice?" · rice 150 g (1 cup)":"");
   const condsText = "Shelf: "+r.conds.map(x=>CONDS[x].n).join(", ").toLowerCase();
