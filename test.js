@@ -45,6 +45,10 @@ ok("no script errors on load", consoleErrors.length === 0, consoleErrors.slice(0
 
 const R = ev("RECIPES"), ING = ev("ING"), CONDS = ev("CONDS"), GEARLABEL = ev("GEARLABEL");
 const S = ev("S"), EAT_OUT = ev("EAT_OUT"), EFFORTS = ev("EFFORTS");
+/* an appliance dish is one the air fryer or the rice cooker actually cooks, not one that
+   merely has rice on the side */
+const isAppliance = r => ev("isApplianceDish")(r);
+const gearTipsOf = (r, servings) => ev("gearTips")(r, servings);
 ok("RECIPES reachable", Array.isArray(R));
 ok("ING reachable", ING && typeof ING === "object");
 ok("CONDS reachable", CONDS && typeof CONDS === "object");
@@ -52,10 +56,10 @@ ok("S reachable", S && typeof S === "object");
 ok("U (ephemeral UI state) reachable", ev("typeof U") === "object");
 
 /* ---------- roster shape ---------- */
-eq("roster count is 32", R.length, 32);
+eq("roster count is 45", R.length, 45);
 eq("unique ids", new Set(R.map(r => r.id)).size, R.length);
 
-const TIERS = { A: 9, B: 4, C: 8, D: 6, E: 4, F: 1 };
+const TIERS = { A: 9, B: 13, C: 15, D: 4, E: 3, F: 1 };
 const tierCount = R.reduce((a, r) => (a[r.tier] = (a[r.tier] || 0) + 1, a), {});
 Object.entries(TIERS).forEach(([t, n]) => eq("tier " + t + " count", tierCount[t], n));
 ok("no recipe missing a tier", R.every(r => "ABCDEF".includes(r.tier)));
@@ -88,8 +92,9 @@ ok("all three tiers have dishes", [0, 1, 2].every(k => R.some(r => r.eff === k))
 /* batch day = the long pot anchors; zero effort = assembly and set-and-forget only */
 ok("every eff-2 dish is a batchable anchor", R.filter(r => r.eff === 2).every(r => r.batch && r.cap >= 4),
   R.filter(r => r.eff === 2 && !(r.batch && r.cap >= 4)).map(r => r.id).join(","));
-ok("no eff-2 dish is quicker than 20 minutes", R.filter(r => r.eff === 2).every(r => parseInt(r.time, 10) >= 20),
-  R.filter(r => r.eff === 2 && parseInt(r.time, 10) < 20).map(r => r.id).join(","));
+ok("no eff-2 dish is quicker than 20 minutes unless the appliance does the waiting",
+  R.filter(r => r.eff === 2).every(r => parseInt(r.time, 10) >= 20 || isAppliance(r)),
+  R.filter(r => r.eff === 2 && parseInt(r.time, 10) < 20 && !isAppliance(r)).map(r => r.id).join(","));
 ok("no zero-effort dish takes more than 8 minutes", R.filter(r => r.eff === 0).every(r => parseInt(r.time, 10) <= 8),
   R.filter(r => r.eff === 0 && parseInt(r.time, 10) > 8).map(r => r.id).join(","));
 ok("zero-effort dishes never need batching", R.filter(r => r.eff === 0).every(r => !r.batch),
@@ -98,7 +103,8 @@ ok("zero-effort dishes never need batching", R.filter(r => r.eff === 0).every(r 
 /* ---------- no orphaned pantry entries ---------- */
 const usedIng = new Set(R.flatMap(r => r.ing.map(([i]) => i)));
 Object.keys(ING).forEach(k => {
-  if (k === "mugi") return; // driven by the toggle, not by any recipe
+  // both are added by compute() from the rice count, not listed in any recipe's ingredients
+  if (k === "mugi" || k === "rice") return;
   ok("ING used: " + k, usedIng.has(k));
 });
 const usedCond = new Set(R.flatMap(r => r.conds));
@@ -130,8 +136,16 @@ R.forEach(r => r.steps.forEach((s, i) => {
 
 /* ---------- cook-in flag ---------- */
 const cookin = R.filter(r => r.cookin).map(r => r.id).sort();
-ok("cook-in set is the four rice-cooker dishes",
-  JSON.stringify(cookin) === JSON.stringify(["hainan", "kimchirice", "takikomi", "tomatorice"]), cookin.join(","));
+ok("cook-in set is the seasoned-rice cooker dishes",
+  JSON.stringify(cookin) === JSON.stringify(["hainan", "kimchirice", "rcchahan", "rcrisotto", "sabarice", "takikomi", "tomatorice"]), cookin.join(","));
+/* the cooking plate steams a dish above plain rice, so it is never a seasoned-rice dish */
+ok("no dish is both cook-in and cooking-plate", !R.some(r => r.cookin && r.plate),
+  R.filter(r => r.cookin && r.plate).map(r => r.id).join(","));
+R.filter(r => r.plate).forEach(r => {
+  ok(r.id + ": plate dish uses the rice cooker", r.gear.includes("rice"));
+  ok(r.id + ": plate dish warns about seasoned rice sticking",
+    gearTipsOf(r, 1).some(x => /plain rice underneath only/i.test(x)));
+});
 R.filter(r => r.cookin).forEach(r => ok(r.id + ": cook-in uses the rice cooker", r.gear.includes("rice")));
 
 /* ---------- drive the UI ---------- */
@@ -220,7 +234,8 @@ R.forEach(r => {
   S.N = Math.max(1, r.cap || 2);
   let c2 = null, threw = null;
   try { c2 = ev("compute()"); ev("render()"); } catch (e) { threw = e.message; }
-  ok("solo plan computes: " + r.id, !threw && c2 && c2.food > 0, threw);
+  ok("solo plan computes: " + r.id, !threw && c2 && c2.food >= 0, threw);
+  if (r.ing.length) ok("solo plan costs something: " + r.id, c2.food > 0);
   const html = tabHTML("week") + tabHTML("shop");
   ok("solo plan renders clean: " + r.id, !/undefined|NaN|\[object Object\]/.test(html));
 });
@@ -241,7 +256,7 @@ R.forEach(r => {
 
 /* ---------- rice portion ---------- */
 R.filter(r => r.rice !== undefined).forEach(r => {
-  if (r.cookin) eq("cook-in keeps a full cup: " + r.id, r.rice, 1);
+  if (r.cookin || r.plate || r.id === "afonigiri") eq("rice-led dish keeps a full cup: " + r.id, r.rice, 1);
   else eq("standard portion is half a cup: " + r.id, r.rice, 0.5);
 });
 ok("no recipe still quotes 200 g cooked rice",
@@ -251,7 +266,7 @@ R.filter(r => r.cookin).forEach(r =>
 
 /* ---------- the real machine: Amazon Basics 4.2 L, 60-200 C ---------- */
 const AIR = R.filter(r => r.gear.includes("air"));
-eq("air-fryer roster size", AIR.length, 8);
+eq("air-fryer roster size", AIR.length, 15);
 ok("no air dish exceeds the 4.2 L basket", AIR.every(r => r.cap >= 1 && r.cap <= 2),
   AIR.filter(r => r.cap > 2).map(r => r.id).join(","));
 ok("every air dish names a temperature", AIR.every(r => r.steps.some(s => /\d{2,3}\s*°C/.test(s))),
@@ -260,7 +275,9 @@ ok("no air dish asks for more than 200 C", !AIR.some(r => r.steps.some(s => {
   const m = s.match(/(\d{2,3})\s*°C/g) || [];
   return m.some(x => parseInt(x, 10) > 200);
 })));
-ok("breaded dishes get the basket to themselves", R.filter(r => r.conds.includes("panko")).every(r => r.cap === 1));
+ok("breaded dishes get the basket to themselves",
+  R.filter(r => r.steps.some(s => /press the panko on|dip in egg/i.test(s))).every(r => r.cap === 1),
+  R.filter(r => r.steps.some(s => /press the panko on|dip in egg/i.test(s)) && r.cap !== 1).map(r => r.id).join(","));
 ok("no recipe tells you to spray aerosol oil into the basket",
   !R.some(r => r.steps.some(s => /spray/i.test(s) && !/never (aerosol )?spray/i.test(s))));
 {
@@ -686,18 +703,161 @@ ok("ground-meat dishes get three days, everything else four",
   S.log = [];
 }
 
+/* ---------- rice was free in every total until now ---------- */
+{
+  S.price = {}; S.plan = ["curry"]; S.N = 4; S.mugi = false;
+  const c = ev("compute()");
+  const riceRow = c.rows.find(r => r.id === "rice");
+  ok("rice appears in the grocery list", !!riceRow, c.rows.map(r => r.id).join(","));
+  ok("it is priced by the gram of dry rice", riceRow && riceRow.cost > 0);
+  ok("the amount matches the cooker cups", riceRow && /\d+ g/.test(riceRow.disp), riceRow && riceRow.disp);
+  const withRice = c.food;
+  /* a gifted bag costs nothing, and the planner has to be able to say so */
+  ev("setPrice('rice', 0)");
+  eq("a price of zero is accepted, not rejected", S.price.rice, 0);
+  const free = ev("compute()").food;
+  ok("a free bag drops out of the bill", free < withRice, withRice + " -> " + free);
+  ok("but the rice is still on the list to buy", ev("compute()").rows.some(r => r.id === "rice"));
+  ev("setPrice('rice', -5)");
+  eq("a negative price is still nonsense", S.price.rice, 0);
+  S.price = {}; S.plan = undefined; S.N = 7;
+}
+
+/* ---------- the shelf: a bottle bought once must not be billed every week ---------- */
+{
+  /* The default shelf was {oil:true} and nothing ever filled it in, so the Shop tab kept
+     asking for mentsuyu, soy and mirin as one-time purchases months after they were bought. */
+  const SEED = ev("SHELF_SEED");
+  ok("the seed covers every condiment a recipe calls for",
+    [...new Set(R.flatMap(r => r.conds))].every(k => SEED.includes(k) || k === "cheese"),
+    [...new Set(R.flatMap(r => r.conds))].filter(k => !SEED.includes(k) && k !== "cheese").join(","));
+  ok("a fresh install starts with a stocked shelf", SEED.every(k => S.owned[k] === true),
+    SEED.filter(k => S.owned[k] !== true).join(","));
+  ok("the shelf is marked as seeded", S.shelfSeeded === true);
+
+  /* nikujaga for four: the exact report Josh made */
+  S.plan = ["nikujaga"]; S.N = 4; ev("render()");
+  const shop = tabHTML("shop");
+  ok("four servings of nikujaga does not re-bill mentsuyu", !/Mentsuyu/.test(shop), "mentsuyu still billed");
+  ok("and asks for no shelf top-up at all", !/Shelf top-up/.test(shop));
+  const c4 = ev("compute()");
+  ok("mentsuyu is still recognised as needed by the recipe", c4.needed.includes("mentsuyu"));
+  ok("it is simply already owned", S.owned.mentsuyu === true);
+
+  /* running out is still expressible, and still reaches the shopping list */
+  ev("toggleCond('mentsuyu')");
+  ok("marking one as run out puts it back on the list", /Mentsuyu/.test(tabHTML("shop")));
+  ok("and the list explains it is a one-time buy", /A bottle lasts months/.test(tabHTML("shop")));
+  ev("toggleCond('mentsuyu')");
+  ok("putting it back in stock clears it again", !/Shelf top-up/.test(tabHTML("shop")));
+}
+{
+  /* a condiment deliberately marked as run out must survive the migration, not be re-stocked */
+  const d2 = new JSDOM(fs.readFileSync(HTML, "utf8"), {
+    runScripts: "dangerously", pretendToBeVisual: true, url: "https://localhost/",
+    virtualConsole: new VirtualConsole(),
+    beforeParse(w) {
+      w.localStorage.setItem("lmp", JSON.stringify({ owned: { mentsuyu: false }, N: 7, v: 2 }));
+    }
+  });
+  eq("an explicit out-of-stock is not overwritten by the seed", d2.window.eval("S.owned.mentsuyu"), false);
+  eq("while untouched staples are stocked", d2.window.eval("S.owned.soy"), true);
+  d2.window.close();
+}
+{
+  /* the old default put one key in the shelf; that save must migrate to a full one */
+  const d3 = new JSDOM(fs.readFileSync(HTML, "utf8"), {
+    runScripts: "dangerously", pretendToBeVisual: true, url: "https://localhost/",
+    virtualConsole: new VirtualConsole(),
+    beforeParse(w) { w.localStorage.setItem("lmp", JSON.stringify({ owned: { oil: true }, N: 7, v: 2 })); }
+  });
+  eq("an existing {oil:true} save gets the rest of the shelf", d3.window.eval("S.owned.mentsuyu"), true);
+  eq("and the migration is recorded so it runs once", d3.window.eval("S.shelfSeeded"), true);
+  eq("and it is written to storage immediately",
+    JSON.parse(d3.window.localStorage.getItem("lmp")).shelfSeeded, true);
+  d3.window.close();
+}
+
+/* ---------- the rice cooker is a cooker, not just a rice pot ---------- */
+{
+  const cooker = R.filter(r => r.cookin || r.plate || r.simmer);
+  ok("the rice cooker has real range", cooker.length >= 10, cooker.length + " dishes");
+  ok("it does more than seasoned rice",
+    R.some(r => r.plate) && R.some(r => r.simmer),
+    "plate " + R.filter(r => r.plate).length + " simmer " + R.filter(r => r.simmer).length);
+  /* the manufacturer's rule: thickeners foam, foam blocks the vent */
+  R.filter(r => r.simmer && r.conds.includes("roux")).forEach(r => {
+    ok(r.id + ": roux goes in after the cycle, never during",
+      r.steps.some(s => /not put the roux in yet|after the cycle|heat OFF/i.test(s)));
+  });
+  ok("the fridge tab documents the cooker's limits", /plain rice underneath, never seasoned rice/i.test(tabHTML("fridge")));
+  ok("including the thickener rule", /blocks the steam vent|foam blocks/i.test(tabHTML("fridge")));
+  ok("and the wooden paddle rule", /[Ww]ooden paddle/.test(tabHTML("fridge")));
+  S.plan = undefined; S.N = 7;
+}
+
 /* ---------- max-batch mode should not pick a 2-serving basket ---------- */
 {
-  S.locked = []; S.N = 7; S.v = 1;
-  const batchCaps = R.filter(r => r.batch).map(r => r.cap || 0);
-  const best = Math.max(...batchCaps);
-  let low = [];
-  for (let i = 0; i < 60; i++) {
+  /* Max-batch used to sort by capacity and take the top, which meant it returned only the nine
+     cap-4 pot and pan dishes: no air fryer, no rice cooker, and the same handful every roll.
+     Capacity is now a weight, not a ranking, so the contract is a spread of dishes that still
+     leans toward the ones needing fewest rounds. */
+  S.locked = []; S.N = 7; S.v = 1; S.recent = [];
+  const seen = {}, caps = [];
+  let appliance = 0, total = 0;
+  for (let i = 0; i < 400; i++) {
     S.plan = undefined; ev("plan(true)");
-    S.plan.map(id => R.find(r => r.id === id)).forEach(r => { if ((r.cap || 0) < best) low.push(r.id); });
+    S.plan.map(id => R.find(r => r.id === id)).forEach(r => {
+      seen[r.id] = (seen[r.id] || 0) + 1; caps.push(r.cap || 0);
+      total++; if (isAppliance(r)) appliance++;
+    });
   }
-  ok("v=1 picks the largest-capacity batch dish", low.length === 0, [...new Set(low)].join(","));
-  S.v = 2;
+  const distinct = Object.keys(seen).length;
+  ok("max batch draws on more than the pot shelf", distinct >= 12, "only " + distinct + " dishes");
+  ok("max batch reaches the appliances", appliance / total > 0.35,
+    Math.round(appliance / total * 100) + "% appliance");
+  ok("max batch still favours fewer rounds",
+    caps.reduce((a, b) => a + b, 0) / caps.length >= 2.5,
+    "mean cap " + (caps.reduce((a, b) => a + b, 0) / caps.length).toFixed(2));
+  ok("max batch only ever picks batchable dishes",
+    Object.keys(seen).every(id => R.find(r => r.id === id).batch),
+    Object.keys(seen).filter(id => !R.find(r => r.id === id).batch).join(","));
+  const hog = Object.entries(seen).sort((a, b) => b[1] - a[1])[0];
+  ok("no single dish dominates the rolls", hog[1] / 400 < 0.25, hog[0] + " " + Math.round(hog[1] / 400 * 100) + "%");
+  S.v = 2; S.recent = [];
+}
+
+/* ---------- the appliances cost money; the planner should reach for them ---------- */
+{
+  S.locked = []; S.recent = [];
+  [1, 2, 3].forEach(v => {
+    S.v = v; S.N = 7;
+    let appliance = 0, total = 0;
+    for (let i = 0; i < 200; i++) {
+      S.plan = undefined; ev("plan(true)");
+      S.plan.map(id => R.find(r => r.id === id)).forEach(r => { total++; if (isAppliance(r)) appliance++; });
+    }
+    ok("variety " + v + " leans on the air fryer and rice cooker", appliance / total > 0.45,
+      Math.round(appliance / total * 100) + "% appliance");
+  });
+  S.v = 2; S.recent = [];
+}
+
+/* ---------- a fresh roll should not hand back the week you just rejected ---------- */
+{
+  S.locked = []; S.v = 2; S.N = 7; S.plan = undefined; S.recent = [];
+  ev("plan(true)");
+  const first = [...S.plan];
+  let repeats = 0;
+  for (let i = 0; i < 40; i++) {
+    const before = [...S.plan];
+    ev("plan(true)");
+    repeats += S.plan.filter(id => before.includes(id)).length;
+  }
+  ok("rolling again mostly changes the dishes", repeats / 40 < 1.0, (repeats / 40).toFixed(2) + " carried over per roll");
+  ok("recent dishes are remembered", S.recent.length > 0 && S.recent.length <= ev("RECENT_KEEP"));
+  ok("the memory holds real dish ids", S.recent.every(id => R.some(r => r.id === id)));
+  S.recent = [];
 }
 
 /* ---------- stepping the meal count never strands a dish at zero ---------- */
