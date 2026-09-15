@@ -723,6 +723,21 @@ ok("ground-meat dishes get three days, everything else four",
   S.price = {}; S.plan = undefined; S.N = 7;
 }
 
+/* ---------- a name must never read as a quantity ---------- */
+{
+  /* "Mentsuyu (3x)" meant 3-times concentrate, but sitting in a shopping list next to rows
+     that really do carry counts, it read as "buy three of them" — and did, for months. */
+  const QTY = /\(\s*[0-9]+\s*[xX×]\s*\)|\(\s*[xX×]\s*[0-9]+\s*\)/;
+  const names = [...Object.values(CONDS).map(c => c.n), ...Object.values(ING).map(i => i.n)];
+  ok("no shelf or pantry name looks like a multiplier",
+    !names.some(n => QTY.test(n)), names.filter(n => QTY.test(n)).join(","));
+  ok("mentsuyu still states its strength somewhere",
+    /triple-strength/i.test(CONDS.mentsuyu.n) || /3倍/.test(CONDS.mentsuyu.jp));
+  /* the dose depends on it, so the strength is not decoration */
+  ok("and the recipes still dose it as a concentrate",
+    R.filter(r => r.conds.includes("mentsuyu")).some(r => r.steps.some(s => /parts water|倍|concentrate/i.test(s))));
+}
+
 /* ---------- the shelf: a bottle bought once must not be billed every week ---------- */
 {
   /* The default shelf was {oil:true} and nothing ever filled it in, so the Shop tab kept
