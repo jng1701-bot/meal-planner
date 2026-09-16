@@ -256,7 +256,9 @@ R.forEach(r => {
 
 /* ---------- rice portion ---------- */
 R.filter(r => r.rice !== undefined).forEach(r => {
-  if (r.cookin || r.plate || r.id === "afonigiri") eq("rice-led dish keeps a full cup: " + r.id, r.rice, 1);
+  /* a plate dish is plain rice under a protein, so it is an ordinary half-cup bowl — and the
+     plate's 1-go ceiling only allows two of them per run */
+  if (r.cookin || r.id === "afonigiri") eq("rice-led dish keeps a full cup: " + r.id, r.rice, 1);
   else eq("standard portion is half a cup: " + r.id, r.rice, 0.5);
 });
 ok("no recipe still quotes 200 g cooked rice",
@@ -731,6 +733,11 @@ ok("ground-meat dishes get three days, everything else four",
   const names = [...Object.values(CONDS).map(c => c.n), ...Object.values(ING).map(i => i.n)];
   ok("no shelf or pantry name looks like a multiplier",
     !names.some(n => QTY.test(n)), names.filter(n => QTY.test(n)).join(","));
+  /* receipt-verified at LIFE 市谷薬王寺店, 2026-09-15, tax inclusive */
+  eq("chicken stock is the price on the receipt", CONDS.torigara.p, 538);
+  eq("curry roux is priced from the receipt", Math.round(ING.roux.p * 185), 353);
+  ok("the simmer rule states a minimum as well as a maximum",
+    /1-go and 3-go/.test(tabHTML("fridge")) && /under the bottom one/.test(tabHTML("fridge")));
   ok("mentsuyu still states its strength somewhere",
     /triple-strength/i.test(CONDS.mentsuyu.n) || /3倍/.test(CONDS.mentsuyu.jp));
   /* the dose depends on it, so the strength is not decoration */
@@ -746,6 +753,13 @@ ok("ground-meat dishes get three days, everything else four",
   ok("the seed covers every condiment a recipe calls for",
     [...new Set(R.flatMap(r => r.conds))].every(k => SEED.includes(k) || k === "cheese"),
     [...new Set(R.flatMap(r => r.conds))].filter(k => !SEED.includes(k) && k !== "cheese").join(","));
+  /* roux is consumed a block a serving, so it is groceries, not a shelf bottle */
+  ok("curry roux is billed per serving, not once", !SEED.includes("roux") && !CONDS.roux && !!ING.roux);
+  R.filter(r => r.steps.some(s => /roux block/.test(s))).forEach(r => {
+    ok(r.id + ": buys the roux it cooks with", r.ing.some(([i]) => i === "roux"),
+      JSON.stringify(r.ing.map(x => x[0])));
+    ok(r.id + ": no longer treats roux as a shelf item", !r.conds.includes("roux"));
+  });
   ok("a fresh install starts with a stocked shelf", SEED.every(k => S.owned[k] === true),
     SEED.filter(k => S.owned[k] !== true).join(","));
   ok("the shelf is marked as seeded", S.shelfSeeded === true);
@@ -791,6 +805,78 @@ ok("ground-meat dishes get three days, everything else four",
   eq("and it is written to storage immediately",
     JSON.parse(d3.window.localStorage.getItem("lmp")).shelfSeeded, true);
   d3.window.close();
+}
+
+/* ---------- capacity claims are physical claims, and get checked ----------
+   Tiger's manual for the 3-go tacook: the cooking plate caps rice at 1 go (min 0.5), and
+   simmer-menu ingredients must sit between the 1-go and 3-go white-rice marks. cap has been
+   wrong three times now — meatballs, onigiri, and a curry claiming four servings in a pot
+   that holds about one litre — so it is asserted, not eyeballed. */
+{
+  const PLATE_MAX_GO = 1, PLATE_MIN_GO = 0.5, COOKER_MAX_GO = 3, SIMMER_MAX_ML = 1100;
+  R.filter(r => r.plate).forEach(r => {
+    ok(r.id + ": plate run stays inside Tiger's 1-go rice limit",
+      r.rice * r.cap <= PLATE_MAX_GO + 1e-9, (r.rice * r.cap) + " go");
+    ok(r.id + ": a single serving still clears the 0.5-go minimum",
+      r.rice >= PLATE_MIN_GO - 1e-9, r.rice + " go");
+  });
+  R.filter(r => r.cookin).forEach(r => {
+    ok(r.id + ": cook-in run fits the 3-go pot", r.rice * r.cap <= COOKER_MAX_GO + 1e-9,
+      (r.rice * r.cap) + " go");
+  });
+  R.filter(r => r.simmer).forEach(r => {
+    ok(r.id + ": a simmer dish declares what it puts in the pot", Number.isFinite(r.mlPerServing));
+    ok(r.id + ": a full run stays under the fill line",
+      r.mlPerServing * r.cap <= SIMMER_MAX_ML, (r.mlPerServing * r.cap) + " ml");
+  });
+  /* and the copy must not contradict the manual */
+  ok("no step still claims two cups of rice under the plate",
+    !R.some(r => r.steps.some(s => /[Tt]wo cups of rice/.test(s))),
+    R.filter(r => r.steps.some(s => /[Tt]wo cups of rice/.test(s))).map(r => r.id).join(","));
+  ok("the fridge rules state the 1-go plate limit", /caps the rice at 1 go/i.test(tabHTML("fridge")));
+}
+
+/* ---------- the rice line must match the dish ---------- */
+{
+  S.plan = ["curry", "hainan"]; S.N = 4; ev("render()");
+  ev("openSheet('curry')");
+  ok("a half-cup dish says half a cup", /75 g \(half a cooker cup\)/.test(D.getElementById("sheet-overlay").innerHTML),
+    (D.getElementById("sheet-overlay").innerHTML.match(/rice [^<·]*/) || [""])[0]);
+  ev("closeSheet()");
+  ev("openSheet('hainan')");
+  ok("a full-cup dish says a full cup", /150 g \(1 cooker cup\)/.test(D.getElementById("sheet-overlay").innerHTML));
+  ev("closeSheet()");
+  ok("no dish prints a rice amount that contradicts its own field",
+    R.filter(r => r.rice).every(r => {
+      ev("S.plan=['" + r.id + "'];S.N=1"); ev("openSheet('" + r.id + "')");
+      const h = D.getElementById("sheet-overlay").innerHTML; ev("closeSheet()");
+      return h.indexOf("rice " + Math.round(r.rice * 150) + " g") > -1;
+    }));
+  S.plan = undefined; S.N = 7;
+}
+
+/* ---------- every dish says whether it fits in one go ---------- */
+{
+  eq("a dish inside its capacity is one go", ev("roundsFor")(R.find(r => r.id === "curry"), 4), 1);
+  eq("beyond it, the rounds are counted", ev("roundsFor")(R.find(r => r.id === "curry"), 9), 3);
+  eq("a dish with no cap never splits", ev("roundsFor")({ cap: undefined }, 8), 1);
+  eq("one round reads as one go", ev("roundsLabel")(R.find(r => r.id === "curry"), 4), "one go");
+  eq("more than one reads as rounds", ev("roundsLabel")(R.find(r => r.id === "afkatsu"), 3), "3 rounds");
+
+  S.plan = ["curry", "afkatsu"]; S.N = 6; S.locked = []; ev("render()");
+  const week = tabHTML("week");
+  ok("the week tab states the rounds for every dish", (week.match(/one go|\d+ rounds/g) || []).length >= 2,
+    (week.match(/one go|\d+ rounds/g) || []).join(","));
+  ev("openSheet('afkatsu')");
+  const sheet = D.getElementById("sheet-overlay").innerHTML;
+  ok("the sheet says what one round holds", /per round/.test(sheet));
+  ok("and how many rounds this week needs", /rounds/.test(sheet));
+  ev("closeSheet()");
+  /* a dish that does fit must say so rather than staying silent */
+  ev("openSheet('curry')");
+  ok("a dish that fits says one go outright", /one go/.test(D.getElementById("sheet-overlay").innerHTML));
+  ev("closeSheet()");
+  S.plan = undefined; S.N = 7;
 }
 
 /* ---------- the rice cooker is a cooker, not just a rice pot ---------- */

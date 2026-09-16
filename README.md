@@ -12,7 +12,7 @@ a cook schedule that respects what the gear can actually hold, and a savings log
 |---|---|
 | 18 cm pot (~2 L) | 4 stew servings, or 2 one-pot pasta/udon |
 | 26 cm frying pan | 2 servings per round before it steams instead of sears |
-| Tiger JAJ-A550 rice cooker (3-cup tacook) | 3 cups per run; 2 cups with the cooking plate in; 2 servings for cook-in and plate dishes; 4 for a simmer-menu braise |
+| Tiger JAJ-A550 rice cooker (3-cup tacook) | 3 go per run; **1 go** with the cooking plate in (Tiger's limit, min 0.5); simmer-menu ingredients between the 1-go and 3-go marks, ~1.1 L |
 | Amazon Basics air fryer 4.2 L (1200 W, 60–200 °C, 60 min, ceramic non-stick) | 2 servings per basket; 1 for anything breaded |
 | 0.8 L kettle, microwave, toaster | — |
 | Storage: 4 × 600 mL boxes, 3 × 355 ml rice pots | one serving per box; peak 3 boxes in circulation |
@@ -28,8 +28,8 @@ different things it does. Recipes are flagged accordingly:
 | Flag | What it means | Rule |
 |---|---|---|
 | `cookin` | seasoned rice cooked with its ingredients (takikomi, chahan, risotto) | never combine with the plate |
-| `plate` | a dish steamed on the cooking plate above the rice | plain rice underneath only, 2 cups max |
-| `simmer` | a braise on the simmer menu, no rice in the pot | fill well under the max line |
+| `plate` | a dish steamed on the cooking plate above the rice | plain rice underneath only, **1 go max** — half a cup a serving, so 2 servings a run |
+| `simmer` | a braise on the simmer menu, no rice in the pot | declare `mlPerServing`; `mlPerServing × cap` must stay under ~1.1 L |
 | none | rice is just a side | `rice: 0.5` |
 
 Tiger's own guidance for non-rice cooking sets the hard limits, and the recipes follow it:
@@ -93,6 +93,15 @@ and `test.js`, commit directly to `main`.
   nine pot dishes; `S.recent` damps anything picked in the last dozen slots.
 - Anything the week actually consumes belongs in `compute()`, including rice. A price of 0
   is legal and means "given to me" — it is not nonsense input.
+- `cap` is a physical claim, not a preference. It has been wrong three times (meatballs,
+  onigiri, and a cooker curry claiming four servings in a one-litre pot), every time because a
+  desired outcome drove the number — the curry was set to 4 so the rice cooker would qualify as
+  an `eff: 2` batch anchor. `test.js` now checks plate dishes against Tiger's 1-go rice limit,
+  cook-in against the 3-go pot, simmer against a declared `mlPerServing`, and air dishes against
+  the basket floor. Work out what fits before deciding what you want to fit.
+- Every recipe states its rounds up front (`roundsFor` / `roundsLabel` / `capLabel`), on the
+  week row and in the sheet's facts. "Can I do this in one go" is a question you have before
+  cooking, so it is answered without waiting for an overflow warning.
 - Fridge claims stay at 3–4 days. Cooked ground meat never gets a longer claim.
 - Air-fryer steps: one layer with gaps, preheat 3 min for skin or coating, never suggest
   aerosol oil spray (it strips the ceramic), and never exceed 200 °C.
