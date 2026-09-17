@@ -1157,6 +1157,11 @@ eq("ginger priced from the receipt", CONDS.ginger.p, 376);
 eq("chicken thigh priced from the receipt", ING.chicken.p, 1.07);   // 618 +8% over 625 g
 eq("frozen broccoli priced from the receipt", ING.fbroc.p, 1.42);   // 459 +8% over 350 g
 eq("soy priced from the receipt", CONDS.soy.p, 322);                // 298 +8%
+/* LIFE 市谷薬王寺店, 2026-09-17, tax inclusive, before the 5% app coupon */
+eq("chicken breast priced from the receipt", ING.chickenbreast.p, 0.85); // 458 +8% over 580 g
+eq("onion priced from the receipt", ING.onion.p, 96);                    // 268 +8% for a bag of 3
+eq("carrot priced from the receipt", ING.carrot.p, 71);                  // 198 +8% for a bag of 3
+eq("potato priced from the receipt", ING.potato.p, 64);                  // 238 +8% for a bag of 4
 ok("soy is koikuchi, not the saltier usukuchi", /濃口/.test(CONDS.soy.jp));
 ok("garlic and ginger are the value bottles, not tubes",
   /お徳用/.test(CONDS.garlic.jp) && /お徳用/.test(CONDS.ginger.jp));
