@@ -8,7 +8,10 @@
  * global eval. Objects returned that way are live references, so mutating them
  * mutates the app's real state.
  *
- * Tabs since the redesign: tonight · week · shop · fridge · save.
+ * Tabs: tonight · week · shop · save. The Fridge tab was removed on 17 Sep 2026 — it added
+ * nothing to the flow. Its shelf lives on Shop and its reference rules on Week.
+ * Step text carries braced quantities ({150 g}); TXT(r) renders them for one serving, and
+ * every text check runs on the rendered words, not the template.
  * Cooking is a full-screen overlay (#cook-overlay), dish details a sheet (#sheet-overlay).
  */
 const fs = require("fs");
@@ -49,6 +52,7 @@ const S = ev("S"), EAT_OUT = ev("EAT_OUT"), EFFORTS = ev("EFFORTS");
    merely has rice on the side */
 const isAppliance = r => ev("isApplianceDish")(r);
 const gearTipsOf = (r, servings) => ev("gearTips")(r, servings);
+const TXT = (r, n) => r.steps.map((s, i) => ev("stepText")(r, i, n || 1));
 ok("RECIPES reachable", Array.isArray(R));
 ok("ING reachable", ING && typeof ING === "object");
 ok("CONDS reachable", CONDS && typeof CONDS === "object");
@@ -56,16 +60,22 @@ ok("S reachable", S && typeof S === "object");
 ok("U (ephemeral UI state) reachable", ev("typeof U") === "object");
 
 /* ---------- roster shape ---------- */
-eq("roster count is 45", R.length, 45);
+eq("roster count is 41", R.length, 41);
 eq("unique ids", new Set(R.map(r => r.id)).size, R.length);
 
-const TIERS = { A: 9, B: 13, C: 15, D: 4, E: 3, F: 1 };
+const TIERS = { A: 9, B: 10, C: 14, D: 4, E: 3, F: 1 };
 const tierCount = R.reduce((a, r) => (a[r.tier] = (a[r.tier] || 0) + 1, a), {});
 Object.entries(TIERS).forEach(([t, n]) => eq("tier " + t + " count", tierCount[t], n));
 ok("no recipe missing a tier", R.every(r => "ABCDEF".includes(r.tier)));
 
 ["omurice", "katsu", "mapo", "stirfry", "oyakodon", "yakisoba", "chahan", "napolitan", "gyudon"]
   .forEach(id => ok("cut recipe absent: " + id, !R.some(r => r.id === id)));
+/* retired 17 Sep 2026: the cooker curry duplicated the pot curry at half the capacity; the two
+   mackerel dishes because Josh does not eat mackerel; tacook chicken duplicated the Hainanese
+   chicken once that moved onto the plate */
+["rccurry", "afsaba", "sabarice", "tachicken"].forEach(id => ok("retired recipe absent: " + id, !R.some(r => r.id === id)));
+ok("no mackerel anywhere in the roster or pantry",
+  !R.some(r => /mackerel|saba|さば|鯖/i.test(r.n + r.jp + TXT(r).join(" "))) && !Object.values(ING).some(i => /mackerel|さば/i.test(i.n + i.jp)));
 ["iwashi", "belachan", "beansoup", "butadon", "afroast", "afbreast", "afkatsu", "afgyoza", "aftofu"]
   .forEach(id => ok("added recipe present: " + id, R.some(r => r.id === id)));
 
@@ -82,6 +92,10 @@ R.forEach(r => {
   ok(r.id + ": ing qty positive", r.ing.every(([, q]) => typeof q === "number" && q > 0));
   ok(r.id + ": conds resolve", r.conds.every(c => CONDS[c]), r.conds.filter(c => !CONDS[c]).join(","));
   ok(r.id + ": rice sane", r.rice === undefined || (r.rice > 0 && r.rice <= 2));
+  ok(r.id + ": states minutes to the table", Number.isFinite(r.ready) && r.ready > 0);
+  ok(r.id + ": has at least one scalable quantity", r.steps.some(s => /\{[\d.]+ [^}]+\}/.test(s)));
+  [1, 2, 3, 4].forEach(n => ok(r.id + ": no template leaks at ×" + n, TXT(r, n).every(t => !/[{}]|NaN|undefined/.test(t)),
+    TXT(r, n).find(t => /[{}]|NaN|undefined/.test(t))));
 });
 
 /* ---------- effort tiers: what the Tonight screen sorts on ---------- */
@@ -90,8 +104,9 @@ ok("every recipe carries an effort tier", R.every(r => [0, 1, 2].includes(r.eff)
   R.filter(r => ![0, 1, 2].includes(r.eff)).map(r => r.id).join(","));
 ok("all three tiers have dishes", [0, 1, 2].every(k => R.some(r => r.eff === k)));
 /* batch day = the long pot anchors; zero effort = assembly and set-and-forget only */
-ok("every eff-2 dish is a batchable anchor", R.filter(r => r.eff === 2).every(r => r.batch && r.cap >= 4),
-  R.filter(r => r.eff === 2 && !(r.batch && r.cap >= 4)).map(r => r.id).join(","));
+/* 3, not 4: the measured pot holds three servings of a stew — see the capacity section */
+ok("every eff-2 dish is a batchable anchor", R.filter(r => r.eff === 2).every(r => r.batch && r.cap >= 3),
+  R.filter(r => r.eff === 2 && !(r.batch && r.cap >= 3)).map(r => r.id).join(","));
 ok("no eff-2 dish is quicker than 20 minutes unless the appliance does the waiting",
   R.filter(r => r.eff === 2).every(r => parseInt(r.time, 10) >= 20 || isAppliance(r)),
   R.filter(r => r.eff === 2 && parseInt(r.time, 10) < 20 && !isAppliance(r)).map(r => r.id).join(","));
@@ -112,11 +127,11 @@ Object.keys(CONDS).forEach(k => ok("COND used: " + k, usedCond.has(k)));
 
 /* ---------- the effort brief ---------- */
 const anchors = R.filter(r => r.tier === "A");
-ok("every tier-A anchor is cap 4", anchors.every(r => r.cap === 4), anchors.filter(r => r.cap !== 4).map(r => r.id).join(","));
+ok("every tier-A anchor makes at least 3 a round", anchors.every(r => r.cap >= 3), anchors.filter(r => r.cap < 3).map(r => r.id).join(","));
 ok("every tier-A anchor is batchable", anchors.every(r => r.batch === true));
 ok("no cap-1 recipe outside the escape hatch",
-  R.filter(r => r.cap === 1).every(r => r.tier === "E" || r.gear.includes("air")),
-  R.filter(r => r.cap === 1 && r.tier !== "E" && !r.gear.includes("air")).map(r => r.id).join(","));
+  R.filter(r => r.cap === 1).every(r => r.tier === "E" || r.gear.includes("air") || r.menu === "risotto"),
+  R.filter(r => r.cap === 1 && r.tier !== "E" && !r.gear.includes("air") && r.menu !== "risotto").map(r => r.id).join(","));
 ok("at least one legume recipe", R.some(r => r.ing.some(([i]) => i === "lentil" || i === "mixedbeans")));
 ok("chicken breast is used", R.some(r => r.ing.some(([i]) => i === "chickenbreast")));
 ok("beef is gone from the pantry", ING.beef === undefined);
@@ -130,14 +145,18 @@ const BANNED = [
   [/\bnegi\b/, "use 'green onion'"],
   [/\bcorn ?starch/i, "use 'potato starch'"]
 ];
-R.forEach(r => r.steps.forEach((s, i) => {
+R.forEach(r => TXT(r).forEach((s, i) => {
   BANNED.forEach(([re, why]) => ok(r.id + " step" + (i + 1) + " vocab (" + why + ")", !re.test(s), s.slice(0, 60)));
 }));
 
 /* ---------- cook-in flag ---------- */
 const cookin = R.filter(r => r.cookin).map(r => r.id).sort();
 ok("cook-in set is the seasoned-rice cooker dishes",
-  JSON.stringify(cookin) === JSON.stringify(["hainan", "kimchirice", "rcchahan", "rcrisotto", "sabarice", "takikomi", "tomatorice"]), cookin.join(","));
+  JSON.stringify(cookin) === JSON.stringify(["rcchahan", "rcrisotto"]), cookin.join(","));
+/* the protein-heavy seasoned rices broke Tiger's ~70 g-a-cup rule by 2–3×, so they cook on the
+   plate over plain rice and are folded together afterwards */
+ok("the mazegohan dishes are plate dishes now",
+  ["hainan", "kimchirice", "takikomi", "tomatorice"].every(id => R.find(r => r.id === id).plate));
 /* the cooking plate steams a dish above plain rice, so it is never a seasoned-rice dish */
 ok("no dish is both cook-in and cooking-plate", !R.some(r => r.cookin && r.plate),
   R.filter(r => r.cookin && r.plate).map(r => r.id).join(","));
@@ -153,7 +172,7 @@ function freshPlan() { S.plan = undefined; ev("plan(true)"); }
 freshPlan();
 ok("plan generated", Array.isArray(S.plan) && S.plan.length > 0);
 
-["tonight", "week", "shop", "fridge", "save"].forEach(t => {
+["tonight", "week", "shop", "save"].forEach(t => {
   ev("setTab('" + t + "')");
   const el = D.getElementById("tab-" + t);
   ok("tab renders: " + t, el && el.innerHTML.trim().length > 50, el ? el.innerHTML.length : "missing");
@@ -161,7 +180,11 @@ ok("plan generated", Array.isArray(S.plan) && S.plan.length > 0);
   ok("tab is a real section with a heading: " + t, el && /<h[123]/.test(el.innerHTML));
 });
 ok("exactly one tab is visible at a time",
-  ["tonight", "week", "shop", "fridge", "save"].filter(t => D.getElementById("tab-" + t).className.includes(" on")).length === 1);
+  ["tonight", "week", "shop", "save"].filter(t => D.getElementById("tab-" + t).className.includes(" on")).length === 1);
+ok("there is no Fridge tab", !D.getElementById("tab-fridge") && D.querySelectorAll("#tabbar .tabbtn").length === 4);
+["fridgeHTML", "eatFridge", "tossFridge", "nextDay", "simDate", "portInc"].forEach(f =>
+  ok("fridge machinery is gone: " + f, ev("typeof " + f) === "undefined"));
+ok("S carries no fridge or fake clock", S.fridge === undefined && S.day === undefined);
 
 /* ---------- compute() maths ---------- */
 const c = ev("compute()");
@@ -207,7 +230,7 @@ eq("toggleMugi round-trips", S.mugi, m0);
 
 /* ---------- cook-in dishes never get barley ---------- */
 S.mugi = true;
-S.plan = ["hainan", "takikomi", "kimchirice", "tomatorice"];
+S.plan = ["rcchahan", "rcrisotto"];
 const onlyCookin = ev("compute()");
 eq("cook-in-only plan needs no barley", onlyCookin.mugiCups, 0);
 ok("cook-in-only plan has no barley row", !onlyCookin.rows.some(r => r.id === "mugi"));
@@ -227,6 +250,17 @@ ok("the price panel is still reachable from Shop", /Tune prices to your receipts
 ev("setPriceOpen(true); render()");
 ok("an opened price panel survives a re-render", !!D.querySelector("#tab-shop details[open]"));
 ev("setPriceOpen(false); render()");
+{
+  S.plan = ["curry"]; S.N = 3; ev("setTab('shop')");
+  const rows = () => D.querySelectorAll("#tab-shop .pricerow").length;
+  eq("the price panel lists this week's items only", rows(), ev("compute()").rows.length);
+  ev("togglePriceAll()");
+  eq("and every ingredient on request", rows(), Object.keys(ING).length);
+  ev("togglePriceAll()");
+  ok("the shelf lives on Shop now", !!D.querySelector("#tab-shop .condgrid") && /The shelf/.test(tabHTML("shop")));
+  S.plan = undefined; ev("render()");
+  ok("and is there even before a week is planned", !!D.querySelector("#tab-shop .condgrid"));
+}
 
 /* ---------- every recipe survives a solo plan ---------- */
 R.forEach(r => {
@@ -242,16 +276,15 @@ R.forEach(r => {
 
 /* ---------- every recipe survives being cooked end to end ---------- */
 R.forEach(r => {
-  S.plan = [r.id]; S.N = Math.max(1, r.cap || 2); S.fridge = []; ev("render()");
-  let threw = null;
+  S.plan = [r.id]; S.N = Math.max(1, r.cap || 2); ev("render()");
+  let threw = null, guard = 0;
   try {
     ev("openSheet('" + r.id + "')");
-    ev("startCook('" + r.id + "', 1)");
-    for (let i = 0; i <= r.steps.length; i++) ev("nextStep()");
+    ev("startCook('" + r.id + "', " + ((r.cap || 1) + 1) + ")");
+    while (ev("U.cook") && guard++ < 60) ev("nextStep()");
   } catch (e) { threw = e.message; }
-  ok("cook wizard runs to the end: " + r.id, !threw, threw);
-  eq("finishing puts one box in the fridge: " + r.id, S.fridge.length, 1);
-  S.fridge = [];
+  ok("cook wizard runs to the end: " + r.id, !threw && !ev("U.cook"), threw || ("stuck after " + guard));
+  ok("finishing says done, never boxes: " + r.id, /^Done\./.test(ev("U.toast ? U.toast.msg : ''")));
 });
 
 /* ---------- rice portion ---------- */
@@ -262,30 +295,36 @@ R.filter(r => r.rice !== undefined).forEach(r => {
   else eq("standard portion is half a cup: " + r.id, r.rice, 0.5);
 });
 ok("no recipe still quotes 200 g cooked rice",
-  !R.some(r => r.steps.some(s => /200 g cooked/.test(s))));
+  !R.some(r => TXT(r).some(s => /200 g cooked/.test(s))));
 R.filter(r => r.cookin).forEach(r =>
-  ok("cook-in still measures 150 g dry: " + r.id, r.steps.some(s => /150 g rice/.test(s))));
+  ok("cook-in still measures 150 g dry: " + r.id, TXT(r).some(s => /150 g rice/.test(s))));
 
 /* ---------- the real machine: Amazon Basics 4.2 L, 60-200 C ---------- */
 const AIR = R.filter(r => r.gear.includes("air"));
-eq("air-fryer roster size", AIR.length, 15);
+eq("air-fryer roster size", AIR.length, 14);
+AIR.forEach(r => {
+  ok(r.id + ": declares the floor space a serving takes", Number.isFinite(r.cm2));
+  ok(r.id + ": a full round fits the basket floor in one layer", r.cm2 * r.cap <= ev("BASKET_CM2"), r.cm2 + " cm² × " + r.cap);
+});
+eq("twelve gyoza fill the basket, so one serving a round", R.find(r => r.id === "afgyoza").cap, 1);
+eq("six wings fill the basket, so one serving a round", R.find(r => r.id === "aftebasaki").cap, 1);
 ok("no air dish exceeds the 4.2 L basket", AIR.every(r => r.cap >= 1 && r.cap <= 2),
   AIR.filter(r => r.cap > 2).map(r => r.id).join(","));
-ok("every air dish names a temperature", AIR.every(r => r.steps.some(s => /\d{2,3}\s*°C/.test(s))),
-  AIR.filter(r => !r.steps.some(s => /\d{2,3}\s*°C/.test(s))).map(r => r.id).join(","));
-ok("no air dish asks for more than 200 C", !AIR.some(r => r.steps.some(s => {
+ok("every air dish names a temperature", AIR.every(r => TXT(r).some(s => /\d{2,3}\s*°C/.test(s))),
+  AIR.filter(r => !TXT(r).some(s => /\d{2,3}\s*°C/.test(s))).map(r => r.id).join(","));
+ok("no air dish asks for more than 200 C", !AIR.some(r => TXT(r).some(s => {
   const m = s.match(/(\d{2,3})\s*°C/g) || [];
   return m.some(x => parseInt(x, 10) > 200);
 })));
 ok("breaded dishes get the basket to themselves",
-  R.filter(r => r.steps.some(s => /press the panko on|dip in egg/i.test(s))).every(r => r.cap === 1),
+  R.filter(r => TXT(r).some(s => /press the panko on|dip in egg/i.test(s))).every(r => r.cap === 1),
   R.filter(r => r.steps.some(s => /press the panko on|dip in egg/i.test(s)) && r.cap !== 1).map(r => r.id).join(","));
 ok("no recipe tells you to spray aerosol oil into the basket",
-  !R.some(r => r.steps.some(s => /spray/i.test(s) && !/never (aerosol )?spray/i.test(s))));
+  !R.some(r => TXT(r).some(s => /spray/i.test(s) && !/never (aerosol )?spray/i.test(s))));
 {
   const DONE = /juices (run )?clear|no pink|75 °C|flakes apart|blistered gold|golden and firm|deep gold|chopstick slides/i;
-  ok("every air dish has a doneness cue", AIR.every(r => r.steps.some(s => DONE.test(s))),
-    AIR.filter(r => !r.steps.some(s => DONE.test(s))).map(r => r.id).join(","));
+  ok("every air dish has a doneness cue", AIR.every(r => TXT(r).some(s => DONE.test(s))),
+    AIR.filter(r => !TXT(r).some(s => DONE.test(s))).map(r => r.id).join(","));
 }
 
 /* ---------- the one-time container kit is bought and gone ---------- */
@@ -304,9 +343,10 @@ ok("shop view no longer sells containers", !/Meal-prep kit|Daiso/.test(tabHTML("
   delete S.kit;
 }
 
-/* ---------- the measurements outlive the shopping list: now on the Fridge tab ---------- */
-ev("setTab('fridge')");
-const fridgeText = () => tabHTML("fridge");
+/* ---------- the measurements outlive the shopping list: collapsed under The rhythm on Week ---------- */
+S.plan = ["curry"]; S.N = 3;
+ev("setTab('week')");
+const fridgeText = () => { S.plan = S.plan || ["curry"]; ev("render()"); return tabHTML("week"); };
 ok("fridge view states the machine", /Amazon Basics 4.2 L/.test(fridgeText()));
 ok("fridge view gives the reheat split", /Reheat wet/.test(fridgeText()) && /Reheat crisp/.test(fridgeText()));
 ok("portioning rule kept: the 600 mL box", /600 mL box/.test(fridgeText()));
@@ -355,21 +395,23 @@ ok("mugi copy no longer claims ¥40", !/about ¥40 a serving/.test(D.body.innerH
 S.mugi = false;
 
 /* ---------- state survives a reload ---------- */
-S.plan = ["curry", "keema"]; S.mugi = true; S.N = 7;
-S.fridge = [{ id: "curry", portions: 2, day: 0 }]; S.day = 1; ev("save()");
+S.plan = ["curry", "keema"]; S.mugi = true; S.N = 7; ev("save()");
 const raw = W.localStorage.getItem("lmp");
 ok("state persisted", !!raw);
 const parsed = JSON.parse(raw || "{}");
 eq("mugi persisted", parsed.mugi, true);
 ok("plan persisted", Array.isArray(parsed.plan) && parsed.plan.length === 2);
-ok("fridge persisted", Array.isArray(parsed.fridge) && parsed.fridge.length === 1);
-eq("the day counter persisted", parsed.day, 1);
-S.mugi = false; S.fridge = []; S.day = 0; ev("save()");
+ok("no fridge is persisted", parsed.fridge === undefined && parsed.day === undefined);
+S.mugi = false; ev("save()");
 
 /* ---------- protein swap: a stale key here blanks the whole app ---------- */
 const MEATCYCLE = ev("MEATCYCLE");
 ok("every MEATCYCLE entry exists in the pantry", MEATCYCLE.every(k => ING[k]),
   MEATCYCLE.filter(k => !ING[k]).join(","));
+ok("the swap only moves between whole cuts", JSON.stringify(MEATCYCLE) === JSON.stringify(["chicken", "pork"]));
+ok("no mince dish offers a swap — chunks cannot become meatballs or soboro",
+  !R.some(r => r.flex && r.ing.some(([i]) => i === "gpork")), R.filter(r => r.flex && r.ing.some(([i]) => i === "gpork")).map(r => r.id).join(","));
+ok("the poached breast is not swappable", !R.find(r => r.id === "belachan").flex);
 R.filter(r => r.flex).forEach(r => {
   S.plan = [r.id]; S.N = r.cap || 2; delete S.protein[r.id];
   let threw = null;
@@ -380,6 +422,9 @@ R.filter(r => r.flex).forEach(r => {
   ok("protein cycle survives a full loop: " + r.id, !threw, threw);
   ok("protein swap resolves in the pantry: " + r.id,
     S.protein[r.id] === undefined || !!ING[S.protein[r.id]], S.protein[r.id]);
+  const seen = new Set();
+  for (let i = 0; i < 4; i++) { ev("cycleProtein('" + r.id + "')"); seen.add(S.protein[r.id]); }
+  ok("the swap never lands on ground pork: " + r.id, !seen.has("gpork"));
   delete S.protein[r.id];
 });
 
@@ -430,20 +475,21 @@ function boot(seed) {
   w.close();
 }
 {
-  const { w } = boot({ stepdone: { curry: { 0: true } }, fridge: [{ id: "nosuchdish", portions: 2, day: 0 }] });
+  const { w } = boot({ stepdone: { curry: { 0: true } }, fridge: [{ id: "curry", portions: 2, day: 0 }], day: 3, tab: "fridge" });
   eq("the retired step-checkbox state is dropped", w.eval("typeof S.stepdone"), "undefined");
-  eq("a fridge entry for a deleted recipe is dropped", w.eval("S.fridge.length"), 0);
+  eq("an old fridge is dropped on load", w.eval("typeof S.fridge"), "undefined");
+  eq("and so is the pretend clock", w.eval("typeof S.day"), "undefined");
+  eq("a save sitting on the Fridge tab lands on Tonight", w.eval("S.tab"), "tonight");
+  ok("and renders", w.document.getElementById("tab-tonight").innerHTML.trim().length > 50);
   w.close();
 }
 {
-  const { w } = boot({ fridge: [{ id: "curry", portions: 2.5, day: 9 }], day: 0 });
-  eq("half a portion is not a portion", w.eval("S.fridge.length"), 0);
-  w.close();
-}
-{
-  const { w } = boot({ fridge: [{ id: "curry", portions: 2, day: 9 }], day: 0 });
-  eq("a cook date in the future is pulled back to today", w.eval("S.fridge[0].day"), 0);
-  ok("no negative day counts reach the screen", !/Day -/.test(w.document.getElementById("tab-fridge").innerHTML));
+  const { errs, w } = boot({ plan: ["curry", "belachan", "rccurry"], protein: { curry: "gpork", belachan: "pork", keema: "chicken", nikujaga: "pork" }, N: 6 });
+  ok("a save with cross-form swaps and a retired dish boots clean", errs.length === 0, errs[0]);
+  eq("mince swapped into a whole-cut dish is dropped", w.eval("S.protein.curry"), undefined);
+  eq("a swap on a dish that no longer allows one is dropped", w.eval("S.protein.belachan"), undefined);
+  eq("a swap on a mince dish is dropped", w.eval("S.protein.keema"), undefined);
+  eq("a legitimate swap survives", w.eval("S.protein.nikujaga"), "pork");
   w.close();
 }
 
@@ -451,61 +497,30 @@ function boot(seed) {
 R.filter(r => r.gear.includes("pan") && (r.cap || 0) > 2).forEach(r =>
   ok("pan dish above cap 2 warns about crowding: " + r.id, !!r.crowd));
 {
+  /* butadon is a braise, not a sear: four servings slopped at the brim of the pan, and fit the pot */
   const bd = R.find(r => r.id === "butadon");
-  S.plan = ["butadon"]; S.N = 4; ev("render()"); ev("openSheet('butadon')");
-  ok("brim-full pan warning reaches the dish sheet",
-    /brim-full in a 26 cm pan/.test(D.getElementById("sheet-overlay").innerHTML));
-  ok("butadon is flagged, not mislabelled as searing", bd.crowd === "full");
-  ev("closeSheet()");
+  ok("butadon cooks in the pot", bd.gear.includes("pot") && !bd.gear.includes("pan"));
+  eq("and four fit it", bd.cap, 4);
+  ok("no brim-full pan warning survives", !R.some(r => r.crowd === "full"));
 }
 
 /* ---------- leftovers must not outlive food safety ---------- */
 ok("no step claims a week in the fridge",
-  !R.some(r => r.steps.some(s => /a week in the fridge|keeps a week/i.test(s))),
-  R.filter(r => r.steps.some(s => /a week in the fridge|keeps a week/i.test(s))).map(r => r.id).join(","));
-ok("ground-meat dishes get three days, everything else four",
-  R.every(r => ev("keepDaysOf(rec('" + r.id + "'))") === (r.ing.some(([i]) => i === "gpork") ? 3 : 4)));
-
-/* ---------- the fridge: cooked portions with a clock on them ---------- */
-{
-  S.fridge = []; S.day = 0; S.plan = ["curry", "soboro"]; S.N = 6; ev("render()");
-  ev("startCook('curry', 3)");
-  const steps = R.find(r => r.id === "curry").steps.length;
-  for (let i = 0; i <= steps; i++) ev("nextStep()");
-  eq("cooking puts the portions in the fridge", S.fridge.length, 1);
-  eq("with the portion count chosen", S.fridge[0].portions, 3);
-  eq("stamped with today", S.fridge[0].day, 0);
-  eq("cook mode closes when it is done", ev("U.cook"), null);
-  eq("and the effort question resets for next time", ev("U.effort"), null);
-
-  ev("setTab('fridge')");
-  ok("the fridge lists it", /Japanese curry/.test(fridgeText()));
-  ok("day 1 of 4 for a non-ground-meat dish", /Day 1 of 4/.test(fridgeText()));
-  ev("nextDay()"); ev("nextDay()");
-  ok("day 3 of 4 after two days", /Day 3 of 4/.test(fridgeText()));
-  ev("nextDay()");
-  ok("the last day says so", /Eat today — last day/.test(fridgeText()));
-  ev("nextDay()");
-  ok("past its day it says bin it", /Past it. Bin it./.test(fridgeText()));
-
-  const n0 = S.fridge[0].portions;
-  ev("eatFridge(0)");
-  eq("eating one takes one", S.fridge[0].portions, n0 - 1);
-  ok("and offers an undo", ev("!!(U.toast && U.toast.undo)"));
-  ev("runToastUndo()");
-  eq("undo puts it back", S.fridge[0].portions, n0);
-  ev("tossFridge(0)");
-  eq("binning removes the entry", S.fridge.length, 0);
-  ev("runToastUndo()");
-  eq("undo un-bins it", S.fridge.length, 1);
-  while (S.fridge.length && S.fridge[0].portions > 0) ev("eatFridge(0)");
-  eq("an emptied box leaves the fridge", S.fridge.length, 0);
-  S.day = 0;
-}
+  !R.some(r => TXT(r).some(s => /a week in the fridge|keeps a week/i.test(s))),
+  R.filter(r => TXT(r).some(s => /a week in the fridge|keeps a week/i.test(s))).map(r => r.id).join(","));
+ok("cooked meat and fish get three days, everything else four, unless the dish is eat-now",
+  R.every(r => ev("keepDaysOf(rec('" + r.id + "'))") === (r.keep || (r.ing.some(([i]) => ING[i].cat === "meat") ? 3 : 4))),
+  R.filter(r => ev("keepDaysOf(rec('" + r.id + "'))") !== (r.keep || (r.ing.some(([i]) => ING[i].cat === "meat") ? 3 : 4))).map(r => r.id).join(","));
+R.forEach(r => {
+  const claims = [...TXT(r).join(" ").matchAll(/[Kk]eeps (?:it )?(\d) days|(\d) days in the fridge|(\d) days chilled/g)].map(m => +(m[1] || m[2] || m[3]));
+  const kd = ev("keepDaysOf(rec('" + r.id + "'))");
+  ok(r.id + ": the steps and the sheet agree on shelf life", claims.every(d => d === kd), claims.join(",") + " vs " + kd);
+});
+ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- tonight: the effort question ---------- */
 {
-  S.fridge = []; S.day = 0; S.plan = ["curry", "udon", "tunamayo"]; S.N = 6;
+  S.plan = ["curry", "udon", "tunamayo"]; S.N = 6;
   ev("U.effort = null; render(); setTab('tonight')");
   ok("the question is asked first", /How much/.test(tabHTML("tonight")));
   eq("three ways to answer", D.querySelectorAll("#tab-tonight .effrow").length, 3);
@@ -514,7 +529,8 @@ ok("ground-meat dishes get three days, everything else four",
   const zero = ev("candidates(compute())");
   ok("zero effort offers only zero-effort dishes",
     zero.every(o => o.eff === 0), zero.filter(o => o.eff !== 0).map(o => o.r.id).join(","));
-  ok("a hero dish is proposed", /Cook it|Eat it/.test(tabHTML("tonight")));
+  ok("a hero dish is proposed", /Cook it/.test(tabHTML("tonight")));
+  ok("the hero says when it would be on the table", /ready ~\d+ min/.test(tabHTML("tonight")));
 
   ev("pickEffort(2)");
   const batch = ev("candidates(compute())");
@@ -531,7 +547,7 @@ ok("ground-meat dishes get three days, everything else four",
   {
     let identical = 0, harder = 0, unlabelled = 0, trials = 120;
     for (let i = 0; i < trials; i++) {
-      S.locked = []; S.v = 2; S.N = 7; S.plan = undefined; S.fridge = []; ev("save()");
+      S.locked = []; S.v = 2; S.N = 7; S.plan = undefined; ev("save()");
       ev("plan(true)");
       const heroes = [];
       for (const k of [0, 1, 2]) {
@@ -551,7 +567,7 @@ ok("ground-meat dishes get three days, everything else four",
   }
   /* in-plan beats off-plan at the same tier: it is already shopped for */
   {
-    S.plan = ["tunamayo", "curry"]; S.N = 6; S.fridge = []; ev("render()");
+    S.plan = ["tunamayo", "curry"]; S.N = 6; ev("render()");
     ev("U.effort=0;U.heroIdx=0");
     const zero = ev("candidates(compute())");
     eq("a planned zero-effort dish is preferred over the roster", zero[0].kind, "cook");
@@ -562,7 +578,7 @@ ok("ground-meat dishes get three days, everything else four",
   }
   /* asking for a batch day when the week has no anchor answers with an anchor, not a quick dish */
   {
-    S.plan = ["tunamayo", "udon"]; S.N = 4; S.fridge = []; ev("render()");
+    S.plan = ["tunamayo", "udon"]; S.N = 4; ev("render()");
     ev("U.effort=2;U.heroIdx=0");
     const batch = ev("candidates(compute())");
     eq("batch day still answers with a batch anchor", batch[0].r.eff, 2);
@@ -572,7 +588,7 @@ ok("ground-meat dishes get three days, everything else four",
   }
   /* the suggestion must not move under you between renders, but should differ week to week */
   {
-    S.locked = []; S.v = 2; S.N = 7; S.plan = ["curry", "keema"]; S.fridge = []; ev("save()");
+    S.locked = []; S.v = 2; S.N = 7; S.plan = ["curry", "keema"]; ev("save()");
     ev("U.effort=0;U.heroIdx=0");
     const a = ev("candidates(compute())")[0].r.id;
     ev("render()"); ev("render()");
@@ -592,7 +608,7 @@ ok("ground-meat dishes get three days, everything else four",
   }
   /* even with no plan at all, every tier has an answer */
   {
-    S.plan = undefined; S.fridge = []; ev("save()");
+    S.plan = undefined; ev("save()");
     [0, 1, 2].forEach(k => {
       ev("U.effort=" + k + ";U.heroIdx=0");
       const cand = ev("candidates(compute())");
@@ -602,15 +618,9 @@ ok("ground-meat dishes get three days, everything else four",
     S.plan = ["curry", "udon", "tunamayo"]; S.N = 6; ev("save()");
   }
 
-  /* leftovers outrank cooking, and are offered as 'eat it' not 'cook it' */
-  S.fridge = [{ id: "curry", portions: 2, day: 0 }];
-  ev("pickEffort(1); render()");
-  const withFridge = ev("candidates(compute())");
-  eq("what is already cooked comes first", withFridge[0].kind, "fridge");
-  ok("the hero offers to eat it", /Eat it/.test(tabHTML("tonight")));
-  ok("the nudge counts the portions waiting",
-    (function () { ev("backToAsk()"); return /2 portions already sitting in the fridge/.test(tabHTML("tonight")); })());
-  S.fridge = [];
+  ok("Tonight never talks about the fridge", !/fridge|portions? already/i.test(tabHTML("tonight")));
+  ev("backToAsk()");
+  ok("not even on the question screen", !/fridge/i.test(tabHTML("tonight")));
 }
 
 /* ---------- the dish sheet ---------- */
@@ -621,6 +631,8 @@ ok("ground-meat dishes get three days, everything else four",
   ok("the sheet opens", sheet.className.includes("show"));
   ok("it names the dish", /Japanese curry/.test(sheet.innerHTML));
   ok("it gives hands-on time, servings and gear", /hands on/.test(sheet.innerHTML) && /this week/.test(sheet.innerHTML) && /gear/.test(sheet.innerHTML));
+  ok("it says how long to the table", /~35 min \+ rice/.test(sheet.innerHTML) && /to the table/.test(sheet.innerHTML));
+  ok("it says how long it keeps", /3 days · freezes/.test(sheet.innerHTML) && /keeps/.test(sheet.innerHTML));
   ok("it lists the per-serving ingredients", /Chicken thigh 120 g/.test(sheet.innerHTML));
   ok("it offers the protein swap on a flex dish", !!sheet.querySelector('[data-k="sheetcycle"]'));
   ok("and a way into cooking", /Cook it · 5 steps/.test(sheet.innerHTML));
@@ -633,35 +645,110 @@ ok("ground-meat dishes get three days, everything else four",
 
 /* ---------- cook mode ---------- */
 {
-  S.plan = ["curry"]; S.N = 4; S.fridge = []; ev("render()");
-  ev("startCook('curry', 2)");
+  S.plan = ["curry"]; S.N = 3; ev("render()");
+  ev("startCook('curry', 3)");
   const cook = D.getElementById("cook-overlay");
+  const n = R.find(r => r.id === "curry").steps.length;
   ok("cook mode opens full screen", cook.className.includes("show"));
-  eq("one dot per step plus the portioning step", cook.querySelectorAll(".dot").length, R.find(r => r.id === "curry").steps.length + 1);
-  ok("it shows step one", /01/.test(cook.innerHTML));
-  ok("one step at a time", cook.querySelectorAll(".steptext").length === 1);
+  ok("it opens on a before-you-start screen", /Before you start/.test(cook.innerHTML));
+  ok("with the servings to cook", /×3/.test(cook.innerHTML));
+  ok("and whether it fits in one go", /One go — 3 fit the pot/.test(cook.textContent), cook.textContent.slice(0, 200));
+  ok("and the rice cooker is told to start first", /Rice first: 1.5 cups \(225 g\) in the cooker now/.test(cook.textContent));
+  ok("with a lead time worked out from the dish", /start prepping in about 15 min/.test(cook.textContent));
+  ok("and a frozen-rice way out", /frozen rice/.test(cook.textContent));
+  eq("one dot per recipe step", cook.querySelectorAll(".dot").length, n);
+  ok("the body is marked as cooking, so the toast clears the footer", D.body.classList.contains("cooking"));
+  ev("cookServ(1)");
+  eq("servings can go up", ev("U.serv"), 4);
+  ok("and four is two rounds in this pot", /2 rounds of up to 3/.test(D.getElementById("cook-overlay").textContent));
+  ev("cookServ(-1)");
   ev("nextStep()");
-  ok("next moves on", /02/.test(cook.innerHTML));
+  ok("step one is scaled to the servings", /360 g chicken/.test(D.getElementById("cook-overlay").textContent) && /1½ onions/.test(D.getElementById("cook-overlay").textContent),
+    D.getElementById("cook-overlay").textContent.slice(0, 200));
+  ok("one step at a time", D.getElementById("cook-overlay").querySelectorAll(".steptext").length === 1);
+  ev("nextStep()"); ev("nextStep()");
+  ok("liquids scale too", /510 ml water/.test(D.getElementById("cook-overlay").textContent));
+  ok("frying oil does not", !/45 ml \(3 tbsp\) oil/.test(TXT(R.find(r => r.id === "curry"), 3).join(" ")));
   ev("prevStep()");
-  ok("back moves back", /01/.test(cook.innerHTML));
+  ok("back moves back", /02/.test(D.getElementById("cook-overlay").innerHTML));
+  ev("prevStep()"); ev("prevStep()");
+  ok("back from step one returns to the setup", /Before you start/.test(D.getElementById("cook-overlay").innerHTML));
   ev("prevStep()");
-  eq("back from step one leaves cook mode", ev("U.cook"), null);
+  eq("back from the setup leaves cook mode", ev("U.cook"), null);
+  ok("and the body is no longer cooking", !D.body.classList.contains("cooking"));
 
-  ev("startCook('curry', 2)");
-  const steps = R.find(r => r.id === "curry").steps.length;
-  for (let i = 0; i < steps - 1; i++) ev("nextStep()");
-  ok("the last step says done cooking", /Done cooking/.test(D.getElementById("cook-overlay").innerHTML));
+  ev("startCook('curry', 3)");
+  for (let i = 0; i < n; i++) ev("nextStep()");
+  ok("the last step says done", /Done</.test(D.getElementById("cook-overlay").innerHTML));
   ev("nextStep()");
-  ok("then it asks how many go in boxes", /go in boxes/.test(D.getElementById("cook-overlay").innerHTML));
-  ok("the portioning step warns about ground meat", /never gets more than 3 days/.test(D.getElementById("cook-overlay").innerHTML));
-  ev("portInc()");
-  eq("portions can go up", ev("U.portions"), 3);
-  ev("portDec()"); ev("portDec()"); ev("portDec()"); ev("portDec()"); ev("portDec()");
-  eq("and stop at zero", ev("U.portions"), 0);
+  eq("done closes cook mode", ev("U.cook"), null);
+  ok("and says how long leftovers keep", /Leftovers keep 3 days/.test(ev("U.toast ? U.toast.msg : ''")));
+  eq("and the effort question resets for next time", ev("U.effort"), null);
+  ok("no portion-into-boxes step remains", !/go in boxes/.test(D.body.innerHTML));
+
+  /* rounds: three servings of karaage is a round of two then a round of one */
+  S.plan = ["karaage"]; S.N = 3; ev("render()");
+  ev("startCook('karaage', 3)");
+  ok("the setup says two rounds", /2 rounds of up to 2/.test(D.getElementById("cook-overlay").textContent));
+  ok("and that prep is shared", /Prep is done once/.test(D.getElementById("cook-overlay").textContent));
   ev("nextStep()");
-  eq("zero portions means nothing was stored", S.fridge.length, 0);
-  ok("and it says so", /Eaten on the spot/.test(ev("U.toast ? U.toast.msg : ''")));
-  S.fridge = [];
+  ok("prep is sized for the whole batch", /prep for all 3/.test(D.getElementById("cook-overlay").textContent) && /450 g chicken/.test(D.getElementById("cook-overlay").textContent));
+  const KR = R.find(r => r.id === "karaage"), kn = KR.steps.length, kf = ev("cookFrom")(KR);
+  ok("karaage's basket steps start at the preheat", kf > 0 && /Preheat/.test(KR.steps[kf]));
+  for (let i = 1; i <= kf; i++) ev("nextStep()");
+  ok("the basket step is labelled round one and sized for it", /round 1 of 2 · ×2/.test(D.getElementById("cook-overlay").textContent));
+  for (let i = kf + 1; i < kn; i++) ev("nextStep()");
+  ok("the last step of round one leads into round two", /Round 2 of 2/.test(D.getElementById("cook-overlay").innerHTML));
+  ev("nextStep()");
+  eq("round two skips the prep and starts at the preheat", ev("U.step"), kf + 1);
+  ok("with its own amounts", /round 2 of 2 · ×1/.test(D.getElementById("cook-overlay").textContent));
+  ev("prevStep()");
+  ok("back from round two's first step returns to round one's last", ev("U.round") === 1 && ev("U.step") === kn);
+  /* a pan round is the whole recipe again */
+  eq("pan and pot rounds repeat from the top", ev("cookFrom")(R.find(r => r.id === "shogayaki")), 0);
+  ev("quitCook()");
+
+  /* a dish that makes its own rice must not be told to start rice */
+  ev("startCook('hainan', 2)");
+  ok("plate dishes get no rice-first line", !/Rice first/.test(D.getElementById("cook-overlay").textContent));
+  ok("but do get the plate rules", /never keep warm/.test(D.getElementById("cook-overlay").textContent));
+  ev("quitCook()");
+  ev("startCook('iwashi', 1)");
+  ok("a two-minute bowl is pointed at frozen rice, not a 50-minute run", /microwave a frozen rice pot/.test(D.getElementById("cook-overlay").textContent));
+  ev("quitCook()");
+  ev("startCook('rcchashu', 1)");
+  eq("the simmer menu's minimum fill sets the fewest servings", ev("U.serv"), 3);
+  ev("cookServ(-1)");
+  eq("and the stepper will not go under it", ev("U.serv"), 3);
+  ev("quitCook()");
+  /* every side-rice dish gets a rice instruction; every self-rice dish gets none */
+  R.forEach(r => {
+    const t = ev("riceFirstText")(r, 2), k = ev("riceKind")(r);
+    if (k === "side") ok(r.id + ": side rice is started before cooking", /Rice first|Hot rice/.test(t), t);
+    else if (k === "cooked") ok(r.id + ": cooked-rice dish says so", /cooked rice/.test(t), t);
+    else ok(r.id + ": no rice instruction when the dish has none of its own to wait on", t === "", t);
+  });
+  /* a toast from a previous screen never sits over the cook footer */
+  ev("flash('something', function(){})");
+  ev("startCook('curry', 3)");
+  eq("starting to cook clears any toast", ev("U.toast"), null);
+  ev("quitCook()");
+}
+
+/* ---------- scaled quantities read like a cookbook ---------- */
+{
+  const fq = ev("fmtQty");
+  eq("15 ml reads as a tablespoon", fq(15, "ml"), "15 ml (1 tbsp)");
+  eq("5 ml reads as a teaspoon", fq(5, "ml"), "5 ml (1 tsp)");
+  eq("big volumes lose the spoon", fq(510, "ml"), "510 ml");
+  eq("three teaspoons is a tablespoon", fq(3, "tsp"), "1 tbsp");
+  eq("half a teaspoon", fq(0.5, "tsp"), "½ tsp");
+  eq("a third of a carrot", fq(0.3, "carrot"), "⅓ carrot");
+  eq("plurals past one", fq(1.5, "onion"), "1½ onions");
+  eq("irregular plurals", fq(2, "potato", "potatoes"), "2 potatoes");
+  eq("grams round to 5", fq(3 * 22, "g"), "65 g");
+  eq("eggs never come in halves past one", fq(1.5, "egg"), "2 eggs");
+  eq("but half an egg is still half", fq(0.5, "egg"), "½ egg");
 }
 
 /* ---------- undo covers everything destructive ---------- */
@@ -688,7 +775,7 @@ ok("ground-meat dishes get three days, everything else four",
 
 /* ---------- the savings log ---------- */
 {
-  S.log = []; S.N = 7; S.day = 0; ev("setTab('save')");
+  S.log = []; S.N = 7; ev("setTab('save')");
   const input = D.getElementById("spentInput");
   ok("there is somewhere to type the receipt total", !!input);
   input.value = "1700";
@@ -737,12 +824,12 @@ ok("ground-meat dishes get three days, everything else four",
   eq("chicken stock is the price on the receipt", CONDS.torigara.p, 538);
   eq("curry roux is priced from the receipt", Math.round(ING.roux.p * 185), 353);
   ok("the simmer rule states a minimum as well as a maximum",
-    /1-go and 3-go/.test(tabHTML("fridge")) && /under the bottom one/.test(tabHTML("fridge")));
+    /1-go and 3-go/.test(fridgeText()) && /under the bottom one/.test(fridgeText()));
   ok("mentsuyu still states its strength somewhere",
     /triple-strength/i.test(CONDS.mentsuyu.n) || /3倍/.test(CONDS.mentsuyu.jp));
   /* the dose depends on it, so the strength is not decoration */
   ok("and the recipes still dose it as a concentrate",
-    R.filter(r => r.conds.includes("mentsuyu")).some(r => r.steps.some(s => /parts water|倍|concentrate/i.test(s))));
+    R.filter(r => r.conds.includes("mentsuyu")).some(r => TXT(r).some(s => /parts water|倍|concentrate/i.test(s))));
 }
 
 /* ---------- the shelf: a bottle bought once must not be billed every week ---------- */
@@ -755,7 +842,7 @@ ok("ground-meat dishes get three days, everything else four",
     [...new Set(R.flatMap(r => r.conds))].filter(k => !SEED.includes(k) && k !== "cheese").join(","));
   /* roux is consumed a block a serving, so it is groceries, not a shelf bottle */
   ok("curry roux is billed per serving, not once", !SEED.includes("roux") && !CONDS.roux && !!ING.roux);
-  R.filter(r => r.steps.some(s => /roux block/.test(s))).forEach(r => {
+  R.filter(r => TXT(r).some(s => /roux block/.test(s))).forEach(r => {
     ok(r.id + ": buys the roux it cooks with", r.ing.some(([i]) => i === "roux"),
       JSON.stringify(r.ing.map(x => x[0])));
     ok(r.id + ": no longer treats roux as a shelf item", !r.conds.includes("roux"));
@@ -767,7 +854,7 @@ ok("ground-meat dishes get three days, everything else four",
   /* nikujaga for four: the exact report Josh made */
   S.plan = ["nikujaga"]; S.N = 4; ev("render()");
   const shop = tabHTML("shop");
-  ok("four servings of nikujaga does not re-bill mentsuyu", !/Mentsuyu/.test(shop), "mentsuyu still billed");
+  ok("four servings of nikujaga does not re-bill mentsuyu", !D.querySelector('[data-k="needmentsuyu"]'), "mentsuyu still billed");
   ok("and asks for no shelf top-up at all", !/Shelf top-up/.test(shop));
   const c4 = ev("compute()");
   ok("mentsuyu is still recognised as needed by the recipe", c4.needed.includes("mentsuyu"));
@@ -775,7 +862,7 @@ ok("ground-meat dishes get three days, everything else four",
 
   /* running out is still expressible, and still reaches the shopping list */
   ev("toggleCond('mentsuyu')");
-  ok("marking one as run out puts it back on the list", /Mentsuyu/.test(tabHTML("shop")));
+  ok("marking one as run out puts it back on the list", !!D.querySelector('[data-k="needmentsuyu"]'));
   ok("and the list explains it is a one-time buy", /A bottle lasts months/.test(tabHTML("shop")));
   ev("toggleCond('mentsuyu')");
   ok("putting it back in stock clears it again", !/Shelf top-up/.test(tabHTML("shop")));
@@ -813,17 +900,40 @@ ok("ground-meat dishes get three days, everything else four",
    wrong three times now — meatballs, onigiri, and a curry claiming four servings in a pot
    that holds about one litre — so it is asserted, not eyeballed. */
 {
-  const PLATE_MAX_GO = 1, PLATE_MIN_GO = 0.5, COOKER_MAX_GO = 3, SIMMER_MAX_ML = 1100;
+  const CK = ev("COOKER"), PLATE_MAX_GO = CK.plateMax, PLATE_MIN_GO = CK.plateMin, SIMMER_MAX_ML = CK.simmerMaxMl;
+  const loadOf = r => ev("loadOf")(r);
   R.filter(r => r.plate).forEach(r => {
     ok(r.id + ": plate run stays inside Tiger's 1-go rice limit",
       r.rice * r.cap <= PLATE_MAX_GO + 1e-9, (r.rice * r.cap) + " go");
     ok(r.id + ": a single serving still clears the 0.5-go minimum",
       r.rice >= PLATE_MIN_GO - 1e-9, r.rice + " go");
   });
-  R.filter(r => r.cookin).forEach(r => {
-    ok(r.id + ": cook-in run fits the 3-go pot", r.rice * r.cap <= COOKER_MAX_GO + 1e-9,
-      (r.rice * r.cap) + " go");
+  R.filter(r => r.plate).forEach(r => {
+    ok(r.id + ": a plate serving spreads in one layer", loadOf(r) <= ev("PLATE_G"), loadOf(r) + " g");
+    ok(r.id + ": the plate comes out when it beeps", TXT(r).some(s => /lift the plate straight out/.test(s)));
+    ok(r.id + ": never suggests keep-warm with the plate in",
+      TXT(r).every(s => !/keep-warm/.test(s) || /never leave it in on keep-warm/.test(s)));
   });
+  R.filter(r => r.cookin).forEach(r => {
+    ok(r.id + ": names its Tiger menu", ["takikomi", "risotto", "chahan"].includes(r.menu), r.menu);
+    ok(r.id + ": a run stays inside that menu's rice limit", r.rice * r.cap <= CK[r.menu] + 1e-9,
+      (r.rice * r.cap) + " go on " + r.menu);
+    ok(r.id + ": extras stay under ~70 g a cup", loadOf(r) / r.rice <= CK.gPerCup, Math.round(loadOf(r) / r.rice) + " g/cup");
+  });
+  eq("the risotto menu takes one cup, so one serving", R.find(r => r.id === "rcrisotto").cap, 1);
+  R.filter(r => r.simmer).forEach(r => {
+    ok(r.id + ": tells you what to set the simmer timer to", TXT(r).some(s => /set the timer to \d+ min/.test(s)));
+    ok(r.id + ": its fewest servings clear the bottom mark", r.mlPerServing * (r.minServ || 1) >= CK.simmerMinMl,
+      r.mlPerServing * (r.minServ || 1) + " ml");
+  });
+  /* the 18 cm pot, measured by Josh on 17 Sep 2026 */
+  eq("the pot's working volume is the measured one", ev("POT_ML"), 1600);
+  R.filter(r => r.gear.includes("pot")).forEach(r => {
+    ok(r.id + ": a full round fits the pot", r.potMl * r.cap <= ev("POT_ML"), r.potMl + " ml × " + r.cap);
+    ok(r.id + ": and one more would not, unless a cap below that is deliberate",
+      r.potMl * (r.cap + 1) > ev("POT_ML") || r.cap === (r.capMax || 4), r.potMl + " ml × " + (r.cap + 1));
+  });
+  eq("curry makes three in the pot, not four", R.find(r => r.id === "curry").cap, 3);
   R.filter(r => r.simmer).forEach(r => {
     ok(r.id + ": a simmer dish declares what it puts in the pot", Number.isFinite(r.mlPerServing));
     ok(r.id + ": a full run stays under the fill line",
@@ -831,19 +941,20 @@ ok("ground-meat dishes get three days, everything else four",
   });
   /* and the copy must not contradict the manual */
   ok("no step still claims two cups of rice under the plate",
-    !R.some(r => r.steps.some(s => /[Tt]wo cups of rice/.test(s))),
-    R.filter(r => r.steps.some(s => /[Tt]wo cups of rice/.test(s))).map(r => r.id).join(","));
-  ok("the fridge rules state the 1-go plate limit", /caps the rice at 1 go/i.test(tabHTML("fridge")));
+    !R.some(r => TXT(r).some(s => /[Tt]wo cups of rice/.test(s))),
+    R.filter(r => TXT(r).some(s => /[Tt]wo cups of rice/.test(s))).map(r => r.id).join(","));
+  ok("the rules state the 1-go plate limit", /caps the rice at 1 go/i.test(fridgeText()));
+  ok("and the per-menu rice limits", /risotto 1/.test(fridgeText()));
 }
 
 /* ---------- the rice line must match the dish ---------- */
 {
-  S.plan = ["curry", "hainan"]; S.N = 4; ev("render()");
+  S.plan = ["curry", "rcchahan"]; S.N = 4; ev("render()");
   ev("openSheet('curry')");
   ok("a half-cup dish says half a cup", /75 g \(half a cooker cup\)/.test(D.getElementById("sheet-overlay").innerHTML),
     (D.getElementById("sheet-overlay").innerHTML.match(/rice [^<·]*/) || [""])[0]);
   ev("closeSheet()");
-  ev("openSheet('hainan')");
+  ev("openSheet('rcchahan')");
   ok("a full-cup dish says a full cup", /150 g \(1 cooker cup\)/.test(D.getElementById("sheet-overlay").innerHTML));
   ev("closeSheet()");
   ok("no dish prints a rice amount that contradicts its own field",
@@ -857,10 +968,10 @@ ok("ground-meat dishes get three days, everything else four",
 
 /* ---------- every dish says whether it fits in one go ---------- */
 {
-  eq("a dish inside its capacity is one go", ev("roundsFor")(R.find(r => r.id === "curry"), 4), 1);
+  eq("a dish inside its capacity is one go", ev("roundsFor")(R.find(r => r.id === "curry"), 3), 1);
   eq("beyond it, the rounds are counted", ev("roundsFor")(R.find(r => r.id === "curry"), 9), 3);
   eq("a dish with no cap never splits", ev("roundsFor")({ cap: undefined }, 8), 1);
-  eq("one round reads as one go", ev("roundsLabel")(R.find(r => r.id === "curry"), 4), "one go");
+  eq("one round reads as one go", ev("roundsLabel")(R.find(r => r.id === "curry"), 3), "one go");
   eq("more than one reads as rounds", ev("roundsLabel")(R.find(r => r.id === "afkatsu"), 3), "3 rounds");
 
   S.plan = ["curry", "afkatsu"]; S.N = 6; S.locked = []; ev("render()");
@@ -879,6 +990,40 @@ ok("ground-meat dishes get three days, everything else four",
   S.plan = undefined; S.N = 7;
 }
 
+/* ---------- the week plans around the gear ---------- */
+{
+  S.locked = []; S.plan = ["curry", "karaage"]; S.N = 5; S.mugi = false;
+  let cc = ev("compute()");
+  eq("servings follow the gear: curry takes the pot's three", cc.servings.curry, 3);
+  eq("and karaage the basket's two", cc.servings.karaage, 2);
+  S.N = 7; cc = ev("compute()");
+  const rounds = cc.picks.reduce((a, r) => a + ev("roundsFor")(r, cc.servings[r.id]), 0);
+  eq("seven meals over those two cook in three rounds, not four", rounds, 3);
+  /* random weeks never cook in more rounds than an even split would */
+  let worse = 0;
+  for (let i = 0; i < 150; i++) {
+    S.plan = undefined; S.v = 2; S.N = 7; ev("plan(true)");
+    const c2 = ev("compute()");
+    const k = c2.picks.length;
+    const even = c2.picks.reduce((a, r, j) => a + Math.ceil((Math.floor(7 / k) + (j < 7 % k ? 1 : 0)) / (r.cap || 2)), 0);
+    const got = c2.picks.reduce((a, r) => a + Math.ceil(c2.servings[r.id] / (r.cap || 2)), 0);
+    if (got > even) worse++;
+  }
+  eq("balancing never adds a round", worse, 0);
+
+  /* the rice line counts only rice that needs its own cooker run */
+  S.plan = ["curry", "hainan"]; S.N = 5; ev("setTab('week')");
+  cc = ev("compute()");
+  eq("side rice excludes a dish that cooks its own", cc.sideCups, cc.servings.curry * 0.5);
+  ok("and the rhythm says the plate dish brings its own", /Hainanese chicken rice cooks its own rice/.test(tabHTML("week")));
+  ok("the batch day pairs the pot with the rice cooker", /rice on first/.test(tabHTML("week")));
+  S.plan = ["rcchashu", "karaage"]; S.N = 6; ev("render()");
+  ok("a cooker braise says the week's rice goes in before it", /any rice for the week goes in before it/.test(tabHTML("week")));
+  S.plan = ["curry", "karaage"]; S.N = 5; ev("render()");
+  ok("an air-fryer dish that freezes raw is marinated while the pot simmers", /marinate the karaage/.test(tabHTML("week")));
+  S.plan = undefined; S.N = 7;
+}
+
 /* ---------- the rice cooker is a cooker, not just a rice pot ---------- */
 {
   const cooker = R.filter(r => r.cookin || r.plate || r.simmer);
@@ -889,11 +1034,11 @@ ok("ground-meat dishes get three days, everything else four",
   /* the manufacturer's rule: thickeners foam, foam blocks the vent */
   R.filter(r => r.simmer && r.conds.includes("roux")).forEach(r => {
     ok(r.id + ": roux goes in after the cycle, never during",
-      r.steps.some(s => /not put the roux in yet|after the cycle|heat OFF/i.test(s)));
+      TXT(r).some(s => /not put the roux in yet|after the cycle|heat OFF/i.test(s)));
   });
-  ok("the fridge tab documents the cooker's limits", /plain rice underneath, never seasoned rice/i.test(tabHTML("fridge")));
-  ok("including the thickener rule", /blocks the steam vent|foam blocks/i.test(tabHTML("fridge")));
-  ok("and the wooden paddle rule", /[Ww]ooden paddle/.test(tabHTML("fridge")));
+  ok("the week tab documents the cooker's limits", /plain rice underneath, never seasoned rice/i.test(fridgeText()));
+  ok("including the thickener rule", /blocks the steam vent|foam blocks/i.test(fridgeText()));
+  ok("and the wooden paddle rule", /[Ww]ooden paddle/.test(fridgeText()));
   S.plan = undefined; S.N = 7;
 }
 
@@ -918,7 +1063,8 @@ ok("ground-meat dishes get three days, everything else four",
   ok("max batch reaches the appliances", appliance / total > 0.35,
     Math.round(appliance / total * 100) + "% appliance");
   ok("max batch still favours fewer rounds",
-    caps.reduce((a, b) => a + b, 0) / caps.length >= 2.5,
+    /* 2.2, down from 2.5 when the measured pot cut the stews from 4 a round to 3 */
+    caps.reduce((a, b) => a + b, 0) / caps.length >= 2.2,
     "mean cap " + (caps.reduce((a, b) => a + b, 0) / caps.length).toFixed(2));
   ok("max batch only ever picks batchable dishes",
     Object.keys(seen).every(id => R.find(r => r.id === id).batch),
@@ -1017,21 +1163,21 @@ ok("garlic and ginger are the value bottles, not tubes",
 
 /* ---------- bottles dispense by spoon; no step may still measure a tube ---------- */
 ok("no recipe step mentions a tube",
-  !R.some(r => r.steps.some(s => /tube/i.test(s))),
-  R.filter(r => r.steps.some(s => /tube/i.test(s))).map(r => r.id).join(","));
+  !R.some(r => TXT(r).some(s => /tube/i.test(s))),
+  R.filter(r => TXT(r).some(s => /tube/i.test(s))).map(r => r.id).join(","));
 {
   const DOSE = /\d\s*cm\s*(squeeze\s*)?(of\s*)?(each\s*)?(garlic|ginger)/i;
   ok("no step doses garlic or ginger in centimetres",
-    !R.some(r => r.steps.some(s => DOSE.test(s))),
-    R.filter(r => r.steps.some(s => DOSE.test(s))).map(r => r.id).join(","));
+    !R.some(r => TXT(r).some(s => DOSE.test(s))),
+    R.filter(r => TXT(r).some(s => DOSE.test(s))).map(r => r.id).join(","));
 }
 {
   const users = R.filter(r => r.conds.includes("garlic") || r.conds.includes("ginger"));
   ok("every garlic/ginger dish gives a spoon measure",
-    users.every(r => r.steps.some(s => /tsp[^.]{0,30}(garlic|ginger) paste/i.test(s))),
-    users.filter(r => !r.steps.some(s => /tsp[^.]{0,30}(garlic|ginger) paste/i.test(s))).map(r => r.id).join(","));
+    users.every(r => TXT(r).some(s => /tsp[^.]{0,30}(garlic|ginger) paste/i.test(s))),
+    users.filter(r => !TXT(r).some(s => /tsp[^.]{0,30}(garlic|ginger) paste/i.test(s))).map(r => r.id).join(","));
 }
-ok("knife cuts still measured in cm", R.some(r => r.steps.some(s => /\d\s*cm (chunks|cubes|strips|half-moons|pieces|slabs)/.test(s))));
+ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chunks|cubes|strips|half-moons|pieces|slabs)/.test(s))));
 
 /* ---------- report ---------- */
 console.log("\n" + "=".repeat(52));

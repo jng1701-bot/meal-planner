@@ -1,58 +1,71 @@
 # Lazy Meal Planner
 
 A single-file meal planner for one person cooking Japanese home food in Tokyo with a
-deliberately minimal kitchen. Generates a week of dishes, a costed LIFE shopping list,
-a cook schedule that respects what the gear can actually hold, and a savings log.
+deliberately minimal kitchen. It generates a week of dishes, a costed LIFE shopping list,
+a cook schedule that works with what the gear can actually hold, a step-by-step cook mode
+with quantities scaled to the batch, and a savings log.
 
 **Live:** https://jng1701-bot.github.io/meal-planner/
 
+Tabs: **Tonight** (how much effort have you got?) · **Week** (dishes, the rhythm, the rules) ·
+**Shop** (list, shelf, prices) · **Saved**. The Fridge tab was removed on 17 Sep 2026.
+
 ## The kitchen it is built around
 
-| Gear | Working limit |
-|---|---|
-| 18 cm pot (~2 L) | 4 stew servings, or 2 one-pot pasta/udon |
-| 26 cm frying pan | 2 servings per round before it steams instead of sears |
-| Tiger JAJ-A550 rice cooker (3-cup tacook) | 3 go per run; **1 go** with the cooking plate in (Tiger's limit, min 0.5); simmer-menu ingredients between the 1-go and 3-go marks, ~1.1 L |
-| Amazon Basics air fryer 4.2 L (1200 W, 60–200 °C, 60 min, ceramic non-stick) | 2 servings per basket; 1 for anything breaded |
-| 0.8 L kettle, microwave, toaster | — |
-| Storage: 4 × 600 mL boxes, 3 × 355 ml rice pots | one serving per box; peak 3 boxes in circulation |
-
-Every recipe carries a `cap` = servings per cooking round on its gear. The cook view turns
-that into "do N rounds back-to-back" rather than pretending one pan does everything.
-
-### The rice cooker is a cooker
-
-The JAJ-A550 is a tacook model, so it is not just a rice pot, and the roster uses four
-different things it does. Recipes are flagged accordingly:
-
-| Flag | What it means | Rule |
+| Gear | Working limit | Source |
 |---|---|---|
-| `cookin` | seasoned rice cooked with its ingredients (takikomi, chahan, risotto) | never combine with the plate |
-| `plate` | a dish steamed on the cooking plate above the rice | plain rice underneath only, **1 go max** — half a cup a serving, so 2 servings a run |
-| `simmer` | a braise on the simmer menu, no rice in the pot | declare `mlPerServing`; `mlPerServing × cap` must stay under ~1.1 L |
-| none | rice is just a side | `rice: 0.5` |
+| 18 cm pot | **1,600 ml** to 1.5 cm below the rim (8.1 cm deep) | measured, 17 Sep 2026 |
+| 26 cm frying pan | 2 servings per round before it steams instead of sears | — |
+| Tiger JAJ-A550 rice cooker (3-cup tacook) | white/quick 3 go · cook-in 2 · fried rice 2 · **risotto 1** · plate 0.5–1 go · simmer between the 1 and 3 marks | manual P.30, P.17, P.19 |
+| Air fryer, Amazon Basics 4.2 L (1200 W, 60–200 °C) | ~315 cm² basket floor, one layer | measured against dish size |
+| Storage: 4 × 600 mL boxes, 3 × 355 ml rice pots | one serving per box | — |
 
-Tiger's own guidance for non-rice cooking sets the hard limits, and the recipes follow it:
-no roux, starch or other thickener during a cycle (thickened liquid foams, foam blocks the
-steam vent), dairy only after the cycle on residual heat, no foil or bags inside, easy on
-the oil, wooden paddle only. Seasoned rice under the cooking plate welds itself to the
-plate's underside, which is why `cookin` and `plate` are mutually exclusive — `test.js`
-enforces that.
+Rice cooker times (manual P.9): white 42–52 min, quick 20–40, cook-in 41–55, risotto 24–34,
+fried rice 34–45.
 
-Container counts come from the same logic. Simulated against the app's own Sunday/Wednesday
-batch schedule, a default week (7 meals, 2–3 dishes) peaks at 3 main containers in
-circulation, so four covers it with one in the sink. Rice pots are set by how many portions
-you freeze per cooker run: 1.5 cups twice a week needs three, one 3-cup run needs five. Only
-"1 dish, max batch" mode needs seven mains. Portion volumes: curry, keema and nikujaga
-400–430 ml, tonjiru and bean soup ~520 ml, nabe ~600 ml — which is why 600 mL is one size for
-everything, and why rice keeps its own 355 ml pot.
+## Capacity is derived, not asserted
+
+`cap` has been wrong four times, every time because a wanted outcome picked the number. Now:
+
+- **Pot dishes** carry `liquid` (ml per serving). `potMl` = solids by weight + liquid, and
+  `cap = floor(POT_ML / potMl)`, clamped by `capMax`. Anything in `after` (roux, toppings) is
+  left out because it goes in once the volume has cooked down. With the measured pot, the stews
+  make **3**, not 4. Change `POT_ML` and every pot cap follows.
+- **Cooking-plate dishes** stay within the 1-go rice limit, spread in one layer
+  (`loadOf ≤ PLATE_G`), and lift the plate out when it beeps — never keep warm with it in.
+- **Cook-in rice** names its `menu`; rice × cap stays inside that menu's limit, and extras stay
+  under Tiger's ~70 g per cup. The protein-heavy seasoned rices broke that 2–3×, so they became
+  plate dishes: plain rice under the plate, the topping folded through afterwards (mazegohan).
+- **Simmer dishes** declare `mlPerServing`, a timer value, and `minServ` so the fewest servings
+  still clear the bottom mark.
+- **Air-fryer dishes** carry `cm2` per serving (in `AIR_CM2`); `cm2 × cap ≤ BASKET_CM2`. Twelve
+  gyoza or six wings fill the floor, so those are one serving a round.
+
+Work out what fits before deciding what you want to fit.
+
+## Cook-day workflow
+
+- **Servings follow the gear.** `compute()` moves servings between dishes whenever that
+  cuts the total number of rounds. Seven meals over curry and karaage cook as 3 curry (one pot)
+  + 4 karaage (two baskets) = 3 rounds, where an even 4 + 3 would take 4.
+- **The rhythm pairs the appliances.** Sunday/Wednesday rows say what the rice cooker does
+  while the anchor cooks (rice on first, or rice before a cooker braise) and what to marinate
+  for later. The rice line counts only side rice; dishes that make their own rice say so.
+- **Cook mode opens on "Before you start":** a servings stepper, the rounds, minutes to the
+  table, and a rice-first line timed against the dish ("start prepping in about 15 min"), with
+  frozen rice as the way out.
+- **Quantities scale.** Step text carries braced quantities — `{150 g}`, `{15 ml}`, `{1 tsp}`,
+  `{0.5 onion}`, `{1 potato|potatoes}` — rendered by `stepText(r, i, n)`. Frying oil, "cover by
+  2 cm" and per-bowl seasonings stay outside braces because they do not grow with the batch.
+- **Rounds:** each round shows "round k of n · ×s" with that round's amounts. Air-fryer prep
+  (cutting, marinating, coating) is done once for the whole batch; only the steps from the
+  preheat on repeat.
 
 ## Files
 
-- `index.html` — the whole app. No build, no dependencies, no framework. Vanilla JS,
-  state in `localStorage` under the key `lmp`.
-- `test.js` — jsdom harness, 1567 assertions. **Keep it committed.** It has been lost
-  twice with scratch folders.
+- `index.html` — the whole app. No build, no dependencies. Vanilla JS, state in
+  `localStorage` under the key `lmp`.
+- `test.js` — jsdom harness, ~2,840 assertions. **Keep it committed.** It has been lost twice.
 
 ## Running the tests
 
@@ -62,46 +75,30 @@ cd /path/to/meal-planner
 NODE_PATH=~/npmtest/node_modules node test.js
 ```
 
-It boots the real `index.html` in jsdom, drives the UI, and checks the roster, the
-capacity rules, food-safety wording, step vocabulary, accessibility, and that a corrupt
-save heals instead of blanking the page. Run it before every push.
+Text checks run on rendered step text (`TXT(r)`), never on the braced templates.
 
 ## Deploying
 
-GitHub Pages serves `main` directly, so a push is a deploy — roughly 60–90 seconds.
-The web UI is the deploy path: **Add file → Upload files** on `main`, drop `index.html`
-and `test.js`, commit directly to `main`.
+GitHub Pages serves `main`, so a push is a deploy (~60–90 s). Web UI: **Add file → Upload
+files** on `main`, drop `index.html`, `test.js` and `README.md`, commit.
 
 ## House rules for edits
 
 - Recipe steps use the shopping-list English names (green onion, potato starch, bean
-  sprouts). Loanwords that have no plain English equivalent stay: daikon, shimeji, miso,
-  mirin, mentsuyu, hondashi, ponzu. `test.js` enforces this.
-- Never let a value reach `S.protein` or `S.plan` that does not resolve in `ING` /
-  `RECIPES`. A stale key used to persist to `localStorage` and blank the app on every
-  subsequent load; the loader now sanitises and the boot render has a recovery path.
-- Tier A dishes are the batch anchors: `cap: 4` and `batch: true`, always.
-- `eff: 2` means the dish yields 4+ servings from one session: `batch` and `cap >= 4`. It
-  normally also means 20+ minutes, but an appliance dish is exempt, because 8 minutes of prep
-  and an hour of the cooker doing the waiting is a better batch day than standing over a pot.
-- Condiments are a one-time shelf, not a weekly cost. `SHELF_SEED` stocks them on first load
-  and only fills keys that were never set, so "I have run out of this" survives. If a bottle
-  starts being re-billed every week, that is the bug, not the recipe.
-- Dish selection is weighted, not sorted (`dishWeight` / `pickWeighted`). The air fryer and
-  rice cooker carry `APPLIANCE_BIAS` because they cost real money; capacity is a weight in
-  max-batch mode rather than a ranking, because sorting by it collapsed the whole mode onto
-  nine pot dishes; `S.recent` damps anything picked in the last dozen slots.
-- Anything the week actually consumes belongs in `compute()`, including rice. A price of 0
-  is legal and means "given to me" — it is not nonsense input.
-- `cap` is a physical claim, not a preference. It has been wrong three times (meatballs,
-  onigiri, and a cooker curry claiming four servings in a one-litre pot), every time because a
-  desired outcome drove the number — the curry was set to 4 so the rice cooker would qualify as
-  an `eff: 2` batch anchor. `test.js` now checks plate dishes against Tiger's 1-go rice limit,
-  cook-in against the 3-go pot, simmer against a declared `mlPerServing`, and air dishes against
-  the basket floor. Work out what fits before deciding what you want to fit.
-- Every recipe states its rounds up front (`roundsFor` / `roundsLabel` / `capLabel`), on the
-  week row and in the sheet's facts. "Can I do this in one go" is a question you have before
-  cooking, so it is answered without waiting for an overflow warning.
-- Fridge claims stay at 3–4 days. Cooked ground meat never gets a longer claim.
-- Air-fryer steps: one layer with gaps, preheat 3 min for skin or coating, never suggest
-  aerosol oil spray (it strips the ceramic), and never exceed 200 °C.
+  sprouts). Loanwords stay: daikon, shimeji, miso, mirin, mentsuyu, hondashi, ponzu.
+- Never let a value reach `S.protein` or `S.plan` that does not resolve. The loader sanitises;
+  the boot render has a three-step recovery path.
+- **Protein swaps are whole cuts only** (`MEATCYCLE = chicken, pork`). Mince dishes are not
+  flex: chunks cannot become meatballs or soboro, and poached mince is not a dish.
+- `eff: 2` means a batch anchor: `batch` and `cap >= 3`.
+- Condiments are a one-time shelf (`SHELF_SEED`), shown on Shop. If a bottle is re-billed every
+  week, that is the bug.
+- Selection is weighted, not sorted (`dishWeight` / `pickWeighted`).
+- Anything the week consumes belongs in `compute()`, including rice. A price of 0 means "given
+  to me".
+- Every recipe states `ready` (minutes to the table, side rice excluded). Tonight shows it.
+- Shelf life: cooked meat and fish 3 days, everything else 4, eat-now dishes `keep: 1`. Any
+  "keeps N days" in the steps must match `keepDaysOf` — the test enforces it.
+- No mackerel in the roster.
+- Air-fryer steps: preheat 3 min for skin or coating, one layer with gaps, never aerosol oil
+  spray, never over 200 °C.

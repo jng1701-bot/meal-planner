@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Meals">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍚</text></svg>">
 <title>Lazy Meal Planner</title>
-<meta name="description" content="One pot, one pan, a rice cooker and a 4.2 L air fryer: how much effort have you got tonight? Plan a week, shop at LIFE, cook, track leftovers in the fridge, and see what you save.">
+<meta name="description" content="One pot, one pan, a rice cooker and a 4.2 L air fryer: how much effort have you got tonight? Plan a week, shop at LIFE, cook it in as few rounds as the gear allows, and see what you save.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -68,7 +68,10 @@ button{font-family:inherit}
 .effen{font-size:19px;font-weight:700;color:var(--ink)}
 .effsub{font-size:13.5px;color:var(--muted2);margin-top:2px}
 .arrow{color:var(--faint);font-size:20px}
-.fridgenudge{margin-top:28px;padding-top:18px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted2);line-height:1.5}
+.setupline{font-size:15px;color:var(--sub);line-height:1.6;margin-top:16px}
+.setupline.mint{color:var(--mint)}
+.setupline.warm{color:var(--warmsoft)}
+body.cooking #toast{bottom:calc(128px + env(safe-area-inset-bottom))}
 
 /* ---- tonight: answered ---- */
 .backlink{background:none;border:none;color:var(--muted2);font-size:13px;font-weight:700;padding:10px 2px;margin-left:-2px;cursor:pointer;letter-spacing:.04em;min-height:44px;display:inline-flex;align-items:center}
@@ -140,29 +143,10 @@ details.detailsblock[open] summary::after{content:"▴"}
 .priceunit{color:var(--muted2);font-size:12.5px;white-space:nowrap}
 .pricerow input{width:82px;min-height:44px;background:var(--bg);border:1px solid var(--line3);color:var(--ink);font:15px inherit;padding:4px 8px;border-radius:0}
 
-/* ---- fridge ---- */
-.linklike{background:none;border:none;color:var(--muted2);font-size:12px;font-weight:700;cursor:pointer;padding:12px 0;white-space:nowrap;min-height:44px}
-.fridgerow{border-top:1px solid var(--line);padding:16px 0;display:flex;gap:14px;align-items:flex-start}
-.fridgemain{flex:1;min-width:0}
-.fridgename{font-size:17px;font-weight:700;color:var(--ink)}
-.fridgejp{font-size:12.5px;margin-top:1px}
-.fridgeage{font-size:12.5px;font-weight:700;margin-top:9px}
-.fridgeage.mint{color:var(--mint)}
-.fridgeage.warm{color:var(--warm)}
-.fridgeacts{display:flex;gap:10px;margin-top:4px}
-.fridgeacts button{background:none;border:none;padding:12px 10px;margin-left:-10px;font-size:12.5px;font-weight:700;cursor:pointer;min-height:44px;display:inline-flex;align-items:center}
-.fridgeacts button:first-child{color:var(--mint)}
-.fridgeacts button:last-child{color:var(--muted2)}
-.fridgedots{display:flex;gap:4px;padding-top:4px}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--row-off);display:inline-block}
-.dot.mint{background:var(--mint)}
-.dot.warm{background:var(--warm)}
-.dot.on{background:var(--mint)}
-.containerrow{border-top:1px solid var(--line);padding:16px 0;font-size:14px;line-height:1.6;color:var(--sub)}
+/* ---- shelf ---- */
 .condgrid{display:flex;flex-wrap:wrap;gap:1px;background:var(--line);border-top:1px solid var(--line);padding-top:1px}
 .condbtn{background:var(--bg);border:none;padding:13px;cursor:pointer;color:var(--condoff);font-size:13px;font-weight:700;flex:1 1 auto;min-height:44px}
 .condbtn.on{color:var(--mint)}
-
 /* ---- saved ---- */
 .hlist.row2 input{flex:1;min-width:0;background:var(--bg);border:none;color:var(--ink);font:700 17px inherit;padding:15px 14px;outline:none}
 .logbtn{background:var(--bg);border:none;color:var(--mint);font-size:14px;font-weight:900;padding:15px 20px;cursor:pointer;white-space:nowrap}
@@ -194,7 +178,7 @@ nav#tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;border-top:1px so
 .sheetname{font-size:24px;font-weight:900;letter-spacing:-.03em;line-height:1.15}
 .sheetjp{font-size:13.5px;margin-top:3px}
 .closeb{background:none;border:none;color:var(--muted2);font-size:20px;cursor:pointer;padding:0;line-height:1}
-.sheetfacts{display:flex;gap:20px;margin-top:20px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sheetfacts{display:flex;flex-wrap:wrap;gap:14px 20px;margin-top:20px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .factv{font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.01em}
 .factk{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:3px}
 .sheetwarn{margin-top:16px;padding-left:12px;border-left:2px solid var(--warm);font-size:13.5px;line-height:1.55;color:var(--warmsoft)}
@@ -242,7 +226,6 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 <div class="wrap tab" id="tab-tonight"></div>
 <div class="wrap tab" id="tab-week"></div>
 <div class="wrap tab" id="tab-shop"></div>
-<div class="wrap tab" id="tab-fridge"></div>
 <div class="wrap tab" id="tab-save"></div>
 </main>
 
@@ -302,149 +285,208 @@ const ING = {
   gyoza:{n:"Frozen gyoza",jp:"冷凍餃子",u:"g",p:0.7,cat:"frozen"},
   porkblock:{n:"Pork shoulder block",jp:"豚肩ロースブロック",u:"g",p:1.45,cat:"meat"},
   tebasaki:{n:"Chicken wings",jp:"手羽先",u:"g",p:1.15,cat:"meat"},
-  sabafillet:{n:"Salted mackerel fillet",jp:"塩さば",u:"pc",p:210,cat:"meat"},
-  sabacan:{n:"Canned mackerel",jp:"さば水煮缶",u:"pc",p:170,cat:"dry"},
   nasu:{n:"Eggplant",jp:"なす",u:"pc",p:70,cat:"veg"}
 };
 const CATS = {meat:"Meat & fish · 肉・魚", veg:"Produce · 野菜", other:"Chilled · 卵・豆腐", dry:"Dry & canned · 乾物・缶", frozen:"Frozen · 冷凍"};
-/* ============ RECIPES (qty per serving) ============ */
+/* ============ RECIPES (qty per serving) ============
+   Step text carries scalable quantities in braces: {150 g}, {15 ml}, {1 tsp}, {0.5 onion},
+   {1 potato|potatoes}. Cook mode multiplies them by the servings in the current round, so
+   the cook never does arithmetic at the stove. Anything outside braces is fixed — frying oil,
+   "cover by 2 cm", per-bowl miso — because it does not grow with the batch.
+
+   Physical fields, all checked by test.js:
+   potMl   — pot dishes: the cap is COMPUTED from POT_ML (the measured working volume of the
+             18 cm pot) and what one serving puts in it: solids by weight plus `liquid` ml.
+             Anything in `after` goes in once the volume has cooked down.
+   menu    — cook-in rice: which Tiger menu, because each has its own rice limit.
+   after   — added after the cooker cycle or as a topping; not part of the cooker/plate load.
+   ready   — minutes to the table, not counting side rice (the cook screen adds that).
+   keep    — days in the fridge when it differs from the default (see keepDaysOf).
+   minServ — the fewest servings that clear a cooker's minimum fill. */
+const PLATE_RICE = "Rinse {75 g} rice until the water runs mostly clear, drain, into the inner pot, and add water to the white-rice line for {0.5 cup|cups}. Plain rice only under the plate. One cup is Tiger's ceiling with the plate in, so two servings is a full run.";
 const RECIPES = [
- {id:"beansoup", tier:"A", n:"Bean & tomato soup", jp:"ミックスビーンズのトマトスープ", gear:["pot"], time:"20 min", eff:2, batch:true, cap:4, flex:true, freeze:"freezes perfectly",
+ {id:"beansoup", tier:"A", n:"Bean & tomato soup", jp:"ミックスビーンズのトマトスープ", gear:["pot"], time:"20 min", ready:25, eff:2, batch:true, liquid:100, flex:true, freeze:"freezes perfectly",
   ing:[["mixedbeans",80],["cantomato",100],["onion",0.5],["carrot",0.3],["bacon",30]], rice:0.5, conds:["torigara","garlic","oil"],
-  steps:["Per serving: dice half an onion and a third of a carrot small. Cut 30 g bacon into strips.","Pot on medium with 15 ml (1 tbsp) oil. Bacon in first for 1 min, then the onion and carrot for 3 min until the onion turns translucent.","Add per serving: 80 g mixed beans (drained), 100 g canned tomato, 200 ml water, 1 tsp chicken stock powder and a 1 tsp of garlic paste.","Bring to a boil, then simmer on medium-low 12 min with the lid sitting ajar. Stir once or twice.","Taste, and add salt only if it needs it. Serve with a bowl of rice. Four servings keeps 4 days in the fridge and a month in the freezer, and it is better on day two."]},
- {id:"belachan", tier:"A", n:"Belachan steamed chicken breast", jp:"よだれ鶏（ベラチャン）", gear:["pot"], time:"10 min", eff:1, batch:true, cap:4, flex:true, freeze:"slices freeze well",
-  ing:[["chickenbreast",150],["cucumber",0.3],["negi",0.2]], rice:0.5, conds:["sesame","soy","ginger"],
-  steps:["Per serving: 150 g chicken breast into the pot with enough cold water to cover it by 2 cm, plus 1 tsp of ginger paste and the green tops of the green onion.","Bring it to a boil, then turn the heat OFF completely and put the lid on. Leave it 15 min. Poaching off-heat is the whole trick — breast turns dry and stringy the moment it actually boils.","Check the thickest part is white all the way through. Lift it out, rest 5 min, slice 1 cm thick across the grain.","Sauce, per serving: 1 tsp of your belachan + 15 ml (1 tbsp) soy sauce + 5 ml (1 tsp) sesame oil, mixed in a small bowl.","Over rice with sliced cucumber and the white of the green onion. Make all 4 servings at once — it keeps 3 days and is genuinely good cold, so it doubles as a fridge raid. Keep the poaching water: that is chicken stock."]},
- {id:"butadaikon", tier:"A", n:"Pork & daikon simmer", jp:"豚バラ大根", gear:["pot"], time:"30 min", eff:2, batch:true, cap:4, flex:true,
+  steps:["Dice {0.5 onion} and {0.3 carrot} small. Cut {30 g} bacon into 1 cm strips.","Pot on medium with 15 ml (1 tbsp) oil. Bacon in first for 1 min, then the onion and carrot for 3 min until the onion turns translucent.","Add {80 g} drained mixed beans, {100 g} canned tomato, {100 ml} water, {1 tsp} chicken stock powder and {1 tsp} garlic paste. It is thick on purpose — a soup base is what lets the pot hold the batch.","Bring to a boil, then simmer on medium-low 12 min with the lid ajar, stirring twice so the bottom does not catch.","Taste, and add salt only if it needs it. Loosen each bowl with 100 ml water as it reheats. Keeps 3 days in the fridge and a month in the freezer, and it is better on day two."]},
+ {id:"belachan", tier:"A", n:"Belachan steamed chicken breast", jp:"よだれ鶏（ベラチャン）", gear:["pot"], time:"10 min", ready:35, eff:1, batch:true, liquid:170, freeze:"slices freeze well",
+  ing:[["chickenbreast",150],["cucumber",0.3],["negi",0.2]], after:["cucumber","negi"], rice:0.5, conds:["sesame","soy","ginger"],
+  steps:["Lay {150 g} chicken breast in the pot in one layer. Add cold water to cover it by 2 cm, {1 tsp} ginger paste and the green tops of a green onion.","Bring it to a boil, then turn the heat OFF completely and put the lid on. Leave it 15 min. Poaching off-heat is the whole trick — breast turns dry and stringy the moment it actually boils.","Check the thickest part is white all the way through. Lift it out, rest 5 min, slice 1 cm thick across the grain.","Sauce: {1 tsp} belachan + {15 ml} soy sauce + {5 ml} sesame oil, mixed in a small bowl.","Over rice with sliced cucumber and the white of the green onion. It keeps 3 days and is good cold. Keep the poaching water: that is chicken stock."]},
+ {id:"butadaikon", tier:"A", n:"Pork & daikon simmer", jp:"豚バラ大根", gear:["pot"], time:"30 min", ready:45, eff:2, batch:true, liquid:250, flex:true,
   ing:[["pork",100],["daikon",150]], rice:0.5, conds:["soy","mirin","sake","ginger","sesame"],
-  steps:["Per serving: peel 150 g daikon and cut into 2 cm half-moons. Cut 100 g pork bite-size.","Pot on medium, 5 ml (1 tsp) sesame oil. Pork first until it changes colour, then daikon, 2 min.","Add per serving: 200 ml water + 22 ml (1.5 tbsp) soy + 15 ml (1 tbsp) each mirin and sake + 1 tsp ginger paste.","Lid slightly ajar, medium-low, 20 min. Done when the daikon is translucent and a chopstick slides through.","Heat off, rest 10 min — daikon drinks the sauce as it cools. Keeps 3 days and improves daily."]},
- {id:"butadon", tier:"A", n:"Butadon (pork bowl)", jp:"豚丼", gear:["pan","rice"], time:"12 min", eff:1, batch:true, cap:4, crowd:"full", freeze:"topping freezes well",
+  steps:["Peel {150 g} daikon and cut into 2 cm half-moons. Cut {100 g} pork bite-size.","Pot on medium, 5 ml (1 tsp) sesame oil. Pork first until it changes colour, then the daikon, 2 min.","Add {200 ml} water, {20 ml} soy sauce, {15 ml} mirin, {15 ml} sake and {1 tsp} ginger paste.","Lid slightly ajar, medium-low, 20 min. Done when the daikon is translucent and a chopstick slides through.","Heat off, rest 10 min — daikon drinks the sauce as it cools. Keeps 3 days and improves daily."]},
+ {id:"butadon", tier:"A", n:"Butadon (pork bowl)", jp:"豚丼", gear:["pot","rice"], time:"12 min", ready:15, eff:1, batch:true, liquid:155, freeze:"topping freezes well",
   ing:[["pork",120],["onion",0.5]], rice:0.5, conds:["soy","mirin","sake","dashi","ginger"],
-  steps:["Slice half an onion per serving into thin wedges.","In the pan, per serving: 100 ml water + 30 ml (2 tbsp) each of soy, mirin, and sake + half a tsp hondashi + 1 tsp ginger paste. Bring to a boil.","Add the onion, medium heat 3 min until soft and see-through.","Add 120 g pork, separating the slices with chopsticks so they do not clump. 4–5 min, spooning off the grey foam.","Over rice. Make 3–4 servings of topping at once: 3 days fridge, 1 month freezer. Identical method to gyudon at roughly half the cost — beef is the priciest protein there is."]},
- {id:"curry", tier:"A", n:"Japanese curry", jp:"カレーライス", gear:["pot","rice"], time:"30 min", eff:2, batch:true, cap:4, flex:true, freeze:"freeze without potato",
-  ing:[["chicken",120],["onion",0.5],["carrot",0.3],["potato",0.8],["roux",25]], rice:0.5, conds:["oil"],
-  steps:["Cut, per serving: half an onion into thick wedges, a third of a carrot into chunky pieces, 1 small potato into quarters, 120 g chicken into bite-size pieces.","Pot on medium-high with 15 ml (1 tbsp) oil. Brown the chicken ~2 min, then add all the vegetables and stir 2 min.","Add water to just cover everything (roughly 200 ml per serving). Bring to a boil, spoon off the grey foam, then lid on and simmer on medium-low 15 min — done when a chopstick slides into a potato easily.","Turn the heat OFF. Drop in 1 roux block (25 g) per serving and stir until fully melted — adding roux off-heat stops it clumping.","Heat back on low for 5 min, stirring so the bottom does not catch, until it is thick like gravy. Serve over rice from the cooker."]},
- {id:"keema", tier:"A", n:"Keema curry", jp:"キーマカレー", gear:["pot","rice"], time:"20 min", eff:2, batch:true, cap:4, flex:true, freeze:"freezes perfectly",
-  ing:[["gpork",60],["lentil",40],["onion",0.5],["cantomato",100],["fveg",50],["roux",25]], rice:0.5, conds:["garlic","ginger","oil"],
-  steps:["Dice half an onion per serving as small as you can manage. Pot or deep pan on medium with 15 ml (1 tbsp) oil, 1 tsp each garlic and ginger paste, and the onion — fry ~3 min until it turns translucent.","Add 60 g ground pork per serving. Break it apart with the spatula and fry until no pink remains.","Add 100 g canned tomato + 40 g red lentils + 50 g frozen veg + 150 ml water per serving. Simmer on medium-low 15 min, stirring now and then — the lentils collapse into the sauce and thicken it for you. Splash in more water if it tightens too far.","Heat OFF, melt in 1 roux block (25 g) per serving. Back on low ~2 min until thick.","Serve over rice. Once cool, portion into containers: 3 days fridge, 1 month freezer."]},
- {id:"nikujaga", tier:"A", n:"Nikujaga (meat & potato stew)", jp:"肉じゃが", gear:["pot"], time:"25 min", eff:2, batch:true, cap:4, flex:true,
-  ing:[["pork",100],["potato",1.2],["onion",0.5],["carrot",0.3]], rice:0.5, conds:["mentsuyu"],
-  steps:["Cut, per serving: 1 potato into quarters, half an onion into wedges, a third of a carrot into chunks.","Pot on medium-high, 5 ml (1 tsp) oil, brown 100 g pork per serving for about 1 min.","Add the vegetables, then water to ALMOST cover (~150 ml per serving) plus 40 ml mentsuyu per serving (ratio: 1 part mentsuyu to 4 parts water).","Bring to a boil, skim the foam, then lid slightly ajar and simmer medium-low 15–20 min until a fork goes into the potato with no resistance.","Heat off and rest 10 min before eating — it soaks up flavour as it cools. Genuinely better tomorrow."]},
- {id:"soboro", tier:"A", n:"Soboro don (meat & egg)", jp:"そぼろ丼", gear:["pan","rice"], time:"12 min", eff:1, batch:true, cap:4, flex:true, crowd:true, freeze:"soboro freezes well",
+  steps:["Slice {0.5 onion} into thin wedges.","In the pot: {100 ml} water, {20 ml} soy sauce, {20 ml} mirin, {15 ml} sake, {0.5 tsp} hondashi and {1 tsp} ginger paste. Bring to a boil.","Add the onion, medium heat 3 min until soft and see-through.","Add {120 g} pork, separating the slices with chopsticks so they do not clump. 4–5 min, spooning off the grey foam.","Over rice. The topping keeps 3 days in the fridge and a month in the freezer — freeze it with some of its sauce."]},
+ {id:"curry", tier:"A", n:"Japanese curry", jp:"カレーライス", gear:["pot","rice"], time:"30 min", ready:35, eff:2, batch:true, liquid:170, flex:true, freeze:"freeze without potato",
+  ing:[["chicken",120],["onion",0.5],["carrot",0.3],["potato",0.6],["roux",25]], after:["roux"], rice:0.5, conds:["oil"],
+  steps:["Cut {0.5 onion} into thick wedges, {0.3 carrot} into chunky pieces, {0.6 potato|potatoes} into big chunks and {120 g} chicken into bite-size pieces.","Pot on medium-high with 15 ml (1 tbsp) oil. Brown the chicken ~2 min, then add all the vegetables and stir 2 min.","Add {170 ml} water. It will not quite cover everything, and that is right: the vegetables give off water and the pot has to hold it. Boil, spoon off the grey foam, then lid on and simmer on medium-low 15 min, stirring once — done when a chopstick slides into a potato easily.","Turn the heat OFF. Drop in {1 roux block|roux blocks} ({25 g}) and stir until fully melted — adding roux off-heat stops it clumping.","Heat back on low for 5 min, stirring so the bottom does not catch, until it is thick like gravy. Over rice. Keeps 3 days; to freeze, fish the potato out first."]},
+ {id:"keema", tier:"A", n:"Keema curry", jp:"キーマカレー", gear:["pot","rice"], time:"20 min", ready:30, eff:2, batch:true, liquid:150, freeze:"freezes perfectly",
+  ing:[["gpork",60],["lentil",40],["onion",0.5],["cantomato",100],["fveg",50],["roux",25]], after:["roux"], rice:0.5, conds:["garlic","ginger","oil"],
+  steps:["Dice {0.5 onion} as small as you can manage. Pot on medium with 15 ml (1 tbsp) oil, {1 tsp} each garlic and ginger paste, and the onion — fry ~3 min until it turns translucent.","Add {60 g} ground pork. Break it apart with the spatula and fry until no pink remains.","Add {100 g} canned tomato, {40 g} red lentils, {50 g} frozen veg and {150 ml} water. Simmer on medium-low 15 min, stirring now and then — the lentils collapse into the sauce and thicken it for you. Splash in more water if it tightens too far.","Heat OFF, melt in {1 roux block|roux blocks} ({25 g}). Back on low ~2 min until thick.","Serve over rice. Once cool, portion into boxes: 3 days in the fridge, a month in the freezer."]},
+ {id:"nikujaga", tier:"A", n:"Nikujaga (meat & potato stew)", jp:"肉じゃが", gear:["pot"], time:"25 min", ready:40, eff:2, batch:true, liquid:125, flex:true,
+  ing:[["pork",100],["potato",1],["onion",0.5],["carrot",0.3]], rice:0.5, conds:["mentsuyu"],
+  steps:["Cut {1 potato|potatoes} into quarters, {0.5 onion} into wedges and {0.3 carrot} into chunks.","Pot on medium-high, 5 ml (1 tsp) oil. Brown {100 g} pork for about 1 min.","Add the vegetables, then {100 ml} water and {25 ml} mentsuyu (1 part mentsuyu to 4 parts water). It only comes halfway up — nikujaga steams under the lid rather than swimming.","Bring to a boil, skim the foam, then lid on and simmer medium-low 15–20 min, turning everything over once, until a fork goes into the potato with no resistance.","Heat off and rest 10 min before eating — it soaks up flavour as it cools. Keeps 3 days, and it is better tomorrow."]},
+ {id:"soboro", tier:"A", n:"Soboro don (meat & egg)", jp:"そぼろ丼", gear:["pan","rice"], time:"12 min", ready:15, eff:1, batch:true, cap:4, crowd:true, freeze:"the meat freezes well",
   ing:[["gpork",120],["egg",2]], rice:0.5, conds:["soy","mirin","sake","ginger"],
-  steps:["Start with a COLD pan: add 120 g ground meat + 15 ml (1 tbsp) each soy, mirin, sake + 1 tsp ginger paste per serving. Mix it all together before turning on the heat — this is the no-clump trick.","Now medium heat, stirring constantly with chopsticks (2 or 3 held together work best) until the meat is fine, crumbly, and the liquid has cooked off — about 5 min. Scoop out.","Eggs: beat 2 per serving, same pan on LOW, stir gently into soft scrambled curds, ~1 min.","Rice bowl: meat over one half, egg over the other. The meat soboro keeps 3 days in the fridge, or a month in the freezer — future-you eats in 2 minutes. Cooked ground meat is the one leftover not to push past 3 days."]},
- {id:"tonjiru", tier:"A", n:"Tonjiru (pork miso soup) + rice", jp:"豚汁", gear:["pot","rice"], time:"20 min", eff:2, batch:true, cap:4,
-  ing:[["pork",80],["daikon",80],["carrot",0.3],["onion",0.3],["negi",0.2]], rice:0.5, conds:["miso","dashi","sesame"],
-  steps:["Cut, per serving: 80 g pork into bite-size pieces, 80 g daikon into thin quarter-slices, a third each of carrot (half-moons) and onion (wedges).","Pot on medium, 5 ml (1 tsp) sesame oil. Fry the pork first, then the vegetables, 2–3 min.","Add 300 ml water + half a tsp hondashi per serving. Simmer 10–15 min until the daikon turns translucent.","Heat OFF. Put 18 g (1 tbsp) miso per serving in a ladle, dissolve it in the ladle with some broth, then stir through — boiling miso kills its flavour, so always off-heat.","Sliced green onion on top. Serve with a bowl of rice — this is a full meal."]},
- {id:"hainan", tier:"B", cookin:true, n:"Rice-cooker Hainanese chicken rice", jp:"炊飯器カオマンガイ", gear:["rice"], time:"5 min prep", eff:1, batch:true, cap:2,
-  ing:[["chickenbreast",150],["cucumber",0.3]], rice:1, conds:["torigara","ginger","garlic","sesame","soy"],
-  steps:["Per serving: rinse 150 g rice (1 rice-cooker cup) in cold water, swishing with your hand, until the water runs mostly clear — about 3 changes of water. Drain, into the cooker.","Add water to just UNDER the 1-cup line (the chicken will release juice). Stir in 1 tsp (3 g) chicken stock powder + a 1 tsp each of garlic and ginger paste.","Lay the chicken breast on top. Do not stir it in. Close the lid, press cook (normal white-rice mode).","When it beeps (~50 min), lift the chicken onto a cutting board, rest it 5 min, then slice into 1 cm strips across the grain. Breast is the traditional cut for this dish, and the cooker’s gentle steam is exactly what keeps it from drying out.","Sauce: mix 15 ml (1 tbsp) soy sauce + 5 ml (1 tsp) sesame oil in a small bowl. Slice a third of a cucumber. Chicken and sauce over the rice."]},
- {id:"kimchirice", tier:"B", cookin:true, n:"Pork-kimchi rice cooker rice", jp:"豚キムチ炊き込みご飯", gear:["rice"], time:"5 min prep", eff:1, batch:true, cap:2, flex:true,
-  ing:[["pork",100],["kimchi",80]], rice:1, conds:["torigara","sesame"],
-  steps:["Per serving: rinse 150 g rice, drain, into the cooker. Water to just under the 1-cup line.","Stir in 1 tsp (3 g) chicken stock powder.","Pile 100 g pork and 80 g kimchi — including its juice — on top of the rice. No stirring. Press cook.","When it beeps, fluff everything together and drizzle 5 ml (1 tsp) sesame oil per serving. A dab of your belachan on top works."]},
- {id:"takikomi", tier:"B", cookin:true, n:"Chicken & mushroom takikomi gohan", jp:"炊き込みご飯", gear:["rice"], time:"7 min prep", eff:1, batch:true, cap:2,
-  ing:[["chicken",80],["shimeji",50],["carrot",0.3]], rice:1, conds:["mentsuyu"],
-  steps:["Per serving: rinse 150 g rice until the water runs mostly clear, drain, into the cooker.","Add water to the 1-cup line, then scoop OUT 45 ml (3 tbsp). Add 45 ml (3 tbsp) mentsuyu in its place.","Cut 80 g chicken into 2 cm pieces. Cut the tough base off the shimeji and tear the clump apart by hand. Slice a third of a carrot into thin half-moons.","Scatter chicken, shimeji, and carrot on TOP of the rice — do not stir, sitting on top is correct. Press cook.","When it beeps, fluff with the paddle and let it rest 5 min with the lid open a crack. Leftovers: press into balls while warm, wrap, freeze."]},
- {id:"tomatorice", tier:"B", cookin:true, n:"Rice-cooker tomato & tuna rice", jp:"炊飯器トマトツナご飯", gear:["rice"], time:"5 min prep", eff:1, batch:true, cap:2,
-  ing:[["tomato",1],["tuna",0.5],["onion",0.25]], rice:1, conds:["torigara","soy","pepper"],
-  steps:["Per serving: rinse 150 g rice, into the cooker, water to just UNDER the 1-cup line (the tomato adds liquid).","Stir in 1 tsp chicken stock powder + half a drained tuna can + a quarter onion, diced.","Core the tomato (cut a small cone out of the stem end) and sit it whole in the middle of the rice. It looks wrong; it is right.","Press cook. When it beeps, smash the tomato with the paddle and mix everything through.","Season: 5 ml (1 tsp) soy + black pepper. Freezes well in portions."]},
- {id:"afsalmon", tier:"C", n:"Air-fryer salmon set", jp:"焼き鮭定食", gear:["air","rice"], time:"3 min work", eff:0, batch:false, cap:2,
+  steps:["Start with a COLD pan: add {120 g} ground pork, {15 ml} soy sauce, {15 ml} mirin, {15 ml} sake and {1 tsp} ginger paste. Mix it all together before turning on the heat — this is the no-clump trick.","Now medium heat, stirring constantly with 3 or 4 chopsticks held together until the meat is fine and crumbly and the liquid has cooked off — about 5 min, longer for a big batch. Scoop it into a box.","The egg is made fresh at each meal, never batched — scrambled egg turns watery in the fridge. When you eat: beat 2 eggs, pan on LOW, stir gently into soft curds, about 1 min.","Rice bowl: meat over one half, egg over the other. The meat keeps 3 days in the fridge or a month in the freezer. Cooked ground meat is the one leftover not to push past 3 days."]},
+ {id:"tonjiru", tier:"A", n:"Tonjiru (pork miso soup) + rice", jp:"豚汁", gear:["pot","rice"], time:"20 min", ready:25, eff:2, batch:true, liquid:200,
+  ing:[["pork",80],["daikon",80],["carrot",0.3],["onion",0.3],["negi",0.2]], after:["negi"], rice:0.5, conds:["miso","dashi","sesame"],
+  steps:["Cut {80 g} pork into bite-size pieces, {80 g} daikon into thin quarter-slices, {0.3 carrot} into half-moons and {0.3 onion} into wedges.","Pot on medium, 5 ml (1 tsp) sesame oil. Fry the pork first, then the vegetables, 2–3 min.","Add {200 ml} water and {0.5 tsp} hondashi. Simmer 10–15 min until the daikon turns translucent. It is thicker than a finished soup on purpose — the rest of the water goes in at the bowl.","Heat OFF. For tonight's bowl: ladle out a portion, add 100 ml hot water, and dissolve 18 g (1 tbsp) miso in it. Boiling miso kills its flavour, so miso never goes in the pot you are keeping.","Box the rest without miso — it keeps 3 days. At each meal reheat a portion with 100 ml water until steaming, then stir in the miso and top with sliced green onion. Serve with rice."]},
+ {id:"hainan", tier:"B", plate:true, n:"Rice-cooker Hainanese chicken rice", jp:"炊飯器カオマンガイ", gear:["rice"], time:"5 min prep", ready:60, eff:1, batch:true, cap:2,
+  ing:[["chickenbreast",150],["cucumber",0.3]], after:["cucumber"], rice:0.5, conds:["torigara","ginger","garlic","sesame","soy"],
+  steps:[PLATE_RICE,"Rub {150 g} chicken breast, left whole, with {1 tsp} chicken stock powder, {1 tsp} garlic paste and {1 tsp} ginger paste. Lay it flat on the cooking plate — spread out, not stacked.","Slide the plate in above the rice, lid down, press white rice. When it beeps (about 50 min), lift the plate straight out — never leave it in on keep-warm.","Rest the chicken 5 min. Tip the juices from the plate over the rice and fold them through with the paddle: that is where the chicken-rice flavour comes from. Slice the chicken 1 cm thick across the grain and check it is white all the way through.","Sauce: {15 ml} soy sauce + {5 ml} sesame oil. Slice {0.3 cucumber|cucumbers}. Chicken and sauce over the rice."]},
+ {id:"kimchirice", tier:"B", plate:true, n:"Pork-kimchi mazegohan", jp:"豚キムチ混ぜご飯", gear:["rice"], time:"5 min prep", ready:55, eff:1, batch:true, cap:2, flex:true,
+  ing:[["pork",100],["kimchi",80]], rice:0.5, conds:["torigara","sesame"],
+  steps:[PLATE_RICE,"Spread {80 g} kimchi over the cooking plate, lay {100 g} pork over it in loose single slices, and sprinkle {1 tsp} chicken stock powder on top. Keep it as flat as you can — piled food cooks unevenly and can boil over.","Plate in, lid down, white rice. When it beeps, lift the plate straight out and check the pork: no pink anywhere.","Tip everything on the plate, juices included, onto the rice and fold it through with the paddle.","{5 ml} sesame oil over the top. A dab of belachan works."]},
+ {id:"takikomi", tier:"B", plate:true, n:"Chicken & mushroom mazegohan", jp:"鶏ときのこの混ぜご飯", gear:["rice"], time:"7 min prep", ready:60, eff:1, batch:true, cap:2, freeze:"press into balls while warm and freeze",
+  ing:[["chicken",80],["shimeji",50],["carrot",0.3]], rice:0.5, conds:["mentsuyu"],
+  steps:[PLATE_RICE,"Cut {80 g} chicken into 2 cm pieces. Cut the base off {50 g} shimeji and tear it apart. Slice {0.3 carrot} into thin half-moons.","Spread chicken, shimeji and carrot over the cooking plate in one layer and spoon {15 ml} mentsuyu over. Plate in, lid down, white rice.","When it beeps, lift the plate straight out and cut a thick piece of chicken: no pink. Tip it all, juices included, over the rice, add {15 ml} more mentsuyu, and fold it through.","Rest 5 min with the lid open a crack. Leftovers: press into balls while warm, wrap, freeze."]},
+ {id:"tomatorice", tier:"B", plate:true, n:"Tomato & tuna mazegohan", jp:"トマトとツナの混ぜご飯", gear:["rice"], time:"5 min prep", ready:55, eff:1, batch:true, cap:2, keep:3, freeze:"freezes well in portions",
+  ing:[["tomato",1],["tuna",0.5],["onion",0.25]], rice:0.5, conds:["torigara","soy","pepper"],
+  steps:[PLATE_RICE,"Core {1 tomato|tomatoes} by cutting a small cone out of the stem end and sit it on the cooking plate. Scatter {0.5 tuna can|tuna cans}, drained, and {0.25 onion}, diced, around it, then {1 tsp} chicken stock powder over everything.","Plate in, lid down, white rice.","When it beeps, lift the plate straight out and tip it onto the rice — juices and all — smashing the tomato into the rice with the paddle as you fold.","Season with {5 ml} soy sauce and black pepper. Freezes well in portions."]},
+ {id:"afsalmon", tier:"C", n:"Air-fryer salmon set", jp:"焼き鮭定食", gear:["air","rice"], time:"3 min work", ready:18, eff:0, batch:false, cap:2,
   ing:[["salmon",1],["fbroc",80]], rice:0.5, conds:["mayo"],
-  steps:["Put the salted salmon fillet straight into the basket, skin side down. No oil, no seasoning — 塩鮭 is pre-salted. Frozen salted fillets cost less than the fresh counter and behave identically here.","Preheat 3 min at 180 °C, then 10–12 min. Done when the thickest part flakes apart when pushed with a fork — check through the window, because opening the drawer pauses the timer and drops the heat.","For the last 5 min, drop 80 g frozen broccoli next to it.","Plate with rice and a dab of Kewpie. The laziest real meal in Japan."]},
- {id:"afteriyaki", tier:"C", n:"Air-fryer teriyaki chicken", jp:"照り焼きチキン", gear:["air","rice"], time:"5 min work", eff:1, batch:true, cap:2,
+  steps:["Preheat 3 min at 180 °C. Then {1 salted salmon fillet|salted salmon fillets} into the basket, skin side down, not touching. No oil, no seasoning — 塩鮭 is already salted.","10–12 min. Done when the thickest part flakes apart when pushed with a fork — check through the window, because opening the drawer pauses the timer and drops the heat.","For the last 5 min, drop {80 g} frozen broccoli in beside it.","Plate with rice and a dab of Kewpie. The laziest real meal in Japan."]},
+ {id:"afteriyaki", tier:"C", n:"Air-fryer teriyaki chicken", jp:"照り焼きチキン", gear:["air","rice"], time:"5 min work", ready:30, eff:1, batch:true, cap:2, freeze:"freeze raw in the marinade",
   ing:[["chicken",150],["fbroc",80]], rice:0.5, conds:["soy","mirin","garlic"],
-  steps:["Cut 150 g chicken thigh per serving into 4–5 big chunks.","Marinade, per serving: 15 ml (1 tbsp) soy + 15 ml (1 tbsp) mirin + 1 tsp garlic paste. Toss the chicken in it — 10 min minimum, overnight is better. Batch extra portions in freezer bags now, thank yourself later.","Preheat 3 min at 180 °C. Chicken in a single layer, skin up, 15 min total. Two servings fills the 4.2 L basket properly; a third would stack and steam.","At the 10-minute mark, scatter 80 g frozen broccoli around the chicken (straight from frozen).","Done when the juices run clear when you poke the thickest piece (or 75 °C inside). Rice from the cooker."]},
- {id:"karaage", tier:"C", n:"Air-fryer karaage", jp:"唐揚げ", gear:["air","rice"], time:"10 min work", eff:1, batch:true, cap:2, freeze:"freeze marinated raw",
+  steps:["Cut {150 g} chicken thigh into big chunks, 4 or 5 from each 150 g.","Marinade: {15 ml} soy sauce + {15 ml} mirin + {1 tsp} garlic paste. Toss the chicken in it — 10 min minimum, overnight is better. Extra portions can go into freezer bags now.","Preheat 3 min at 180 °C. Chicken in a single layer, skin up, 15 min total. Two servings fills the 4.2 L basket; a third would stack and steam.","At the 10-minute mark, scatter {80 g} frozen broccoli around the chicken, straight from frozen.","Done when the juices run clear when you poke the thickest piece (or 75 °C inside). Serve with rice."]},
+ {id:"karaage", tier:"C", n:"Air-fryer karaage", jp:"唐揚げ", gear:["air","rice"], time:"10 min work", ready:40, eff:1, batch:true, cap:2, freeze:"freeze raw in the marinade",
   ing:[["chicken",150],["cabbage",50]], rice:0.5, conds:["soy","garlic","ginger","katakuriko","oil"],
-  steps:["Cut 150 g chicken thigh per serving into 4 cm chunks — keep the skin on.","Marinade, per serving: 15 ml (1 tbsp) soy + 1 tsp each garlic and ginger paste. 15 min minimum. Extra portions: freeze raw in the marinade, in bags; thaw overnight in the fridge.","Tip ~15 g potato starch onto a plate. Roll each chunk until it is dusted white on every side.","Pat 5 ml (1 tsp) oil over the dusted pieces with your fingers — never aerosol spray, it strips the ceramic coating. Dry starch stays pale and floury.","Preheat 3 min at 190 °C. Single layer with gaps: 8 min, flip every piece, 5 more min. Golden outside, juices clear inside = done. Two servings is the honest limit of the 4.2 L basket.","Shredded cabbage + rice. Squeeze of mayo optional but encouraged."]},
- {id:"afroast", tier:"C", n:"Air-fryer chicken & potato roast", jp:"鶏とじゃがいものバスケットロースト", gear:["air"], time:"5 min work", eff:1, batch:true, cap:2, freeze:"freeze raw in the marinade",
-  ing:[["chicken",150],["potato",1],["onion",0.5]], conds:["oil","soy","pepper"],
-  steps:["Per serving: cut 150 g chicken thigh into 4 big chunks, 1 potato into 2 cm cubes, half an onion into thick wedges. Leave the potato skin on — it is where the crisp comes from.","In a bowl, toss all of it with 5 ml (1 tsp) oil, 15 ml (1 tbsp) soy sauce and a heavy grind of black pepper. Coat the potato properly or it turns leathery.","Preheat 3 min at 200 °C. Tip everything in as one layer — two servings is the honest limit of the 4.2 L basket.","200 °C for 20 min. Pull the basket out at the 10-minute mark and shake it once, then watch the potato edges go gold through the window.","Done when a chopstick slides into a potato and the chicken juices run clear. No rice needed, the potato is the carb — and the only thing to wash is the basket, which goes in the dishwasher."]},
- {id:"afbreast", tier:"C", n:"Air-fryer pepper chicken breast", jp:"鶏むね肉の胡椒焼き", gear:["air","rice"], time:"3 min work", eff:1, batch:true, cap:2,
+  steps:["Cut {150 g} chicken thigh into 4 cm chunks — keep the skin on.","Marinade: {15 ml} soy sauce + {1 tsp} each garlic and ginger paste. 15 min minimum. Extra portions freeze raw in the marinade, in bags; thaw overnight in the fridge.","Tip {15 g} potato starch onto a plate. Roll each chunk until it is dusted white on every side.","Pat {5 ml} oil over the dusted pieces with your fingers — never aerosol spray, it strips the ceramic coating. Dry starch stays pale and floury.","Preheat 3 min at 190 °C. Single layer with gaps: 8 min, flip every piece, 5 more min. Golden outside, juices clear inside = done. Two servings is the honest limit of the 4.2 L basket.","Serve with {50 g} shredded cabbage and rice. Squeeze of mayo optional but encouraged."]},
+ {id:"afroast", tier:"C", n:"Air-fryer chicken & potato roast", jp:"鶏とじゃがいものバスケットロースト", gear:["air"], time:"5 min work", ready:35, eff:1, batch:true, cap:2, freeze:"freeze raw in the marinade",
+  ing:[["chicken",150],["potato",0.7],["onion",0.3]], conds:["oil","soy","pepper"],
+  steps:["Cut {150 g} chicken thigh into big chunks, {0.7 potato|potatoes} into 2 cm cubes and {0.3 onion} into thick wedges. Leave the potato skin on — it is where the crisp comes from.","In a bowl, toss it all with {5 ml} oil, {15 ml} soy sauce and a heavy grind of black pepper. Coat the potato properly or it turns leathery.","Preheat 3 min at 200 °C. Tip everything in as one layer — two servings is the limit of the 4.2 L basket.","200 °C for 20 min. Pull the basket out at the 10-minute mark and shake it once, then watch the potato edges go gold through the window.","Done when a chopstick slides into a potato and the chicken juices run clear. No rice needed, the potato is the carb — and the basket is the only thing to wash."]},
+ {id:"afbreast", tier:"C", n:"Air-fryer pepper chicken breast", jp:"鶏むね肉の胡椒焼き", gear:["air","rice"], time:"3 min work", ready:22, eff:1, batch:true, cap:2,
   ing:[["chickenbreast",150],["fbroc",80]], rice:0.5, conds:["oil","pepper","soy"],
-  steps:["Per serving: cut 150 g chicken breast into 3 cm slabs. Thick pieces stay juicy; thin ones turn to chalk.","Rub each piece with 5 ml (1 tsp) oil and a lot of black pepper. That is the entire prep.","Preheat 3 min at 180 °C. Breast in one layer, 12 min, flipping once at 6 min. 180 °C and not 200 °C — breast is lean and high heat dries it out.","Cut into the thickest slab to check: no pink anywhere and the juices run clear (75 °C inside). Thicker pieces want another 2–3 min — every machine runs slightly differently.","Scatter 80 g frozen broccoli around it for the last 5 min, straight from the freezer.","Rest 3 min before slicing, then 5 ml (1 tsp) soy over the top. Rice from the cooker. Breast is the cheapest protein in the shop, and this is the leanest dinner in the roster."]},
- {id:"afkatsu", tier:"C", n:"Air-fryer chicken katsu", jp:"鶏カツ", gear:["air","rice"], time:"10 min work", eff:1, batch:true, cap:1, freeze:"freeze breaded, uncooked",
+  steps:["Cut {150 g} chicken breast into 3 cm slabs. Thick pieces stay juicy; thin ones turn to chalk.","Rub the pieces with {5 ml} oil and a lot of black pepper. That is the entire prep.","Preheat 3 min at 180 °C. Breast in one layer, 12 min, flipping once at 6 min. 180 °C and not 200 °C — breast is lean and high heat dries it out.","Cut into the thickest slab to check: no pink anywhere and the juices run clear (75 °C inside). Thicker pieces want another 2–3 min.","Scatter {80 g} frozen broccoli around it for the last 5 min, straight from the freezer.","Rest 3 min before slicing, then {5 ml} soy sauce over the top. Serve with rice."]},
+ {id:"afkatsu", tier:"C", n:"Air-fryer chicken katsu", jp:"鶏カツ", gear:["air","rice"], time:"10 min work", ready:30, eff:1, batch:true, cap:1, freeze:"freeze breaded, uncooked",
   ing:[["chicken",150],["egg",0.5],["cabbage",50]], rice:0.5, conds:["katakuriko","panko","oil","mayo","soy"],
-  steps:["Per serving: butterfly 150 g chicken thigh open so it lies flat and even. Even thickness is what makes or breaks a katsu.","Set out three stations: potato starch on a plate, a beaten egg in a bowl, 30 g panko on a second plate. Dust with starch, dip in egg, then press the panko on hard — pressing is what stops it falling off in the basket.","Pat 5 ml (1 tsp) oil over the crumbs with your fingers until no white powder is left. Never aerosol spray: it strips the ceramic coating, and dry panko stays pale.","Preheat 3 min at 190 °C. One cutlet, flat, with nothing touching it: 8 min, flip, 5 min more. Breaded food is the one dish that needs the basket to itself — a second serving is a second round.","Done when the crumb is deep gold and the juices run clear where you cut into the thickest part (75 °C inside). Pale crumb means it needs longer, not hotter.","Slice into 2 cm strips, shredded cabbage alongside, rice from the cooker. Mayo and soy sauce mixed 1:1 is a passable tonkatsu sauce."]},
- {id:"afgyoza", tier:"C", n:"Air-fryer frozen gyoza set", jp:"冷凍餃子（エアフライヤー）", gear:["air","rice"], time:"5 min work", eff:0, batch:false, cap:2,
+  steps:["Butterfly {150 g} chicken thigh open so it lies flat and even. Even thickness is what makes or breaks a katsu.","Set out three stations: potato starch on a plate, a beaten egg in a bowl, {30 g} panko on a second plate. Dust with starch, dip in egg, then press the panko on hard — pressing is what stops it falling off in the basket.","Pat {5 ml} oil over the crumbs with your fingers until no white powder is left. Never aerosol spray: it strips the ceramic coating, and dry panko stays pale.","Preheat 3 min at 190 °C. One cutlet, flat, with nothing touching it: 8 min, flip, 5 min more. Breaded food needs the basket to itself — a second serving is a second round.","Done when the crumb is deep gold and the juices run clear where you cut into the thickest part (75 °C inside). Pale crumb means it needs longer, not hotter.","Slice into 2 cm strips, {50 g} shredded cabbage alongside, rice. Mayo and soy sauce mixed 1:1 is a passable tonkatsu sauce."]},
+ {id:"afgyoza", tier:"C", n:"Air-fryer frozen gyoza set", jp:"冷凍餃子（エアフライヤー）", gear:["air","rice"], time:"5 min work", ready:15, eff:0, batch:false, cap:1, keep:3,
   ing:[["gyoza",300],["cabbage",50]], rice:0.5, conds:["oil","soy","sesame"],
-  steps:["10–12 frozen gyoza per serving, straight from the freezer into the basket, flat side down, in one layer with gaps. No thawing, no water, no lid.","Wipe about 5 ml (1 tsp) oil over the tops so the wrappers blister instead of drying out.","Preheat 3 min at 190 °C, then 10 min. No flipping, no steaming step, no pan to scrub — this is why the fryer earns its counter space.","From minute 8, watch through the window: done when the wrappers are blistered gold and the edges have gone crisp.","Dip: 15 ml (1 tbsp) soy + a drop of sesame oil, and belachan if you want fire. Shredded cabbage and rice on the side."]},
- {id:"aftofu", tier:"C", n:"Air-fryer crispy tofu with ponzu", jp:"揚げ出し豆腐風", gear:["air","rice"], time:"5 min work", eff:1, batch:false, cap:2,
-  ing:[["tofu",1],["negi",0.2]], rice:0.5, conds:["katakuriko","oil","ponzu","sesame"],
-  steps:["Per serving: press one block of firm tofu — wrap it in kitchen paper, sit a plate on top, leave it 10 min. Wet tofu steams, pressed tofu crisps. That is the whole recipe.","Cut it into 8 cubes and roll them in about 15 g potato starch until dusted white on every side. Handle them like eggs, they break.","Preheat 3 min at 200 °C. Cubes in one layer, not touching, with 5 ml (1 tsp) oil patted over the tops.","200 °C for 12 min, shaking the basket gently at the 8-minute mark.","Golden and firm outside means done. Onto rice, ponzu poured over, sliced green onion and a drop of sesame oil on top. Under ¥200 a serving with no meat at all."]},
- {id:"nabe", tier:"D", n:"Chicken mizutaki nabe", jp:"水炊き鍋", gear:["pot"], time:"20 min", eff:1, kettle:true, batch:true, cap:2,
+  steps:["Preheat 3 min at 190 °C. {12 frozen gyoza|frozen gyoza} straight from the freezer into the basket, flat side down, in one layer with gaps. No thawing, no water. Twelve is what one layer holds, so a second serving is a second round.","Wipe {5 ml} oil over the tops so the wrappers blister instead of drying out.","10 min. No flipping, no steaming step, no pan to scrub.","From minute 8, watch through the window: done when the wrappers are blistered gold and the edges have gone crisp.","Dip: {15 ml} soy sauce + a drop of sesame oil, and belachan if you want fire. {50 g} shredded cabbage and rice on the side."]},
+ {id:"aftofu", tier:"C", n:"Air-fryer crispy tofu with ponzu", jp:"揚げ出し豆腐風", gear:["air","rice"], time:"5 min work", ready:25, eff:1, batch:false, cap:2,
+  ing:[["tofu",1],["negi",0.2]], after:["negi"], rice:0.5, conds:["katakuriko","oil","ponzu","sesame"],
+  steps:["Press {1 block|blocks} of firm tofu: wrap in kitchen paper, sit a plate on top, leave it 10 min. Wet tofu steams, pressed tofu crisps.","Cut each block into 8 cubes and roll them in {15 g} potato starch until dusted white on every side. Handle them like eggs, they break.","Preheat 3 min at 200 °C. Cubes in one layer, not touching, with {5 ml} oil patted over the tops.","200 °C for 12 min, shaking the basket gently at the 8-minute mark.","Golden and firm outside means done. Onto rice, ponzu poured over, sliced green onion and a drop of sesame oil on top."]},
+ {id:"nabe", tier:"D", n:"Chicken mizutaki nabe", jp:"水炊き鍋", gear:["pot"], time:"20 min", ready:25, eff:1, kettle:true, batch:true, liquid:250, capMax:2,
   ing:[["chicken",150],["cabbage",150],["tofu",0.5],["shimeji",50]], rice:0.5, conds:["dashi","ponzu"],
-  steps:["Cut, per serving: 150 g chicken into chunks, 150 g cabbage into big squares, half a tofu block into large cubes, shimeji torn apart.","Pot: 400 ml water + 1 tsp hondashi per serving. Bring to a boil.","Chicken in first. 5 min, spooning off the foam that rises.","Everything else on top. Lid on, medium, 8–10 min until the cabbage is soft.","Pour some ponzu into a small bowl and dip each bite. Night two: drop cooked rice + a beaten egg into the leftover broth, 3 min = zōsui, a free second recipe."]},
- {id:"tompasta", tier:"D", n:"One-pot tomato bacon pasta", jp:"ワンポットトマトパスタ", gear:["pot"], time:"15 min", eff:1, kettle:true, batch:false, cap:2,
+  steps:["Cut {150 g} chicken into chunks, {150 g} cabbage into big squares and {0.5 tofu block|tofu blocks} into large cubes, and tear apart {50 g} shimeji.","Pot: {250 ml} water + {1 tsp} hondashi. Bring to a boil.","Chicken in first. 5 min, spooning off the foam that rises.","Everything else on top — the cabbage piles high and collapses as it cooks. Lid on, medium, 8–10 min until the cabbage is soft.","Pour some ponzu into a small bowl and dip each bite. Night two: drop cooked rice and a beaten egg into the leftover broth, 3 min = zōsui."]},
+ {id:"tompasta", tier:"D", n:"One-pot tomato bacon pasta", jp:"ワンポットトマトパスタ", gear:["pot"], time:"15 min", ready:20, eff:1, kettle:true, batch:false, liquid:250, capMax:2, keep:1,
   ing:[["pasta",100],["bacon",50],["cantomato",200],["onion",0.3]], conds:["torigara","garlic","oil"],
-  steps:["Per serving: cut 50 g bacon into strips, dice a third of an onion.","Pot on medium, 5 ml (1 tsp) oil. Bacon + onion + 1 tsp garlic paste, fry 2 min.","Add 200 g canned tomato + 250 ml water + 1 tsp chicken stock powder per serving. Bring to a boil.","Snap 100 g pasta in half and push it in. Stir every 2 min or so — one-pot pasta sticks if ignored.","Simmer about 10 min (check 1 min before the packet time) until the pasta is done and the sauce clings. Taste; add salt if flat."]},
- {id:"udon", tier:"D", n:"One-pot mentsuyu udon", jp:"かけうどん", gear:["pot"], time:"8 min", eff:0, kettle:true, batch:false, cap:2,
-  ing:[["udon",200],["egg",1],["negi",0.2],["pork",50]], conds:["mentsuyu"],
-  steps:["Pot: 350 ml water + 50 ml mentsuyu per serving. Bring to a boil.","Add 50 g thin pork slices, 1 min, skim any foam.","Frozen udon block straight in — no thawing. 2 min, loosening it with chopsticks as it softens.","Crack an egg in, do NOT stir, lid on, heat OFF, wait 1 min — you get a just-set onsen-style egg.","Green onion on top, eat from the pot. Total washing up: one pot, one pair of chopsticks."]},
- {id:"wafupasta", tier:"D", n:"One-pot wafū mushroom pasta", jp:"和風きのこパスタ", gear:["pot"], time:"15 min", eff:1, kettle:true, batch:false, cap:2,
+  steps:["Cut {50 g} bacon into strips and dice {0.3 onion}.","Pot on medium, 5 ml (1 tsp) oil. Bacon, onion and {1 tsp} garlic paste, fry 2 min.","Add {200 g} canned tomato, {250 ml} water and {1 tsp} chicken stock powder. Bring to a boil.","Snap {100 g} pasta in half and push it in. Stir every 2 min or so — one-pot pasta sticks if ignored.","Simmer about 10 min (check 1 min before the packet time) until the pasta is done and the sauce clings. Taste; add salt if flat. Eat it now — it does not reheat well."]},
+ {id:"udon", tier:"D", n:"One-pot mentsuyu udon", jp:"かけうどん", gear:["pot"], time:"8 min", ready:8, eff:0, kettle:true, batch:false, liquid:400, capMax:2, keep:1,
+  ing:[["udon",200],["egg",1],["negi",0.2],["pork",50]], after:["negi"], conds:["mentsuyu"],
+  steps:["Pot: {350 ml} water + {50 ml} mentsuyu. Bring to a boil.","Add {50 g} thin pork slices, 1 min, skim any foam.","{1 frozen udon block|frozen udon blocks} straight in — no thawing. 2 min, loosening with chopsticks as it softens.","Crack in {1 egg|eggs}, do NOT stir, lid on, heat OFF, wait 1 min — you get a just-set onsen-style egg.","Green onion on top, eat from the pot. Total washing up: one pot, one pair of chopsticks."]},
+ {id:"wafupasta", tier:"D", n:"One-pot wafū mushroom pasta", jp:"和風きのこパスタ", gear:["pot"], time:"15 min", ready:18, eff:1, kettle:true, batch:false, liquid:330, capMax:2, keep:1,
   ing:[["pasta",100],["bacon",40],["shimeji",60]], conds:["mentsuyu","garlic"],
-  steps:["Per serving: cut 40 g bacon into strips, cut the base off the shimeji and tear apart 60 g.","Pot on medium. Bacon + shimeji + 1 tsp garlic paste, fry 2 min until the mushrooms soften.","Add 300 ml water + 30 ml (2 tbsp) mentsuyu per serving. Boil, then add 100 g pasta snapped in half.","Stir every couple of minutes for ~10 min until the liquid is almost fully absorbed — what remains IS the sauce.","A knob of butter at the end if you have it. Eat from the pot, zero extra dishes."]},
- {id:"chinchalok", tier:"E", n:"Chinchalok omelette don", jp:"チンチャロクオムレツ丼", gear:["pan","rice"], time:"7 min", eff:1, batch:false, cap:1,
+  steps:["Cut {40 g} bacon into strips, cut the base off {60 g} shimeji and tear it apart.","Pot on medium. Bacon, shimeji and {1 tsp} garlic paste, fry 2 min until the mushrooms soften.","Add {300 ml} water + {30 ml} mentsuyu. Boil, then add {100 g} pasta snapped in half.","Stir every couple of minutes for ~10 min until the liquid is almost fully absorbed — what remains IS the sauce.","A knob of butter at the end if you have it. Eat from the pot, now."]},
+ {id:"chinchalok", tier:"E", n:"Chinchalok omelette don", jp:"チンチャロクオムレツ丼", gear:["pan","rice"], time:"7 min", ready:7, eff:1, batch:false, cap:1, keep:1,
   ing:[["egg",3],["negi",0.2]], rice:0.5, conds:["oil"],
-  steps:["Beat 3 eggs with 1 tsp of your chinchalok and a small handful of sliced green onion. NO extra salt — chinchalok brings plenty.","Pan on medium-high with 15 ml (1 tbsp) oil. Give it a full minute to get properly hot — the egg should sizzle on contact.","Pour in. Wait 10 seconds, then drag the edges toward the middle with the spatula, tilting the pan so raw egg fills the gaps. 3–4 drags total.","When the top is still slightly glossy, stop — slide it out over rice. It finishes cooking from its own heat. Belachan on the side for fire."]},
- {id:"iwashi", tier:"E", n:"Iwashi kabayaki don", jp:"いわし蒲焼き丼", gear:["rice"], time:"2 min", eff:0, batch:false, cap:2,
+  steps:["Beat {3 egg|eggs} with {1 tsp} chinchalok and a small handful of sliced green onion. NO extra salt — chinchalok brings plenty.","Pan on medium-high with 15 ml (1 tbsp) oil. Give it a full minute to get properly hot — the egg should sizzle on contact.","Pour in. Wait 10 seconds, then drag the edges toward the middle with the spatula, tilting the pan so raw egg fills the gaps. 3–4 drags total.","When the top is still slightly glossy, stop — slide it out over rice. It finishes cooking from its own heat. Belachan on the side for fire."]},
+ {id:"iwashi", tier:"E", n:"Iwashi kabayaki don", jp:"いわし蒲焼き丼", gear:["rice"], time:"2 min", ready:2, eff:0, batch:false, cap:2, keep:1,
   ing:[["sardine",1],["negi",0.2]], rice:0.5, conds:["mayo"],
-  steps:["Hot rice into a bowl — about 165 g cooked per serving.","Open the canned grilled sardine and tip the whole thing over the rice, sauce included. The sauce IS the seasoning, so do not drain it.","Sliced green onion on top, and a dab of Kewpie if you want it richer.","Ninety seconds, no pan, no heat. Two cans in the cupboard is the cheapest insurance against ordering delivery, and this is the best omega-3 in the database."]},
- {id:"tunamayo", tier:"E", n:"Tuna-mayo don (zero cook)", jp:"ツナマヨ丼", gear:["rice"], time:"2 min", eff:0, batch:false,
+  steps:["Hot rice into a bowl — about 165 g cooked per serving.","Open {1 can|cans} of grilled sardine and tip it over the rice, sauce included. The sauce IS the seasoning, so do not drain it.","Sliced green onion on top, and a dab of Kewpie if you want it richer.","Ninety seconds, no pan, no heat. Two cans in the cupboard is the cheapest insurance against ordering delivery."]},
+ {id:"tunamayo", tier:"E", n:"Tuna-mayo don (zero cook)", jp:"ツナマヨ丼", gear:["rice"], time:"2 min", ready:2, eff:0, batch:false, keep:1,
   ing:[["tuna",1],["negi",0.2]], rice:0.5, conds:["mayo","soy"],
-  steps:["Hot rice into a bowl — about 165 g cooked per serving.","Open the tuna can and press the lid down over the sink to drain the liquid out.","Mix the tuna with 15 ml (1 tbsp) mayo + 5 ml (1 tsp) soy right in the can or a small bowl.","Pile onto the rice, sliced green onion on top. Total time: 90 seconds. This is the emergency meal that keeps you from ordering delivery."]},
- {id:"shogayaki", tier:"F", n:"Ginger pork (shōgayaki)", jp:"豚の生姜焼き", gear:["pan","rice"], time:"10 min", eff:1, crowd:true, batch:true, cap:2,
+  steps:["Hot rice into a bowl — about 165 g cooked per serving.","Open {1 tuna can|tuna cans} and press the lid down over the sink to drain the liquid out.","Mix the tuna with {15 ml} mayo + {5 ml} soy sauce right in the can or a small bowl.","Pile onto the rice, sliced green onion on top. This is the emergency meal that keeps you from ordering delivery."]},
+ {id:"shogayaki", tier:"F", n:"Ginger pork (shōgayaki)", jp:"豚の生姜焼き", gear:["pan","rice"], time:"10 min", ready:12, eff:1, crowd:true, batch:true, cap:2,
   ing:[["pork",150],["onion",0.5],["cabbage",50]], rice:0.5, conds:["soy","mirin","ginger","oil"],
-  steps:["Per serving: slice half an onion thin; shred 50 g cabbage for the side (the pre-shredded konbini bag is completely acceptable).","Mix the sauce first so it is ready: 15 ml (1 tbsp) soy + 15 ml (1 tbsp) mirin + a generous 2 tsp of ginger paste per serving.","Pan on medium-high, 5 ml (1 tsp) oil. Onion for 2 min, then 150 g pork spread out flat — leave 1 min to brown before stirring.","When the pork has no pink left, pour the sauce in and toss ~1 min until everything is glossy and coated.","Rice, pile of cabbage, pork on top. The cooked batch keeps 3 days chilled."]},
- {id:"tachicken", tier:"B", plate:true, n:"Tacook steamed chicken & rice", jp:"炊飯器の蒸し鶏ごはん", gear:["rice"], time:"4 min prep", eff:1, batch:true, cap:2, freeze:"slices freeze well",
-  ing:[["chickenbreast",150],["negi",0.2]], rice:0.5, conds:["sake","pepper","soy","sesame"],
-  steps:["Per serving: rinse 75 g rice (half a cooker cup) until the water runs mostly clear, drain, into the pot, water to the matching line. One cup of rice total is the ceiling with the cooking plate in — the plate takes the space above it, and Tiger sets the limit at 1 go. Two servings is therefore the most this does in a run.","Salt a whole 150 g chicken breast per serving on both sides and grind black pepper over it. Sit it on the cooking plate uncut: a whole breast holds far more water than slices do.","Spoon 15 ml (1 tbsp) sake over the chicken, slide the plate in above the rice, lid down, press white rice.","When it beeps (~50 min) lift the plate straight out and rest the chicken 5 min before cutting — the juice that ran out during cooking goes back in while it sits.","Slice 1 cm strips across the grain and check the middle: white through, no pink. Sauce is 15 ml (1 tbsp) soy + 5 ml (1 tsp) sesame oil, green onion on top. The rice underneath cooked in the chicken steam, which is the entire point of the plate."]},
- {id:"tabuta", tier:"B", plate:true, n:"Tacook pork & cabbage steam", jp:"豚とキャベツの重ね蒸し", gear:["rice"], time:"5 min prep", eff:1, batch:true, cap:2, flex:true,
-  ing:[["pork",100],["cabbage",120],["negi",0.2]], rice:0.5, conds:["sake","ponzu","sesame"],
-  steps:["Rinse and drain 75 g rice per serving (half a cooker cup) into the pot, water to the matching line. One cup total is the ceiling with the plate in, so this maxes out at two servings. Plain rice only under the plate — seasoned rice swells into the plate and is miserable to wash off.","Tear 120 g cabbage per serving into rough pieces. Layer half of it on the cooking plate, lay 100 g pork over it in loose slices, then the rest of the cabbage on top.","Spoon 15 ml (1 tbsp) sake over the pile. Slide the plate in, lid down, white rice.","When it beeps the cabbage has collapsed to about a third of its height and the pork has no pink left anywhere. If a thick piece is still pink, close the lid for 5 min on keep-warm.","Tip it into a bowl, ponzu over the top, 5 ml (1 tsp) sesame oil, green onion. No oil went into the cooking and there is no pan to wash."]},
- {id:"tasalmon", tier:"B", plate:true, n:"Tacook salmon sakamushi", jp:"鮭の酒蒸し", gear:["rice"], time:"3 min prep", eff:1, batch:false, cap:2,
+  steps:["Slice {0.5 onion} thin; shred {50 g} cabbage for the side (the pre-shredded bag is completely acceptable).","Mix the sauce first so it is ready: {15 ml} soy sauce + {15 ml} mirin + {2 tsp} ginger paste.","Pan on medium-high, 5 ml (1 tsp) oil. Onion for 2 min, then {150 g} pork spread out flat — leave 1 min to brown before stirring.","When the pork has no pink left, pour the sauce in and toss ~1 min until everything is glossy and coated.","Rice, pile of cabbage, pork on top. The cooked batch keeps 3 days chilled."]},
+ {id:"tabuta", tier:"B", plate:true, n:"Tacook pork & cabbage steam", jp:"豚とキャベツの蒸し", gear:["rice"], time:"5 min prep", ready:55, eff:1, batch:true, cap:2, flex:true,
+  ing:[["pork",100],["cabbage",100],["negi",0.2]], after:["negi"], rice:0.5, conds:["sake","ponzu","sesame"],
+  steps:[PLATE_RICE,"Tear {100 g} cabbage into rough pieces and spread it over the cooking plate. Lay {100 g} pork over it in loose single slices — spread out, not piled.","Spoon {15 ml} sake over the top. Plate in, lid down, white rice.","When it beeps, lift the plate straight out — never leave it in on keep-warm. The pork should have no pink anywhere; if a thick piece is still pink, give that piece 1 min in the microwave.","Into a bowl over the rice: {15 ml} ponzu, {5 ml} sesame oil, sliced green onion. No oil in the cooking and no pan to wash."]},
+ {id:"tasalmon", tier:"B", plate:true, n:"Tacook salmon sakamushi", jp:"鮭の酒蒸し", gear:["rice"], time:"3 min prep", ready:55, eff:1, batch:false, cap:2,
   ing:[["salmon",1],["shimeji",40],["negi",0.3]], rice:0.5, conds:["sake","ponzu"],
-  steps:["Rinse and drain 75 g rice per serving (half a cooker cup), water to the matching line, cooking plate in above it. One cup is the ceiling with the plate in, so two servings is the limit.","Per serving: one salted salmon fillet on the plate, skin down. Tear 40 g shimeji apart and scatter it around with the green part of a green onion.","15 ml (1 tbsp) sake over the fish. Lid down, white rice.","Done when the thickest part flakes apart under a fork — salted fillets need no seasoning at all, the salt is already in them.","Ponzu over the fish and the mushrooms. Two minutes of work for a full teishoku, and the only washing up is the plate."]},
- {id:"tashumai", tier:"B", plate:true, n:"Tacook cabbage shumai", jp:"キャベツ焼売", gear:["rice"], time:"10 min prep", eff:1, batch:true, cap:2, freeze:"freeze them raw on the tray",
+  steps:[PLATE_RICE,"{1 salted salmon fillet|salted salmon fillets} on the plate, skin down, not overlapping. Tear {40 g} shimeji apart and scatter it around with the green part of a green onion.","{15 ml} sake over the fish. Plate in, lid down, white rice.","When it beeps, lift the plate straight out. Done when the thickest part flakes apart under a fork — salted fillets need no seasoning at all.","Ponzu over the fish and the mushrooms. The plate is the only washing up."]},
+ {id:"tashumai", tier:"B", plate:true, n:"Tacook cabbage shumai", jp:"キャベツ焼売", gear:["rice"], time:"10 min prep", ready:60, eff:1, batch:true, cap:2, freeze:"freeze them raw on a tray",
   ing:[["gpork",120],["cabbage",80],["negi",0.2]], rice:0.5, conds:["soy","sesame","ginger","katakuriko"],
-  steps:["Rinse and drain 75 g rice per serving (half a cooker cup) into the pot, water to the matching line — one cup total is all that fits under the plate.","Per serving, mix 120 g ground pork with 1 tsp ginger paste, 15 ml (1 tbsp) soy, 5 ml (1 tsp) sesame oil, a chopped green onion and 10 g potato starch. Mix it hard with one hand until it turns sticky and pale — that stickiness is what stops the balls falling apart.","Shred 80 g cabbage per serving finely and spread it on a plate. Roll the meat into 6 balls and roll each one through the cabbage until it is coated. No wrappers needed, the cabbage is the wrapper.","Sit the balls on the cooking plate with a gap between them. Lid down, white rice.","When it beeps, cut one in half: no pink anywhere in the middle. Soy and a drop of sesame oil to dip."]},
- {id:"sabarice", tier:"B", cookin:true, n:"Saba-can takikomi rice", jp:"さば缶の炊き込みご飯", gear:["rice"], time:"3 min prep", eff:1, batch:true, cap:2, freeze:"press into balls while warm and freeze",
-  ing:[["sabacan",0.5],["shimeji",40],["negi",0.3]], rice:1, conds:["mentsuyu","ginger"],
-  steps:["Per serving: rinse 150 g rice, drain, into the cooker. Water to the 1-cup line, then scoop out 30 ml (2 tbsp) and put 30 ml (2 tbsp) mentsuyu in its place.","Stir in 1 tsp ginger paste — ginger is not optional here, it is what keeps the tin from tasting tinned.","Tip half a can of mackerel per serving on top, juice and all, in big lumps. Scatter 40 g torn shimeji over it. Do not stir. Press cook.","When it beeps, fold it through with the paddle, breaking the fish into flakes as you go.","Green onion on top. Cheapest omega-3 in the roster and the whole thing costs about the same as a convenience store onigiri."]},
- {id:"rcchashu", tier:"B", simmer:true, mlPerServing:180, n:"Rice-cooker chashu pork", jp:"炊飯器チャーシュー", gear:["rice"], time:"8 min prep", eff:2, batch:true, cap:4, freeze:"slices freeze in their sauce",
-  ing:[["porkblock",80],["negi",0.2]], rice:0.5, conds:["soy","mirin","sake","ginger","garlic"],
-  steps:["Cook your rice first and get it out of the way — the cooker is busy for about an hour with this.","For 4 servings: a 320 g pork shoulder block, patted dry. Into the cooker with 60 ml soy, 60 ml mirin, 60 ml sake, 200 ml water, 1 tsp each garlic and ginger paste, and the green top of a green onion.","Liquid must cover the meat but stay well under the maximum line — the simmer menu boils, and an overfull pot pushes sauce out of the steam vent.","Press the simmer menu. No roux, no starch, no thickener of any kind goes in now: thickeners foam and block the vent. Anything you want to thicken with happens after.","When it finishes, turn the block over in the sauce and leave it on keep-warm 15 min. It is done when a chopstick slides into the middle with no resistance.","Lift it out, rest 10 min, slice thin across the grain. Spoon the sauce over. Keeps 3 days in the fridge, and slices freeze in a little of their own sauce for a month."]},
- {id:"rccurry", tier:"B", simmer:true, mlPerServing:450, n:"Rice-cooker chicken curry", jp:"炊飯器カレー", gear:["rice"], time:"8 min prep", eff:1, batch:true, cap:2, flex:true, freeze:"freeze without the potato",
-  ing:[["chicken",120],["onion",0.5],["carrot",0.3],["potato",0.8],["roux",25]], rice:0.5, conds:["torigara"],
-  steps:["Rice first, then empty the cooker — the curry needs the whole pot. Two servings is both the limit and the right number: everything has to sit between the 1-go and 3-go marks on the inner pot. Four servings is roughly double the top mark, and a single serving sits near the bottom one, where a too-empty pot boils over just as readily as a too-full one.","Per serving: half an onion in wedges, a third of a carrot in chunks, 1 potato quartered, 120 g chicken in bite-size pieces. Everything into the cooker with 100 ml water per serving and 1 tsp chicken stock powder. Far less water than the pot version — nothing evaporates from a sealed cooker, and pot quantities come out as soup.","Do not put the roux in yet. This is the one rule that matters: roux thickens, thickened liquid foams, and foam blocks the steam vent. Water and solids only for now.","Press the simmer menu and walk away. Done when a chopstick slides into a potato with no resistance.","Now the roux. Open the lid, drop in 1 block (25 g) per serving, and stir with a wooden paddle until it has completely melted into the residual heat. Metal spoons scar the inner pot.","Lid down on keep-warm for 10 min to thicken. Serve over the rice you already made. Freezes a month, but fish the potato out first — it turns to grit."]},
- {id:"rcrisotto", tier:"B", cookin:true, n:"Rice-cooker mushroom risotto", jp:"炊飯器リゾット", gear:["rice"], time:"5 min prep", eff:1, batch:false, cap:2,
-  ing:[["shimeji",60],["bacon",40],["onion",0.25]], rice:1, conds:["torigara","cheese","pepper","oil"],
-  steps:["Per serving: rinse 150 g rice briefly and drain. Risotto wants some of its starch kept, so one quick rinse, not three.","Into the cooker: the rice, 40 g bacon in strips, a quarter onion diced small, 60 g shimeji torn apart, 1 tsp chicken stock powder, 5 ml (1 tsp) oil and water to the 1-cup line.","Press the risotto menu. If your cooker is a plain one with no risotto setting, normal white rice gets you close.","When it beeps, stir in 15 g grated parmesan and a hard grind of black pepper. Cheese goes in now and not before — dairy in the cooking cycle catches on the bottom and can foam over.","Lid down 5 min on keep-warm, then stir again. Eat it the day it is made; reheated risotto sets into a brick."]},
- {id:"rcchahan", tier:"B", cookin:true, n:"Rice-cooker chahan", jp:"炊飯器チャーハン", gear:["rice"], time:"5 min prep", eff:1, batch:false, cap:2,
-  ing:[["bacon",40],["egg",1],["negi",0.3]], rice:1, conds:["torigara","soy","sesame","pepper"],
-  steps:["Per serving: rinse 150 g rice, drain, into the cooker. Water to just UNDER the 1-cup line — chahan wants drier rice than usual.","Stir in 1 tsp chicken stock powder and 5 ml (1 tsp) soy. Scatter 40 g bacon in strips on top. Press the fried rice menu.","While it cooks, beat an egg and slice a green onion.","When it beeps, open the lid and pour the raw egg straight over the hot rice, then fold it through fast with the paddle. The residual heat sets it into threads without scrambling it into lumps.","Sesame oil, black pepper, green onion. Lid down 3 min. It will not have the smoky edge a screaming-hot pan gives you, but there is no pan to scrub either."]},
- {id:"afsaba", tier:"C", n:"Air-fryer salted mackerel set", jp:"塩さば定食", gear:["air","rice"], time:"2 min work", eff:0, batch:false, cap:2,
-  ing:[["sabafillet",1],["fbroc",60]], rice:0.5, conds:["ponzu"],
-  steps:["One salted mackerel fillet per serving, straight into the basket, skin side up. No oil, no salt, no seasoning — 塩さば is already salted and will need nothing from you.","Preheat 3 min at 180 °C, then 12 min. Mackerel is oily enough that it bastes itself.","At the 7-minute mark drop 60 g frozen broccoli in beside it, straight from the freezer.","Done when the thickest part flakes apart at a fork and the skin has tightened and browned. Check through the window rather than opening the drawer, which pauses the timer and drops the heat.","Ponzu over it, rice from the cooker. Two minutes of your attention for the best-value protein in the shop."]},
- {id:"aftebasaki", tier:"C", n:"Air-fryer tebasaki wings", jp:"手羽先の塩焼き", gear:["air","rice"], time:"5 min work", eff:1, batch:true, cap:2, freeze:"freeze raw and seasoned",
+  steps:[PLATE_RICE,"Mix {120 g} ground pork with {1 tsp} ginger paste, {15 ml} soy sauce, {5 ml} sesame oil, {0.2 green onion|green onions} chopped and {10 g} potato starch. Mix hard with one hand until it turns sticky and pale — that stickiness is what holds the balls together.","Shred {80 g} cabbage finely onto a plate. Roll the meat into {6 ball|balls} and roll each through the cabbage until coated. The cabbage is the wrapper.","Sit the balls on the cooking plate with a gap between them. Plate in, lid down, white rice.","When it beeps, lift the plate straight out and cut one in half: no pink anywhere in the middle. Soy sauce and a drop of sesame oil to dip."]},
+ {id:"rcchashu", tier:"B", simmer:true, mlPerServing:180, minServ:3, simmerMin:60, n:"Rice-cooker chashu pork", jp:"炊飯器チャーシュー", gear:["rice"], time:"8 min prep", ready:95, eff:2, batch:true, cap:4, freeze:"slices freeze in their sauce",
+  ing:[["porkblock",80],["negi",0.2]], after:["negi"], rice:0.5, conds:["soy","mirin","sake","ginger","garlic"],
+  steps:["The cooker is busy for about 1½ hours with this. Want rice with it? Cook it first and set it aside, or use frozen rice.","A {80 g} pork shoulder block, patted dry, into the cooker with {15 ml} soy sauce, {15 ml} mirin, {15 ml} sake, {50 ml} water, 1 tsp each garlic and ginger paste, and the green top of a green onion.","Check the level: everything must sit between the white-rice 1 and 3 marks on the inner pot. Under the bottom mark it can boil over; over the top one it will not cook through.","Press the simmer menu and set the timer to 60 min. No roux, no starch, no thickener of any kind goes in: thickeners foam and block the steam vent.","When it finishes, turn the block over in the sauce and leave it 15 min on keep-warm. Done when a chopstick slides into the middle with no resistance; if not, add 30 min more on the simmer menu.","Lift it out, rest 10 min, slice thin across the grain, spoon the sauce over. Keeps 3 days in the fridge; slices freeze in a little sauce for a month."]},
+ {id:"rcrisotto", tier:"B", cookin:true, menu:"risotto", n:"Rice-cooker mushroom risotto", jp:"炊飯器リゾット", gear:["rice"], time:"5 min prep", ready:40, eff:1, batch:false, cap:1, keep:1,
+  ing:[["shimeji",40],["bacon",30]], rice:1, conds:["torigara","cheese","pepper","oil"],
+  steps:["Rinse {150 g} rice once, quickly — risotto keeps some starch — and put it straight into the cooker without leaving it to drain.","Add {30 g} bacon in strips, {40 g} shimeji torn apart, {1 tsp} chicken stock powder and {5 ml} oil, then water to the risotto line for 1 cup. The risotto menu takes 1 cup at most, so this is one serving a run.","Press the risotto menu (about 30 min).","When it beeps, stir in {15 g} grated parmesan and a hard grind of black pepper. Cheese goes in now and not before — dairy in the cycle catches on the bottom and can foam over.","Lid down 5 min, then stir again. Eat it the day it is made; reheated risotto sets into a brick."]},
+ {id:"rcchahan", tier:"B", cookin:true, menu:"chahan", n:"Rice-cooker chahan", jp:"炊飯器チャーハン", gear:["rice"], time:"5 min prep", ready:45, eff:1, batch:false, cap:2,
+  ing:[["bacon",40],["egg",1],["negi",0.3]], after:["egg","negi"], rice:1, conds:["torigara","soy","sesame","pepper"],
+  steps:["Rinse {150 g} rice, drain, into the cooker. Water to the fried-rice line — chahan wants drier rice than usual.","Stir in {1 tsp} chicken stock powder and {5 ml} soy sauce. Scatter {40 g} bacon in strips on top. Press the fried rice menu.","While it cooks (about 40 min), beat {1 egg|eggs} and slice {0.3 green onion|green onions}.","When it beeps, pour the raw egg straight over the hot rice and fold it through fast with the paddle. The residual heat sets it into threads.","{5 ml} sesame oil, black pepper and the green onion. Lid down 3 min."]},
+ {id:"aftebasaki", tier:"C", n:"Air-fryer tebasaki wings", jp:"手羽先の塩焼き", gear:["air","rice"], time:"5 min work", ready:30, eff:1, batch:true, cap:1, freeze:"freeze raw and seasoned",
   ing:[["tebasaki",180],["cabbage",50]], rice:0.5, conds:["pepper","oil","soy"],
-  steps:["Per serving: 180 g chicken wings, about 5 or 6. Pat them properly dry with kitchen paper — wet skin steams instead of crisping, and this is the whole battle with wings.","Salt generously, a heavy grind of black pepper, and 5 ml (1 tsp) oil rubbed over with your fingers. Never aerosol spray, it strips the ceramic coating.","Preheat 3 min at 190 °C. Wings in one layer, not touching. 12 min, then flip each one and give it 8 more.","Done when the skin is taut and browned and the juices run clear where the wing meets the drumette. Wings are forgiving — 3 more minutes makes them better, not worse.","Shredded cabbage and rice. Squeeze 5 ml (1 tsp) soy over them while they are still hot."]},
- {id:"afmiso", tier:"C", n:"Air-fryer miso chicken", jp:"鶏の味噌焼き", gear:["air","rice"], time:"5 min work", eff:1, batch:true, cap:2, flex:true, freeze:"freeze raw in the marinade",
+  steps:["Take {180 g} chicken wings, about 6. Pat them properly dry with kitchen paper — wet skin steams instead of crisping, and this is the whole battle with wings.","Salt generously, a heavy grind of black pepper, and {5 ml} oil rubbed over with your fingers. Never aerosol spray, it strips the ceramic coating.","Preheat 3 min at 190 °C. Wings in one layer, not touching — about 6 is what the basket floor holds, so a second serving is a second round. 12 min, then flip each one and give it 8 more.","Done when the skin is taut and browned and the juices run clear where the wing meets the drumette. Wings are forgiving — 3 more minutes makes them better, not worse.","{50 g} shredded cabbage and rice. Squeeze {5 ml} soy sauce over the wings while they are still hot."]},
+ {id:"afmiso", tier:"C", n:"Air-fryer miso chicken", jp:"鶏の味噌焼き", gear:["air","rice"], time:"5 min work", ready:40, eff:1, batch:true, cap:2, flex:true, freeze:"freeze raw in the marinade",
   ing:[["chicken",150],["fbroc",70]], rice:0.5, conds:["miso","mirin","sake","garlic"],
-  steps:["Cut 150 g chicken thigh per serving into 4 or 5 big chunks.","Marinade per serving: 18 g (1 tbsp) miso, 15 ml (1 tbsp) mirin, 15 ml (1 tbsp) sake and 1 tsp garlic paste, mixed smooth before the chicken goes in. 15 min minimum, overnight is better.","Wipe most of the marinade off before it goes in the basket. Miso left thick on the surface burns black long before the middle is done.","Preheat 3 min at 180 °C — lower than the teriyaki because miso has sugar in it. Single layer, 15 min. Two servings fills the 4.2 L basket honestly.","Frozen broccoli in for the last 5 min. Done when the juices run clear at the thickest piece, or 75 °C inside.","Extra portions freeze raw in the marinade in a bag, and they cure a little deeper as they thaw."]},
- {id:"afmeatball", tier:"C", n:"Air-fryer pork meatballs", jp:"肉団子", gear:["air","rice"], time:"10 min work", eff:1, batch:true, cap:2, flex:true, freeze:"freeze raw or cooked",
+  steps:["Cut {150 g} chicken thigh into big chunks, 4 or 5 from each 150 g.","Marinade: {18 g} miso (1 tbsp for each 18 g), {15 ml} mirin, {15 ml} sake and {1 tsp} garlic paste, mixed smooth before the chicken goes in. 15 min minimum, overnight is better.","Wipe most of the marinade off before it goes in the basket. Miso left thick on the surface burns black long before the middle is done.","Preheat 3 min at 180 °C — lower than the teriyaki because miso has sugar in it. Single layer, 15 min.","Frozen broccoli ({70 g}) in for the last 5 min. Done when the juices run clear at the thickest piece, or 75 °C inside.","Extra portions freeze raw in the marinade in a bag, and they cure a little deeper as they thaw."]},
+ {id:"afmeatball", tier:"C", n:"Air-fryer pork meatballs", jp:"肉団子", gear:["air","rice"], time:"10 min work", ready:30, eff:1, batch:true, cap:2, freeze:"freeze raw or cooked",
   ing:[["gpork",120],["onion",0.3],["egg",0.5]], rice:0.5, conds:["katakuriko","ginger","soy","mirin","sesame"],
-  steps:["Per serving: 120 g ground pork, a third of an onion diced very small, half a beaten egg, 10 g potato starch, 1 tsp ginger paste and 15 ml (1 tbsp) soy. Mix with one hand until sticky.","Roll into 6 balls per serving, about 3 cm. Wet hands stop the mix sticking to you.","Preheat 3 min at 180 °C. Balls in one layer with gaps, 12 of them — two servings. Stacking them is what turns meatballs grey and steamed instead of browned.","12 min, shaking the basket once at the halfway mark.","Cut one open to check: no pink at the centre. Glaze while hot with 15 ml (1 tbsp) mirin and 5 ml (1 tsp) soy stirred together, plus a drop of sesame oil.","They freeze cooked and reheat in the fryer at 180 °C in 5 min, which makes them the best lunchbox item here."]},
- {id:"afhamburg", tier:"C", n:"Air-fryer hamburg steaks", jp:"ハンバーグ", gear:["air","rice"], time:"12 min work", eff:1, batch:true, cap:2, flex:true, freeze:"freeze the raw patties",
-  ing:[["gpork",130],["onion",0.4],["egg",0.5]], rice:0.5, conds:["panko","pepper","oil","soy","mirin"],
-  steps:["Per serving: dice 0.4 onion small and soften it 2 min in the microwave, then let it cool. Warm onion cooks the egg in the mix and the patty turns crumbly.","Mix 130 g ground pork with the cooled onion, half a beaten egg, 15 g panko, salt and a lot of black pepper. Work it until it is tacky, then throw it between your hands a few times to knock the air out — trapped air is what splits a patty.","Shape into one oval about 2 cm thick with a dent pressed into the middle, so it rises flat instead of into a ball.","Preheat 3 min at 180 °C, brush the top with 5 ml (1 tsp) oil, 15 min.","Done when the juices run clear where you press the middle, or 75 °C inside. Pink juice means 3 more minutes.","Sauce in the resting time: 15 ml (1 tbsp) each mirin and soy stirred into the fat left in the basket. Rice, and whatever vegetable is cheap."]},
- {id:"afnasu", tier:"C", n:"Air-fryer eggplant with miso", jp:"なすの味噌田楽", gear:["air","rice"], time:"4 min work", eff:1, batch:false, cap:2,
-  ing:[["nasu",1.5],["negi",0.2]], rice:0.5, conds:["miso","mirin","oil","sesame"],
-  steps:["Per serving: 1 or 2 eggplants halved lengthways, and score the cut face in a diamond pattern about 5 mm deep. The scoring is what lets the heat into the middle.","Brush the cut faces with 10 ml (2 tsp) oil. Eggplant drinks oil, so brush rather than pour or it goes greasy.","Preheat 3 min at 200 °C. Cut side up, 12 min.","Meanwhile stir 18 g (1 tbsp) miso with 15 ml (1 tbsp) mirin into a paste.","Spread the miso over the cut faces and give it 3 more minutes, watching through the window — miso catches fast. It is done when a chopstick slides into the flesh with no resistance and the top is bubbling.","Sesame oil, green onion, rice. About ¥120 a serving with no meat in it at all."]},
- {id:"afonigiri", tier:"C", n:"Air-fryer yaki-onigiri", jp:"焼きおにぎり", gear:["air"], time:"8 min work", eff:1, batch:true, cap:2, freeze:"freeze them cooked",
+  steps:["Mix {120 g} ground pork, {0.3 onion} diced very small, {0.5 egg|eggs} beaten, {10 g} potato starch, {1 tsp} ginger paste and {15 ml} soy sauce. Mix with one hand until sticky.","Roll into {6 ball|balls} about 3 cm across. Wet hands stop the mix sticking to you.","Preheat 3 min at 180 °C. Balls in one layer with gaps — 12 is what the basket floor holds, so two servings a round. Stacking them turns meatballs grey and steamed.","12 min, shaking the basket once at the halfway mark.","Cut one open to check: no pink at the centre. Glaze while hot with {15 ml} mirin and {5 ml} soy sauce stirred together, plus a drop of sesame oil.","They freeze cooked and reheat in the fryer at 180 °C in 5 min."]},
+ {id:"afhamburg", tier:"C", n:"Air-fryer hamburg steaks", jp:"ハンバーグ", gear:["air","rice"], time:"12 min work", ready:35, eff:1, batch:true, cap:2, freeze:"freeze the raw patties",
+  ing:[["gpork",130],["onion",0.3],["egg",0.5]], rice:0.5, conds:["panko","pepper","oil","soy","mirin"],
+  steps:["Dice {0.3 onion} small and soften it 2 min in the microwave, then let it cool. Warm onion cooks the egg in the mix and the patty turns crumbly.","Mix {130 g} ground pork with the cooled onion, {0.5 egg|eggs} beaten, {15 g} panko, salt and a lot of black pepper. Work it until tacky, then throw it between your hands a few times to knock the air out — trapped air splits a patty.","Shape into {1 oval|ovals} about 2 cm thick with a dent pressed into the middle, so each rises flat instead of into a ball.","Preheat 3 min at 180 °C, brush the tops with {5 ml} oil, 15 min.","Done when the juices run clear where you press the middle, or 75 °C inside. Pink juice means 3 more minutes.","Sauce in the resting time: {15 ml} mirin and {15 ml} soy sauce stirred into the fat left in the basket. Rice, and whatever vegetable is cheap."]},
+ {id:"afnasu", tier:"C", n:"Air-fryer eggplant with miso", jp:"なすの味噌田楽", gear:["air","rice"], time:"4 min work", ready:22, eff:1, batch:false, cap:2,
+  ing:[["nasu",1.5],["negi",0.2]], after:["negi"], rice:0.5, conds:["miso","mirin","oil","sesame"],
+  steps:["Halve {1.5 eggplant|eggplants} lengthways and score the cut faces in a diamond pattern about 5 mm deep. The scoring is what lets the heat into the middle.","Brush the cut faces with {10 ml} oil. Eggplant drinks oil, so brush rather than pour or it goes greasy.","Preheat 3 min at 200 °C. Cut side up, 12 min.","Meanwhile stir {18 g} miso with {15 ml} mirin into a paste.","Spread the miso over the cut faces and give it 3 more minutes, watching through the window — miso catches fast. Done when a chopstick slides into the flesh with no resistance and the top is bubbling.","Sesame oil, green onion, rice."]},
+ {id:"afonigiri", tier:"C", cooked:true, n:"Air-fryer yaki-onigiri", jp:"焼きおにぎり", gear:["air"], time:"8 min work", ready:20, eff:1, batch:true, cap:2, keep:3, freeze:"freeze them cooked",
   ing:[], rice:1, conds:["soy","mentsuyu","sesame"],
-  steps:["Per serving: about 300 g of cooked rice, ideally a day old from the fridge — fresh hot rice is too wet to hold an edge and falls apart in the basket.","Wet your hands, salt them, and press the rice into 2 firm triangles per serving. Press harder than feels right. A loose onigiri disintegrates.","Mix 15 ml (1 tbsp) soy with 15 ml (1 tbsp) mentsuyu and a few drops of sesame oil. Brush one side.","Preheat 3 min at 200 °C. Onigiri in one layer on baking paper cut to size, brushed side up, 8 min. Four is what the basket floor actually holds — two servings.","Flip, brush the other side, 5 more min. Done when the brushed faces have gone deep gold and crackle under the brush.","The best use there is for the tail end of a rice-cooker run, and they freeze cooked — 6 min at 180 °C straight from frozen."]},
+  steps:["Take {300 g} cooked rice, ideally a day old from the fridge — fresh hot rice is too wet to hold an edge and falls apart in the basket.","Wet your hands, salt them, and press the rice into {2 firm triangle|firm triangles}. Press harder than feels right. A loose onigiri disintegrates.","Mix {15 ml} soy sauce with {15 ml} mentsuyu and a few drops of sesame oil. Brush one side.","Preheat 3 min at 200 °C. Onigiri in one layer on baking paper cut to size, brushed side up, 8 min. Four is what the basket floor holds — two servings.","Flip, brush the other side, 5 more min. Done when the brushed faces have gone deep gold and crackle under the brush.","They freeze cooked — 6 min at 180 °C straight from frozen."]},
 ];
+/* ============ PHYSICAL LIMITS ============
+   Every cap below is a physical claim, derived here or asserted in test.js — never a wish. */
+/* The 18 cm pot, measured 17 Sep 2026: three 500 ml jugs + 100 ml fills it to 1.5 cm below
+   the rim (8.1 cm deep). 1.5 cm is the headroom a simmer needs, so this is the working volume. */
+const POT_ML = 1600;
+/* Tiger JAJ-A550 manual: rice limits by menu (P.30), cook-in extras about 70 g a cup or less
+   (P.7), plate runs 0.5–1 go on the white menu only (P.19), simmer between the 1 and 3 marks
+   (P.17), and the finishing times by menu (P.9). */
+const COOKER = { white:3, takikomi:2, risotto:1, chahan:2, plateMax:1, plateMin:0.5, gPerCup:70,
+  simmerMinMl:400, simmerMaxMl:1100, whiteMin:"42–52", quickMin:"20–40" };
+const PLATE_G = 220;      /* what spreads in one layer on the cooking plate, per serving (estimate) */
+const BASKET_CM2 = 315;   /* floor of the 4.2 L air-fryer basket */
+/* floor space one serving takes laid out with gaps — the basket cap is checked against it */
+const AIR_CM2 = {afsalmon:140, afteriyaki:140, karaage:140, afroast:150, afbreast:110, afkatsu:200, afgyoza:300,
+  aftofu:120, afmiso:140, afmeatball:90, afhamburg:100, afnasu:150, afonigiri:80, aftebasaki:300};
+/* grams per piece, for anything the pantry counts in pieces */
+const PC_G = {onion:200, carrot:150, potato:150, tomato:120, negi:100, cucumber:100, egg:60, tofu:350,
+  salmon:80, tuna:70, sardine:100, nasu:80};
+const gramsOf = (id,q) => ING[id].u==="g" ? q : q*(PC_G[id]||100);
+const loadOf = r => r.ing.filter(([id])=>!(r.after||[]).includes(id)).reduce((a,[id,q])=>a+gramsOf(id,q),0);
+RECIPES.forEach(r=>{
+  if (r.gear.includes("pot")) {
+    r.potMl = Math.round(loadOf(r) + (r.liquid||0));
+    r.cap = Math.max(1, Math.min(r.capMax||4, Math.floor(POT_ML / r.potMl)));
+  }
+  if (AIR_CM2[r.id]) r.cm2 = AIR_CM2[r.id];
+});
+/* where the rice for a dish comes from: the dish itself, a separate cooker run, or nothing */
+const riceKind = r => !r.rice ? "none" : (r.cookin || r.plate) ? "self" : r.cooked ? "cooked" : "side";
+
+/* ============ SCALED STEP TEXT ============ */
+const FRAC = [[0,""],[1/4,"¼"],[1/3,"⅓"],[1/2,"½"],[2/3,"⅔"],[3/4,"¾"],[1,""]];
+function fmtCount(v){
+  let whole = Math.floor(v + 1e-9), rest = v - whole, best = FRAC[0], d = 9;
+  FRAC.forEach(f=>{ const dd = Math.abs(rest - f[0]); if (dd < d - 1e-9) { d = dd; best = f; } });
+  if (best[0] === 1) { whole += 1; best = FRAC[0]; }
+  if (!whole && !best[1]) return "¼";
+  return (whole ? String(whole) : "") + best[1];
+}
+function fmtQty(v, unit, plural){
+  if (unit === "g") return (v >= 20 ? Math.round(v/5)*5 : Math.round(v)) + " g";
+  if (unit === "ml") {
+    const ml = v >= 10 ? Math.round(v/5)*5 : Math.round(v);
+    if (ml <= 60 && ml % 15 === 0) return ml+" ml ("+(ml/15)+" tbsp)";
+    if (ml <= 15 && ml % 5 === 0) return ml+" ml ("+(ml/5)+" tsp)";
+    return ml+" ml";
+  }
+  if (unit === "tsp") return (v >= 3 && Math.abs(v/3 - Math.round(v/3)) < 1e-9) ? (v/3)+" tbsp" : fmtCount(v) + " tsp";
+  /* nobody beats one and a half eggs: past one, eggs round up to whole */
+  if (unit === "egg" && v > 1.01) v = Math.ceil(v - 0.01);
+  return fmtCount(v) + " " + (v > 1.01 ? (plural || unit+"s") : unit);
+}
+/* {150 g}  {15 ml}  {1 tsp}  {0.5 onion}  {1 potato|potatoes} — multiplied by n servings */
+function scaleText(s, n){
+  return s.replace(/\{([\d.]+) ([^}|]+?)(?:\|([^}]+))?\}/g, (m, q, unit, plural)=>fmtQty(parseFloat(q)*n, unit, plural));
+}
+function stepText(r, i, n){ return scaleText(r.steps[i], n || 1); }
+
 const EAT_OUT = 1000;
 const GEARLABEL = {rice:"rice cooker", pot:"pot", pan:"pan", air:"air fryer"};
 /* The shelf staples. A bottle of any of these is a one-time buy that lasts months, so the
@@ -461,12 +503,19 @@ const isApplianceDish = r => r.gear.includes("air") || r.cookin === true || r.pl
 const yen = x => (x<0?"−":"")+"¥"+Math.abs(Math.round(x)).toLocaleString();
 const rec = id => RECIPES.find(r=>r.id===id);
 const baseMeat = r => (r.ing.find(([id])=>ING[id].cat==="meat")||[null])[0];
-const keepDaysOf = r => r.ing.some(([id])=>id==="gpork") ? 3 : 4;
+/* cooked meat and fish get 3 days, everything else 4; a dish meant to be eaten now says so */
+const keepDaysOf = r => r.keep ? r.keep : ingsOf(r).some(([id])=>ING[id].cat==="meat") ? 3 : 4;
 const cap1 = s => s.charAt(0).toUpperCase()+s.slice(1);
+/* Protein swaps are between WHOLE cuts only. Ground pork is not a substitute for thigh chunks
+   (meatballs and soboro cannot be made from chunks without a grinder) and chunks are not a
+   substitute for mince, so mince dishes are not flex at all.
+   Every entry must exist in ING — a stale key here poisons S.protein and blanks the app. */
+const MEATCYCLE = ["chicken","pork"];
+function ingsOf(r){ return r.ing.map(([id,q])=> (r.flex && S.protein && S.protein[r.id] && id===baseMeat(r)) ? [S.protein[r.id],q] : [id,q]); }
 const EFFORTS = [
   {k:0, jp:"2分", en:"Zero effort", sub:"Open a can, or boil one pot."},
   {k:1, jp:"15分", en:"Something quick", sub:"One pot, one wash."},
-  {k:2, jp:"45分", en:"Batch day", sub:"Cook once, eat four times."}
+  {k:2, jp:"45分", en:"Batch day", sub:"Cook once, eat three or four times."}
 ];
 
 /* ============ STATE (persisted) ============ */
@@ -478,19 +527,16 @@ S.owned = isObj(S.owned) ? S.owned : {};
 S.locked = Array.isArray(S.locked) ? S.locked : [];
 S.recent = Array.isArray(S.recent) ? S.recent.filter(x=>typeof x==="string" && !!rec(x)).slice(0,RECENT_KEEP) : [];
 S.bought = isObj(S.bought) ? S.bought : {};
-S.protein = isObj(S.protein) ? Object.fromEntries(Object.entries(S.protein).filter(([k,v])=>typeof v==="string" && ING[v])) : {};
+/* a swap must be a whole cut on a dish that allows it — mince and whole cuts are different dishes */
+S.protein = isObj(S.protein) ? Object.fromEntries(Object.entries(S.protein).filter(([k,v])=>typeof v==="string" && ING[v] && MEATCYCLE.includes(v) && rec(k) && rec(k).flex)) : {};
 /* every field the log renderer touches is checked here: a bad entry used to brick the app on every load */
 S.log = Array.isArray(S.log) ? S.log.filter(l=>isObj(l) && typeof l.d==="string" && Number.isFinite(l.spent) && Number.isFinite(l.meals)) : [];
 S.N = Number.isInteger(S.N) && S.N>=1 && S.N<=14 ? S.N : 7;
 S.v = [1,2,3].includes(S.v) ? S.v : 2;
-S.tab = ["tonight","week","shop","fridge","save"].includes(S.tab) ? S.tab
+S.tab = ["tonight","week","shop","save"].includes(S.tab) ? S.tab
   : (S.tab==="plan" ? "week" : "tonight"); /* migrate from the old tab set: plan->week, cook/anything else->tonight */
 S.price = isObj(S.price) ? Object.fromEntries(Object.entries(S.price).filter(([k,v])=>ING[k] && typeof v==="number" && isFinite(v) && v>=0)) : {};
 S.mugi = S.mugi === true;
-S.day = Number.isInteger(S.day) && S.day>=0 ? S.day : 0;
-S.fridge = Array.isArray(S.fridge) ? S.fridge.filter(f=>isObj(f) && typeof f.id==="string" && !!rec(f.id) && Number.isInteger(f.portions) && f.portions>0 && Number.isInteger(f.day) && f.day>=0) : [];
-/* a cooked-on day from the future would render negative ages — pull it back to today */
-S.fridge.forEach(f=>{ if (f.day > S.day) f.day = S.day; });
 /* The shelf used to start at {oil:true} and nothing ever filled it in, so the Shop tab kept
    billing a full pantry of condiments as one-time purchases, week after week, for bottles
    bought months ago. Seed the staples once. Only keys that were never set are touched, so a
@@ -501,13 +547,13 @@ if (S.shelfSeeded !== true) {
   try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {}
 }
 /* legacy fields from older saves: dropped, never resurrected */
-delete S.stepdone; delete S.kit; delete S.aircap;
+delete S.stepdone; delete S.kit; delete S.aircap; delete S.fridge; delete S.day;
 if (S.plan !== undefined) { S.plan = Array.isArray(S.plan) ? S.plan.filter(x=>typeof x==="string") : undefined; if (S.plan && !S.plan.length) S.plan = undefined; }
 function save(){ try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {} }
 const priceOf = id => S.price[id] !== undefined ? S.price[id] : ING[id].p;
 
 /* ============ EPHEMERAL UI STATE (not persisted — resets on load) ============ */
-let U = { effort:null, heroIdx:0, sheet:null, cook:null, step:0, portions:2, toast:null, _toastTimer:null };
+let U = { effort:null, heroIdx:0, sheet:null, cook:null, step:0, serv:1, round:1, priceAll:false, toast:null, _toastTimer:null };
 /* inline handlers can only see globals, and a script-scoped `let` is not one — so the panel's
    open state is written through a function, or it silently collapses on the next render */
 let priceOpen = false;
@@ -605,11 +651,9 @@ function clearTicks(){
   S.bought={}; save(); render();
   flash("Basket ticks cleared", ()=>{ S.bought=prevBought; save(); render(); });
 }
-/* every entry must exist in ING - a stale key here poisons S.protein and blanks the app */
-const MEATCYCLE = ["chicken","pork","gpork"];
-function ingsOf(r){ return r.ing.map(([id,q])=> (r.flex && S.protein[r.id] && id===baseMeat(r)) ? [S.protein[r.id],q] : [id,q]); }
 function cycleProtein(rid){
   const r = rec(rid), b = baseMeat(r);
+  if (!r.flex || b === "gpork") return;
   const cyc = MEATCYCLE.includes(b) ? MEATCYCLE : [b, ...MEATCYCLE];
   const cur = S.protein[rid]||b, nxt = cyc[(cyc.indexOf(cur)+1)%cyc.length];
   if (nxt===b) delete S.protein[rid]; else S.protein[rid]=nxt;
@@ -619,7 +663,7 @@ function logWeek(){
   const el = document.getElementById("spentInput");
   const v = +el.value;
   if (!v || v<0 || !isFinite(v)) return;
-  S.log.push({d:simDate().toISOString().slice(0,10), spent:v, meals:S.N});
+  S.log.push({d:todayMidnight().toISOString().slice(0,10), spent:v, meals:S.N});
   U._clearSpent = true;
   save(); render();
   flash("Logged "+yen(v)+" for "+S.N+" meals.");
@@ -666,56 +710,61 @@ if (typeof document !== "undefined") {
   });
 }
 
-/* ---- fridge ---- */
-const cloneFridge = () => S.fridge.map(f=>({...f}));
-function eatFridge(i){
-  const f = S.fridge[i]; if (!f) return;
-  const r = rec(f.id), before = cloneFridge();
-  f.portions -= 1;
-  if (f.portions<=0) S.fridge.splice(i,1);
-  U.heroIdx = 0;
-  save(); render();
-  flash("Ate the "+r.n+". Past you was kind.", ()=>{ S.fridge = before; save(); render(); });
-}
-function tossFridge(i){
-  const f = S.fridge[i]; if (!f) return;
-  const r = rec(f.id), before = cloneFridge();
-  S.fridge.splice(i,1); save(); render();
-  flash("Binned the "+r.n+". It happens.", ()=>{ S.fridge = before; save(); render(); });
-}
-function nextDay(){ S.day++; save(); render(); }
-
 /* ---- tonight: effort + hero ---- */
 function pickEffort(k){ U.effort=k; U.heroIdx=0; render(); }
 function backToAsk(){ U.effort=null; render(); }
 function nextHero(){ U.heroIdx++; render(); }
-function initPortions(r, serv){ return r.cap ? Math.min(serv, r.cap) : serv; }
 function openCookFromHero(rid){
   const c = compute(), r = rec(rid);
-  const serv = c && c.servings[rid] ? c.servings[rid] : 1;
-  startCook(rid, initPortions(r, serv));
+  startCook(rid, c && c.servings[rid] ? c.servings[rid] : defaultServ(r));
 }
+/* an unplanned dish starts at the fewest servings that make sense on its gear */
+function defaultServ(r){ return Math.max(1, r.minServ || 1); }
 
 /* ---- sheet ---- */
 function openSheet(rid){ U.sheet = rid; render(); }
 function closeSheet(){ U.sheet = null; render(); }
 
-/* ---- cook mode ---- */
-function startCook(rid, portions){ U.sheet=null; U.cook=rid; U.step=0; U.portions=portions; render(); }
-function quitCook(){ U.cook=null; U.step=0; render(); }
-function prevStep(){ if (U.step>0) U.step--; else U.cook=null; render(); }
+/* ---- cook mode ----
+   step 0 is "before you start": servings, rounds, and what the rice cooker should be doing.
+   Steps 1..n are the recipe with every braced quantity scaled to the servings in this round. */
+function startCook(rid, serv){
+  const r = rec(rid); if (!r) return;
+  clearTimeout(U._toastTimer); U.toast = null;
+  U.sheet=null; U.cook=rid; U.step=0; U.round=1; U.serv=Math.max(defaultServ(r), serv||1); render();
+}
+function quitCook(){ U.cook=null; U.step=0; U.round=1; render(); }
+function cookServ(d){
+  const r = rec(U.cook); if (!r) return;
+  U.serv = Math.min(8, Math.max(defaultServ(r), U.serv + d)); render();
+}
+/* servings cooked in round k of this session: full rounds first, the remainder last */
+function roundServ(r, total, k){
+  const n = roundsFor(r, total); if (n === 1) return total;
+  return Math.max(1, Math.min(r.cap, total - r.cap*(k-1)));
+}
+/* Air-fryer rounds share the prep: cutting, marinating and coating happen once for the whole
+   batch, and only the basket steps (from the preheat on) repeat per round. Other gear repeats
+   the whole recipe, because a pan or pot round is the recipe. Index is 0-based. */
+function cookFrom(r){ const i = r.gear.includes("air") ? r.steps.findIndex(s=>/Preheat/.test(s)) : 0; return Math.max(0, i); }
+function stepServ(r, i){ return i < cookFrom(r) ? U.serv : roundServ(r, U.serv, U.round); }
+function prevStep(){
+  if (U.round>1 && U.step===cookFrom(rec(U.cook))+1) { U.round--; U.step = rec(U.cook).steps.length; }
+  else if (U.step>0) U.step--;
+  else U.cook=null;
+  render();
+}
 function nextStep(){
   const r = rec(U.cook); if (!r) { U.cook=null; render(); return; }
-  const last = U.step >= r.steps.length;
-  if (!last) { U.step++; render(); return; }
-  if (U.portions>0) S.fridge.push({id:r.id, portions:U.portions, day:S.day});
-  const msg = U.portions>0 ? U.portions+" box"+(U.portions>1?"es":"")+" in the fridge. Future you is sorted." : "Eaten on the spot. Respect.";
-  U.cook=null; U.step=0; U.effort=null; U.heroIdx=0;
+  if (U.step < r.steps.length) { U.step++; render(); return; }
+  const rounds = roundsFor(r, U.serv);
+  if (U.round < rounds) { U.round++; U.step = cookFrom(r)+1; render(); return; }
+  const kd = keepDaysOf(r);
+  const msg = "Done. " + (kd===1 ? "Eat it now." : "Leftovers keep "+kd+" days"+(r.freeze?" · "+r.freeze:"")+".");
+  U.cook=null; U.step=0; U.round=1; U.effort=null; U.heroIdx=0;
   save(); render();
   flash(msg);
 }
-function portDec(){ U.portions = Math.max(0, U.portions-1); render(); }
-function portInc(){ U.portions = Math.min(6, U.portions+1); render(); }
 
 /* ============ DERIVED ============ */
 function compute(){
@@ -724,10 +773,24 @@ function compute(){
   if (!picks.length) return null;
   const N = S.N, servings = {};
   picks.forEach((r,i)=>{ servings[r.id] = Math.floor(N/picks.length) + (i < N%picks.length ? 1 : 0); });
-  const g = {}; let riceGo = 0, mugiCups = 0;
+  /* An even split ignores the gear: 7 meals over curry (3 a pot) and karaage (2 a basket) came
+     out 4/3, which is two rounds of each. Move servings from a dish that overflows its gear to
+     one with room, so the week cooks in as few rounds as the gear allows. */
+  const rnd = r => Math.ceil(servings[r.id] / (r.cap || 2));
+  const total = () => picks.reduce((a,r)=>a+rnd(r), 0);
+  for (let pass=0, better=true; better && pass<40; pass++) {
+    better = false;
+    picks.forEach(a=>picks.forEach(b=>{
+      if (a===b || servings[a.id]<=1) return;
+      const before = total(); servings[a.id]--; servings[b.id]++;
+      if (total() < before) better = true; else { servings[a.id]++; servings[b.id]--; }
+    }));
+  }
+  const g = {}; let riceGo = 0, mugiCups = 0, sideCups = 0;
   picks.forEach(r=>{
     const s = servings[r.id];
     riceGo += (r.rice||0)*s;
+    if (riceKind(r)==="side" || riceKind(r)==="cooked") sideCups += r.rice*s;
     if (S.mugi && !r.cookin) mugiCups += (r.rice||0)*s;
     ingsOf(r).forEach(([id,q])=>{ g[id]=(g[id]||0)+q*s; });
   });
@@ -743,7 +806,7 @@ function compute(){
     return {id, cat:it.cat, n:it.n, jp:it.jp, disp: it.u==="pc" ? buy+(buy>1?" pcs":" pc") : buy+" g", cost};
   });
   const needed = [...new Set(picks.flatMap(r=>r.conds))];
-  return {picks, servings, N, rows, food, riceGo, mugiCups, needed};
+  return {picks, servings, N, rows, food, riceGo, sideCups, mugiCups, needed};
 }
 
 /* A week is only 2–3 dishes, so it usually cannot answer all three effort questions —
@@ -765,9 +828,6 @@ function rotated(list, salt){
 }
 function candidates(c){
   const eff = U.effort;
-  const fridge = [];
-  S.fridge.forEach((f,i)=>{ const r=rec(f.id); if (!r) return;
-    fridge.push({kind:"fridge", r, idx:i, age:S.day-f.day, portions:f.portions, eff:0}); });
   const planned = c ? c.picks : [];
   const inPlan = planned.filter(r=>r.eff<=eff).map(r=>({kind:"cook", r, eff:r.eff, serv:c.servings[r.id]}));
   const offPlan = rotated(RECIPES.filter(r=>r.eff===eff && !planned.some(p=>p.id===r.id)), eff)
@@ -777,21 +837,19 @@ function candidates(c){
        anchor is a better answer than a 12-minute pan dish — batching is the whole request. */
     const anchors = inPlan.filter(o=>o.r.eff===2);
     const others = inPlan.filter(o=>o.r.eff!==2);
-    return [...anchors, ...offPlan, ...fridge, ...others];
+    return [...anchors, ...offPlan, ...others];
   }
-  /* asked for something easy: what is already cooked wins, then the plan, hardest first */
-  return [...fridge, ...inPlan.sort((a,b)=>b.eff-a.eff), ...offPlan];
+  /* asked for something easy: the plan first, hardest first, then the roster */
+  return [...inPlan.sort((a,b)=>b.eff-a.eff), ...offPlan];
 }
-
-/* How many rounds N servings takes on this dish's gear, and how to say it. Josh asked for this
-   to be visible on every recipe, not only on the ones that overflow — "can I do it all in one
-   go" is the question you have before you start cooking, not after. */
 function roundsFor(r, s){ return (!r.cap || s <= r.cap) ? 1 : Math.ceil(s / r.cap); }
 function roundsLabel(r, s){
   const n = roundsFor(r, s);
   if (n === 1) return "one go";
   return n + " rounds";
 }
+/* minutes to the table; side rice is its own clock, so it is named rather than added in */
+function readyLabel(r){ return "ready ~"+r.ready+" min"+(riceKind(r)==="side" ? " + rice" : ""); }
 function capLabel(r){
   if (!r.cap) return "no limit";
   return r.cap + " a round";
@@ -802,19 +860,16 @@ function gearTips(r, s){
   if (cp && s>cp) t.push(cp===1
     ? "This dish only works one serving at a time — do "+s+" quick rounds back-to-back."
     : "×"+s+" servings won't fit in one go — cook "+Math.ceil(s/cp)+" rounds of ~"+cp+".");
-  if (r.crowd === "full") t.push("Four servings is brim-full in a 26 cm pan — if it looks like it will slop over the side, do two rounds.");
-  else if (r.crowd) t.push("Doing 2+ servings at once? Split into rounds — a crowded 26 cm pan steams instead of sears.");
-  if (r.plate) t.push("Cooking plate: plain rice underneath only — seasoned rice rises into the plate and welds itself to the underside. Tiger caps the rice at 1 go with the plate in, which is half a cup a serving and two servings a run.");
+  if (r.crowd) t.push("Doing 2+ servings at once? Split into rounds — a crowded 26 cm pan steams instead of sears.");
+  if (r.plate) t.push("Cooking plate: plain rice underneath only, food spread out rather than piled, and lift the plate out when it beeps — never keep warm with it in. Tiger caps the rice at 1 go with the plate in: half a cup a serving, two servings a run.");
+  if (r.minServ && s < r.minServ) t.push("The simmer menu needs at least "+r.minServ+" servings in the pot, or it sits under the bottom mark and can boil over.");
   return t;
 }
 
 /* ============ RENDER: Tonight ============ */
 function todayMidnight(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
-/* the app's own clock: real today, plus however many times "pretend it's tomorrow" was tapped.
-   Everything dated — the header and the savings log — reads from here, so they never disagree. */
-function simDate(){ return new Date(todayMidnight().getTime() + S.day*864e5); }
 function tonightHTML(c){
-  const d = simDate();
+  const d = todayMidnight();
   const wd = ["日","月","火","水","木","金","土"][d.getDay()];
   const dateLine = (d.getMonth()+1)+"月"+d.getDate()+"日 "+wd;
   const planCount = c ? c.N+" meals planned" : "no plan yet";
@@ -823,7 +878,6 @@ function tonightHTML(c){
   return h;
 }
 function askingHTML(){
-  const fridgeN = S.fridge.reduce((a,f)=>a+f.portions,0);
   let h = '<div style="animation:lmpUp .3s ease both">'
     + '<div class="kicker mint jpx">何 食べたい？</div>'
     + '<div class="hero1">How much<br>effort have<br>you got?</div>'
@@ -835,7 +889,6 @@ function askingHTML(){
       + '<span class="arrow">→</span></button>';
   });
   h += '</div>';
-  if (fridgeN>0) h += '<div class="fridgenudge">There are '+fridgeN+' portion'+(fridgeN>1?"s":"")+' already sitting in the fridge. You may not need to cook at all.</div>';
   h += '</div>';
   return h;
 }
@@ -865,44 +918,30 @@ function answeredHTML(c){
 }
 function heroHTML(hero){
   const r = hero.r;
-  let tag, why, cta, go;
-  if (hero.kind==="fridge") {
-    const kd = keepDaysOf(r), left = kd-hero.age;
-    tag = 'Already cooked · <span lang="ja">冷蔵庫</span>';
-    why = hero.portions+" portion"+(hero.portions>1?"s":"")+" in a box, cooked "+(hero.age===0?"today":hero.age+" day"+(hero.age>1?"s":"")+" ago")+". "+(left<=1?"Eat it today — the clock is up.":left+" days of goodwill left.");
-    cta = "Eat it";
-    go = "eatFridge("+hero.idx+")";
-  } else {
-    const off = hero.kind==="offplan";
-    tag = off ? "Not in this week's plan · "+r.time : (r.eff===2?"Batch anchor · ":"Cook fresh · ")+r.time;
-    const gearTxt = r.gear.map(g=>GEARLABEL[g]).join(" + ");
-    const perRound = r.cap ? Math.min(hero.serv||r.cap, r.cap) : (hero.serv||1);
-    why = cap1(gearTxt)+". "+(off
-      ? (U.effort===2 ? "This week has no batch anchor in it, so this one is off the plan — you will need to shop for it."
-                      : "Nothing this easy is in this week's plan, so this one is off it — check the cupboard first.")
-      : (r.batch ? "Makes "+perRound+" at a time"+(r.freeze?", "+r.freeze:"")+"." : "Too quick to be worth batching."));
-    cta = "Cook it";
-    go = "openCookFromHero('"+r.id+"')";
-  }
+  const off = hero.kind==="offplan";
+  const tag = (off ? "Not in this week's plan · " : (r.eff===2?"Batch anchor · ":"Cook fresh · ")) + r.time + " · " + readyLabel(r);
+  const gearTxt = r.gear.map(g=>GEARLABEL[g]).join(" + ");
+  const perRound = r.cap ? Math.min(hero.serv||r.cap, r.cap) : (hero.serv||1);
+  const why = cap1(gearTxt)+". "+(off
+    ? (U.effort===2 ? "This week has no batch anchor in it, so this one is off the plan — you will need to shop for it."
+                    : "Nothing this easy is in this week's plan, so this one is off it — check the cupboard first.")
+    : (r.batch ? "Makes "+perRound+" at a time"+(r.freeze?", "+r.freeze:"")+"." : "Too quick to be worth batching."));
   return '<div style="animation:lmpUp .3s ease both;margin-top:0">'
     + '<div class="kicker mint" style="margin-top:26px">'+tag+'</div>'
     + '<div class="hero2">'+r.n+'</div>'
     + '<div class="herojp jp">'+r.jp+'</div>'
     + '<div class="herowhy">'+why+'</div>'
-    + '<div class="herocta hlist"><button class="cta" data-k="herogo" onclick="'+go+'">'+cta+'</button>'
+    + '<div class="herocta hlist"><button class="cta" data-k="herogo" onclick="openCookFromHero(\''+r.id+'\')">Cook it</button>'
     + '<button class="nah" data-k="heronah" onclick="nextHero()">Nah</button></div>'
     + '</div>';
 }
 function altRowHTML(o,i){
-  const meta = o.kind==="fridge" ? "in the fridge · "+o.portions+" left" : o.r.time+" · "+o.r.gear.map(g=>GEARLABEL[g]).join(" + ");
-  const badge = o.kind==="fridge" ? "ready" : o.kind==="offplan" ? "off plan" : (o.r.eff===2?"batch":"cook");
-  const tint = o.kind==="fridge" ? "mint" : "muted";
-  const go = o.kind==="fridge" ? "eatFridge("+o.idx+")" : "openSheet('"+o.r.id+"')";
-  return '<button class="altrow" data-k="alt'+i+'" onclick="'+go+'">'
+  const meta = o.r.time+" · "+readyLabel(o.r)+" · "+o.r.gear.map(g=>GEARLABEL[g]).join(" + ");
+  const badge = o.kind==="offplan" ? "off plan" : (o.r.eff===2?"batch":"cook");
+  return '<button class="altrow" data-k="alt'+i+'" onclick="openSheet(\''+o.r.id+'\')">'
     + '<span class="altbody"><span class="altn">'+o.r.n+'</span><span class="altmeta">'+meta+'</span></span>'
-    + '<span class="altbadge '+tint+'">'+badge+'</span></button>';
+    + '<span class="altbadge muted">'+badge+'</span></button>';
 }
-
 /* ============ RENDER: Week ============ */
 function weekHTML(c){
   const V = {1:"1 dish<br>max batch",2:"2–3 dishes",3:"Different<br>most days"};
@@ -939,33 +978,74 @@ function weekHTML(c){
   }
   return h;
 }
+/* what the other appliances do while a batch anchor cooks — the whole point of a cook day */
+function pairingFor(r, c, riceRun){
+  const bits = [];
+  const busyCooker = r.simmer || r.cookin || r.plate;
+  if (riceKind(r) === "cooked") bits.push("It wants day-old rice, so cook "+Math.round(r.rice*c.servings[r.id]*2)/2+" cups the day before and keep them in the fridge.");
+  else if (busyCooker) bits.push("It has the rice cooker for ~"+r.ready+" min, so any rice for the week goes in before it.");
+  else if (riceRun > 0) bits.push("Put "+riceRun+" cup"+(riceRun>1?"s":"")+" of rice on first ("+COOKER.whiteMin+" min), then start prepping — they finish together.");
+  const prep = c.picks.filter(p=>p!==r && p.gear.includes("air") && /raw/.test(p.freeze||""));
+  if (prep.length && !r.gear.includes("air")) bits.push("While it simmers, marinate the "+prep[0].n.replace(/^Air-fryer /,"")+" and bag it for later in the week.");
+  return bits.join(" ");
+}
 function rhythmHTML(c){
   const bat = c.picks.filter(r=>r.batch && c.servings[r.id]>=3);
   const quick = c.picks.filter(r=>!bat.includes(r));
-  const rounds = r => { if (!r.cap || c.servings[r.id]<=r.cap) return "";
+  const rounds = r => { if (!r.cap || c.servings[r.id]<=r.cap) return " One go.";
     return r.cap===1 ? " One serving per run, so "+c.servings[r.id]+" quick rounds back to back."
       : " Your gear fits ~"+r.cap+" per run — "+Math.ceil(c.servings[r.id]/r.cap)+" rounds back to back."; };
+  /* side rice: cooked in 3-cup runs, the first alongside Sunday's anchor, the rest Wednesday's */
+  const side = Math.ceil(c.sideCups*2)/2;
+  const runs = side ? Math.ceil(side/COOKER.white) : 0;
+  const run1 = Math.min(side, COOKER.white), run2 = Math.max(0, side-run1);
   const rows = [];
-  if (bat[0]) rows.push(["日 SUN", "All "+c.servings[bat[0].id]+" servings of "+bat[0].n+"."+(bat[0].freeze?" "+cap1(bat[0].freeze)+".":"")+rounds(bat[0])+" About 45 minutes."]);
-  if (bat[1]) rows.push(["水 WED", "Top up with "+bat[1].n+"."+rounds(bat[1])+" About 30 minutes."]);
+  if (bat[0]) rows.push(["日 SUN", "All "+c.servings[bat[0].id]+" servings of "+bat[0].n+" ("+GEARLABEL[bat[0].gear[0]]+")."+rounds(bat[0])+" "+pairingFor(bat[0], c, run1)+(bat[0].freeze?" "+cap1(bat[0].freeze)+".":"")]);
+  if (bat[1]) rows.push(["水 WED", "Top up with "+bat[1].n+" ("+GEARLABEL[bat[1].gear[0]]+")."+rounds(bat[1])+" "+pairingFor(bat[1], c, run2)]);
   bat.slice(2).forEach(r=>rows.push(["ALSO", "Batch "+r.n+" ("+c.servings[r.id]+" servings)."+rounds(r)]));
   quick.forEach(r=>rows.push([r.time.replace(" min"," MIN").toUpperCase(), r.n+" × "+c.servings[r.id]+", cooked fresh — "+(r.batch?"batchable, but at this size fresher is easier":"too quick to be worth batching")+"."+rounds(r)]));
-  const rr = Math.ceil(Math.ceil(c.riceGo)/3);
-  rows.push(["米 RICE", Math.ceil(c.riceGo)+" cooker cups ("+Math.ceil(c.riceGo)*150+" g dry). The 3-cup JAJ-A550 maxes at 3 per run"+(rr>1?", so "+rr+" runs — start the next while you eat":"")+". Freeze flat, microwave to revive."+(S.mugi&&c.mugiCups>0?" Mochi-mugi on: "+(Math.round(c.mugiCups*10)/10)+" of those cups are plain rice — add "+Math.round(c.mugiCups*50)+" g barley to those (50 g per cup) plus an extra 100 ml water per cup, same cycle. Cook-in cooker dishes stay white.":"")]);
+  const own = c.picks.filter(r=>riceKind(r)==="self").map(r=>r.n);
+  let riceTxt = side
+    ? side+" cooker cup"+(side>1?"s":"")+" of side rice ("+Math.round(side*150)+" g dry). The JAJ-A550 takes 3 a run"
+      + (runs>1 ? ", so "+runs+" runs: "+run1+" with Sunday's cook, "+run2+" with Wednesday's" : ", so one run")
+      + ". Freeze what you will not eat in 2 days — the 355 ml pots or flat in bags, 3 min in the microwave."
+    : "No side rice this week.";
+  if (own.length) riceTxt += " "+own.join(", ")+(own.length>1?" cook":" cooks")+" its own rice, on a separate run.";
+  if (S.mugi && c.mugiCups>0) riceTxt += " Mochi-mugi on: add "+Math.round(c.mugiCups*50)+" g barley across the plain rice (50 g per cup) plus 100 ml extra water per cup, same cycle. Seasoned-rice dishes stay white.";
+  rows.push(["米 RICE", riceTxt]);
   let h = '<div class="bigrow" style="margin:38px 0 4px;align-items:center"><h3 class="sectionlabel">The rhythm</h3>'
     + '<button class="mugitoggle'+(S.mugi?" on":"")+'" data-k="mugi" onclick="toggleMugi()" aria-pressed="'+S.mugi+'" title="Barley into the plain rice at 3:1 — 50 g per cooker-cup, about ¥20 a serving, ten times the fibre. Same cycle, same effort.">mochi-mugi '+(S.mugi?"ON":"OFF")+'</button></div>'
     + '<div class="dividerlist">';
   rows.forEach(([when,what])=>{ h += '<div class="schedrow"><div class="schedwhen jpx">'+when+'</div><div class="schedwhat">'+what+'</div></div>'; });
   h += '</div>';
+  h += rulesHTML();
   return h;
 }
-
+/* reference that is needed now and then: collapsed, never an open card */
+function rulesHTML(){
+  return '<details class="detailsblock"><summary>Air fryer, reheating and portioning — the rules</summary><div class="detailsnote">'
+    + '<b>Reheat wet</b> — rice, curry, keema, nikujaga, tonjiru, soboro. Microwave, lid on: 2–3 min from the fridge, 4–5 from frozen. Soups get their water back as they reheat.<br><br>'
+    + '<b>Reheat crisp</b> — karaage, katsu, gyoza, tofu, salmon. Air fryer 180 °C, no oil: 4–5 min from the fridge, 8–10 from frozen. Food onto the basket; the container never goes in.<br><br>'
+    + '<b>Cooking</b> — preheat 3 min for skin or coating, one layer with gaps, pat the oil on rather than spraying it. Amazon Basics 4.2 L, 60–200 °C.<br><br>'
+    + '<b>Rice</b> — 150 g dry per cooker cup, about 170 g cooked per serving. Mochi-mugi barley goes in at 3:1 (50 g per cup, plus 100 ml extra water): roughly ¥20 a serving for ten times the fibre, same cycle, same effort. Cook-in cooker dishes stay white.<br><br>'
+    + '<b>Portioning</b> — one serving goes in a 600 mL box: curry, keema and nikujaga land at 400–430 ml, tonjiru and the bean soup at ~520 once their water is back, nabe fills it. Rice goes in its own 355 ml one-bowl pot (約170 g), never in with the sauce. Four boxes and three rice pots covers the Sunday/Wednesday rhythm; only "1 dish, max batch" needs more.<br><br>'
+    + '<b>The pot</b> — 1.6 L to 1.5 cm under the rim. That is why the stews stop at 3 servings: a fourth does not fit before the vegetables cook down.'
+    + '</div></details>'
+    + '<details class="detailsblock"><summary>The rice cooker — what it can and cannot do</summary><div class="detailsnote">'
+    + 'Tiger tacook JAJ-A550, 3 cups. Rice limits by menu: white and quick 3 cups, cook-in and fried rice 2, risotto 1. White rice takes '+COOKER.whiteMin+' min, quick-cook '+COOKER.quickMin+'.<br><br>'
+    + '<b>The cooking plate</b> — plain rice underneath, never seasoned rice: the grains swell up into the plate and set like glue on the underside. Tiger caps the rice at 1 go (min 0.5) with the plate in — half a cup a serving, two servings a run. White-rice menu only. Spread the food out rather than piling it, and lift the plate out when it beeps: never keep warm with it in. To season the rice, fold the plate juices through afterwards.<br><br>'
+    + '<b>Cook-in rice</b> — about 70 g of extras per cup of rice at most, sitting on top, not stirred in. More than that and the rice cooks hard.<br><br>'
+    + '<b>Simmer menu</b> — for the braises. Set the timer (5–120 min). Ingredients go between the 1-go and 3-go white-rice marks, about 0.4 to 1.1 L: over the top mark it will not cook through and will boil over, under the bottom one it boils over too. Short of done? Add 30 min, up to three times.<br><br>'
+    + '<b>Never during the cycle</b> — roux, starch or any other thickener. Thickened liquid foams, foam blocks the steam vent, and blocked vents spray. Thickeners and dairy go in after the cycle ends, on residual heat. No foil, wrap or bags inside. Go easy on oil.<br><br>'
+    + '<b>Wooden paddle only</b> — metal scars the inner pot, and a scarred pot sticks forever after.'
+    + '</div></details>';
+}
 /* ============ RENDER: Shop ============ */
 function emptyGo(msg, key){
   return '<div class="emptycard">'+msg+'<br><button class="ghostbtn small" style="margin-top:14px" data-k="'+key+'" onclick="setTab(\'week\')">Go to Week</button></div>';
 }
 function shopHTML(c){
-  if (!c) return '<h2 class="eyebrow"><span lang="ja">買い物</span> · LIFE run</h2>'+emptyGo("No plan yet — your grocery list appears here once you generate a week.", "gotoweeksh");
+  if (!c) return '<h2 class="eyebrow"><span lang="ja">買い物</span> · LIFE run</h2>'+emptyGo("No plan yet — your grocery list appears here once you generate a week.", "gotoweeksh")+shelfHTML();
   const done = c.rows.filter(r=>S.bought[r.id]);
   const left = c.rows.filter(r=>!S.bought[r.id]).reduce((a,r)=>a+r.cost,0);
   let h = '<h2 class="eyebrow"><span lang="ja">買い物</span> · LIFE run</h2>'
@@ -990,7 +1070,7 @@ function shopHTML(c){
   const need = c.needed.filter(x=>!S.owned[x]);
   if (need.length) {
     h += '<h3 class="ghead2">Shelf top-up · <span lang="ja">調味料</span></h3>'
-      + '<div class="detailsnote" style="margin:2px 0 0">A bottle lasts months, so these only appear while the shelf in Fridge says you are out of one. Tap to put it back in stock.</div>'
+      + '<div class="detailsnote" style="margin:2px 0 0">A bottle lasts months, so these only appear while the shelf below says you are out of one. Tap to put it back in stock.</div>'
       + '<div class="dividerlist">';
     need.forEach(k=>{
       h += '<button class="shoprow" data-k="need'+k+'" role="checkbox" aria-checked="false" onclick="toggleCond(\''+k+'\')">'
@@ -1001,67 +1081,32 @@ function shopHTML(c){
     });
     h += '</div>';
   }
-  h += priceTuneHTML();
-  h += '<div class="footnote">LIFE stickers meat and fish down 20–50% after about 7pm. The 🏷 dishes take whatever is cheapest — swap the protein in the dish sheet.</div>';
+  h += shelfHTML();
+  h += priceTuneHTML(c);
+  h += '<div class="footnote">LIFE stickers meat and fish down 20–50% after about 7pm. Dishes marked "any stickered meat" take whichever of chicken thigh or pork komagire is cheapest — swap it in the dish sheet.</div>';
   return h;
 }
-function priceTuneHTML(){
+function togglePriceAll(){ U.priceAll = !U.priceAll; render(); }
+function priceTuneHTML(c){
   const edited = Object.keys(S.price).length;
+  /* this week's items first; the full pantry only on request */
+  const ids = (c && !U.priceAll) ? c.rows.map(r=>r.id) : Object.keys(ING);
   let h = '<details class="detailsblock"'+(priceOpen?" open":"")+' ontoggle="setPriceOpen(this.open)"><summary>Tune prices to your receipts'+(edited?" ("+edited+" edited)":"")+'</summary>'
     + '<div class="detailsnote">Match these to what LIFE actually charges — every cost and saving updates. ¥ per 100 g, or ¥ per piece/pack/can. Set something to 0 if you were given it.</div>';
-  h += Object.entries(ING).map(([id,it])=>{
-    const cur = priceOf(id), disp = Math.round(it.u==="pc" ? cur : cur*100), ed = S.price[id]!==undefined;
+  h += ids.map(id=>{
+    const it = ING[id], cur = priceOf(id), disp = Math.round(it.u==="pc" ? cur : cur*100), ed = S.price[id]!==undefined;
     return '<div class="pricerow"><span class="pricename"><b>'+it.n+'</b>'+(ed?" ✏️":"")+'<span class="jp"> '+it.jp+'</span></span><span class="priceunit">'+(it.u==="pc"?"¥/pc":"¥/100g")+'</span><input type="number" inputmode="numeric" min="0" value="'+disp+'" aria-label="price of '+it.n+'" data-k="price'+id+'" onchange="setPrice(\''+id+'\',this.value)"></div>';
   }).join("");
+  if (c) h += '<button class="ghostbtn small" data-k="priceall" onclick="togglePriceAll()">'+(U.priceAll?"Only this week's items":"Show every ingredient")+'</button>';
   if (edited) h += '<button class="ghostbtn small" data-k="resetprices" onclick="resetPrices()">Reset all to defaults</button>';
   h += '</details>';
   return h;
 }
-
-/* ============ RENDER: Fridge ============ */
-function fridgeHTML(){
-  const tot = S.fridge.reduce((a,f)=>a+f.portions,0);
-  let h = '<div class="bigrow"><h2 class="eyebrow"><span lang="ja">冷蔵庫</span> · Fridge</h2><button class="linklike" data-k="nextday" onclick="nextDay()">pretend it\'s tomorrow →</button></div>'
-    + '<div class="bignum" style="margin-top:14px">'+(tot?tot+" portions":"Empty")+'</div>'
-    + '<div class="subline">'+(tot?"cooked and waiting · 冷蔵庫":"nothing cooked · 冷蔵庫")+'</div>';
-  h += '<div class="dividerlist" style="margin-top:24px">';
-  S.fridge.forEach((f,i)=>{
-    const r = rec(f.id); if (!r) return;
-    const kd = keepDaysOf(r), age = S.day-f.day, left = kd-age;
-    const ageText = left<=0 ? "Past it. Bin it." : left===1 ? "Eat today — last day" : "Day "+(age+1)+" of "+kd+" · "+f.portions+" left";
-    const tint = left<=1 ? "warm" : "mint";
-    h += '<div class="fridgerow"><div class="fridgemain">'
-      + '<div class="fridgename">'+r.n+'</div><div class="fridgejp jp">'+r.jp+'</div>'
-      + '<div class="fridgeage '+tint+'">'+ageText+'</div>'
-      + '<div class="fridgeacts"><button data-k="fe'+i+'" onclick="eatFridge('+i+')">Eat one</button><button data-k="ft'+i+'" onclick="tossFridge('+i+')">Bin it</button></div>'
-      + '</div><div class="fridgedots">'+Array.from({length:kd},(_,k)=>'<span class="dot '+(k<age?"":tint)+'"></span>').join("")+'</div></div>';
-  });
-  h += '</div>';
-  if (!S.fridge.length) h += '<div class="emptynote">Nothing cooked yet. Finish a dish in cook mode and the leftovers land here with a clock on them.</div>';
-  const boxLine = tot>0
-    ? tot+" of your 4 × 600 mL boxes are in play"+(tot>4?" — that is more boxes than you own, so something is going in the freezer":" — one still free for the sink")+"."
-    : "All 4 × 600 mL boxes clean and empty. Rice lives in its own 355 mL pots, never in with the sauce.";
-  h += '<h3 class="sectionlabel" style="margin:38px 0 4px">Containers</h3><div class="dividerlist"><div class="containerrow">'+boxLine+'</div></div>';
-  h += '<details class="detailsblock"><summary>Air fryer, reheating and portioning — the rules</summary><div class="detailsnote">'
-    + '<b>Reheat wet</b> — rice, curry, keema, nikujaga, tonjiru, soboro. Microwave, lid on: 2–3 min from the fridge, 4–5 from frozen.<br><br>'
-    + '<b>Reheat crisp</b> — karaage, katsu, gyoza, tofu, salmon. Air fryer 180 °C, no oil: 4–5 min from the fridge, 8–10 from frozen. Food onto the basket; the container never goes in.<br><br>'
-    + '<b>Cooking</b> — preheat 3 min for skin or coating, one layer with gaps, pat the oil on rather than spraying it. Amazon Basics 4.2 L, 60–200 °C.<br><br>'
-    + '<b>Rice</b> — 150 g dry per cooker cup, about 170 g cooked per serving. Mochi-mugi barley goes in at 3:1 (50 g per cup, plus 100 ml extra water): roughly ¥20 a serving for ten times the fibre, same cycle, same effort. Cook-in cooker dishes stay white.<br><br>'
-    + '<b>Portioning</b> — one serving goes in a 600 mL box: curry, keema and nikujaga land at 400–430 ml, tonjiru and the bean soup at ~520, nabe fills it. Rice goes in its own 355 ml one-bowl pot (約170 g), never in with the sauce. Four boxes and three rice pots covers the Sunday/Wednesday rhythm; only "1 dish, max batch" needs more.'
-    + '</div></details>';
-  h += '<details class="detailsblock"><summary>The rice cooker — what it can and cannot do</summary><div class="detailsnote">'
-    + 'Tiger tacook JAJ-A550, 3 cups. It is not only a rice pot: it has simmer, risotto, fried-rice and cake menus, and a cooking plate that steams a dish above the rice while it cooks.<br><br>'
-    + '<b>The cooking plate</b> — plain rice underneath, never seasoned rice: the grains swell up into the plate and set like glue on the underside. Tiger caps the rice at 1 go (min 0.5) with the plate in, because the plate takes the space above — half a cup a serving, two servings a run. Raw meat and fish go straight on.<br><br>'
-    + '<b>Simmer menu</b> — for the braises. Ingredients go between the 1-go and 3-go white-rice marks, about 0.4 to 1.2 L: over the top mark it will not cook through and will boil over, under the bottom one it boils over too.<br><br>'
-    + '<b>Never during the cycle</b> — roux, starch or any other thickener. Thickened liquid foams, foam blocks the steam vent, and blocked vents spray. Thickeners and dairy go in after the cycle ends, on residual heat. No foil, wrap or bags inside for the same reason. Go easy on oil.<br><br>'
-    + '<b>Wooden paddle only</b> — metal scars the inner pot, and a scarred pot sticks forever after.'
-    + '</div></details>';
-  h += '<h3 class="sectionlabel">The shelf · <span lang="ja">調味料</span></h3>'
+function shelfHTML(){
+  return '<h3 class="sectionlabel" style="margin:38px 0 8px">The shelf · <span lang="ja">調味料</span></h3>'
     + '<div class="condgrid">'+Object.entries(CONDS).map(([k,cd])=>'<button class="condbtn'+(S.owned[k]?" on":"")+'" data-k="cond'+k+'" aria-pressed="'+!!S.owned[k]+'" title="'+cd.jp+'" aria-label="'+cd.n+' ('+cd.jp+')'+(S.owned[k]?", in stock":", out of stock")+'" onclick="toggleCond(\''+k+'\')">'+cd.n+'</button>').join("")+'</div>'
-    + '<div class="footnote">Mint means you have it. Tap anything you have run out of and it joins the shopping list.</div>';
-  return h;
+    + '<div class="footnote" style="margin-top:10px;padding-top:0;border-top:none">Mint means you have it. Tap anything you have run out of and it joins the shopping list.</div>';
 }
-
 /* ============ RENDER: Saved ============ */
 function saveHTML(){
   const totSpent = S.log.reduce((a,l)=>a+l.spent,0);
@@ -1095,11 +1140,13 @@ function sheetHTML(c){
   if (!U.sheet) return {show:false, html:""};
   const r = rec(U.sheet); if (!r) { U.sheet=null; return {show:false, html:""}; }
   const planned = !!(c && c.servings[r.id]);
-  const serv = planned ? c.servings[r.id] : 1;
-  const facts = [[r.time,"hands on"],
+  const serv = planned ? c.servings[r.id] : defaultServ(r);
+  const kd = keepDaysOf(r);
+  const facts = [[r.time,"hands on"], ["~"+r.ready+" min"+(riceKind(r)==="side"?" + rice":""),"to the table"],
     planned ? ["×"+serv+" · "+roundsLabel(r, serv),"this week"] : ["—","not planned"],
     [capLabel(r),"per round"],
-    [r.gear.map(g=>GEARLABEL[g]).join(" + "),"gear"]];
+    [r.gear.map(g=>GEARLABEL[g]).join(" + "),"gear"],
+    [kd===1 ? "eat today" : kd+" days"+(r.freeze?" · freezes":""), "keeps"]];
   const tips = gearTips(r, serv);
   /* yaki-onigiri buys nothing at all, so the list can be empty — do not leave a dangling separator */
   const ingParts = ingsOf(r).map(([id,q])=>{ const it=ING[id]; return it.n+" "+(it.u==="pc"?q+" pc":q+" g"); });
@@ -1121,45 +1168,67 @@ function sheetHTML(c){
     const cur = ING[S.protein[r.id]||baseMeat(r)].n;
     h += '<button class="flexbtn" data-k="sheetcycle" onclick="cycleProtein(\''+r.id+'\')">↔ '+cur+'</button>';
   }
-  h += '<button class="cta" data-k="sheetstart" onclick="startCook(\''+r.id+'\', '+initPortions(r,serv)+')">Cook it · '+r.steps.length+' steps</button>';
+  h += '<button class="cta" data-k="sheetstart" onclick="startCook(\''+r.id+'\', '+serv+')">Cook it · '+r.steps.length+' steps</button>';
   h += '</div>';
   return {show:true, html:h};
+}
+/* what the rice cooker should be doing while this dish cooks */
+function riceFirstText(r, serv){
+  const k = riceKind(r);
+  if (k === "none" || k === "self") return "";
+  const cups = Math.round(r.rice*serv*2)/2, g = Math.round(cups*150);
+  if (k === "cooked") return "This needs "+Math.round(cups*330)+" g of cooked rice, ideally a day old. None in the fridge? Cook "+cups+" cup"+(cups>1?"s":"")+" now on quick-cook ("+COOKER.quickMin+" min) and let it cool.";
+  if (r.gear.every(g=>g==="rice")) return "Hot rice: microwave a frozen rice pot for 3 min, or cook "+cups+" cup"+(cups>1?"s":"")+" ("+g+" g) on quick-cook, "+COOKER.quickMin+" min.";
+  const lead = 50 - r.ready;
+  const when = lead >= 10 ? "this takes ~"+r.ready+" min, so start prepping in about "+(Math.round(lead/5)*5)+" min" : "this takes about as long, so start both now";
+  return "Rice first: "+cups+" cup"+(cups>1?"s":"")+" ("+g+" g) in the cooker now — white rice is "+COOKER.whiteMin+" min and "+when+"."
+    + (cups > COOKER.white ? " That is more than 3 cups: 3 now, the rest in a second run." : "")
+    + (r.ready <= 25 ? " In a hurry, quick-cook is "+COOKER.quickMin+" min." : "")
+    + " Using frozen rice pots instead? Skip this — 3 min in the microwave at the end.";
 }
 function cookHTML(){
   if (!U.cook) return {show:false, html:""};
   const r = rec(U.cook); if (!r) { U.cook=null; return {show:false, html:""}; }
-  const last = U.step >= r.steps.length;
+  const n = r.steps.length, rounds = roundsFor(r, U.serv), rs = roundServ(r, U.serv, U.round);
   const canWake = typeof navigator !== "undefined" && "wakeLock" in navigator;
   let h = '<div class="cookhead"><button class="quitb" data-k="cookquit" onclick="quitCook()">✕ Quit</button>'
-    + '<div class="stepdots" role="progressbar" aria-valuemin="1" aria-valuemax="'+(r.steps.length+1)+'" aria-valuenow="'+(U.step+1)+'">'
-    + r.steps.concat([1]).map((x,i)=>'<span class="dot '+(i<=U.step?"on":"")+'"></span>').join("")+'</div>'
+    + '<div class="stepdots" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+U.step+'">'
+    + r.steps.map((x,i)=>'<span class="dot '+(i<U.step?"on":"")+'"></span>').join("")+'</div>'
     /* only offer the screen lock where the API actually exists, or the button lies */
     + (canWake ? '<button class="wakeb'+(wakeWanted?" on":"")+'" data-k="cookwake" aria-pressed="'+wakeWanted+'" onclick="toggleWake()">'+(wakeWanted?"Staying awake":"Keep awake")+'</button>' : '')
     + '</div><div class="cookbody">';
-  if (!last) {
+  if (U.step === 0) {
+    const rice = riceFirstText(r, U.serv);
+    const tips = gearTips(r, U.serv).filter(t=>!/won't fit in one go|only works one serving/.test(t));
     h += '<div class="kicker mint">'+r.n+' · <span lang="ja">'+r.jp+'</span></div>'
-      + '<div class="stepnum">'+String(Math.min(U.step+1,r.steps.length)).padStart(2,"0")+'</div>'
-      + '<div class="steptext">'+r.steps[Math.min(U.step,r.steps.length-1)]+'</div>';
+      + '<div class="hero2">Before you start</div>'
+      + '<div class="portstepper"><button data-k="servdec" aria-label="fewer servings" onclick="cookServ(-1)">−</button><div class="portval">×'+U.serv+'</div><button data-k="servinc" aria-label="more servings" onclick="cookServ(1)">+</button></div>'
+      + '<div class="setupline">'+(rounds===1
+          ? "One go — "+(r.cap ? capLabel(r).replace(" a round"," fit")+" the "+GEARLABEL[r.gear[0]] : "no limit")+"."
+          : rounds+" rounds of up to "+r.cap+" — the "+GEARLABEL[r.gear[0]]+" holds "+r.cap+". "+(cookFrom(r)>0 ? "Prep is done once for all of it; the cooking steps repeat for each round." : "The steps repeat for each round, with the amounts for that round."))+'</div>'
+      + '<div class="setupline">'+cap1(readyLabel(r))+'.</div>'
+      + (rice ? '<div class="setupline mint">'+rice+'</div>' : '')
+      + tips.map(t=>'<div class="setupline warm">'+t+'</div>').join("");
   } else {
-    h += '<div class="kicker mint jpx">できた</div>'
-      + '<div class="hero2">How many<br>go in boxes?</div>'
-      + '<div class="portionhint">'+(r.freeze?cap1(r.freeze)+". ":"")+'One serving per 600 mL box. Cooked ground meat never gets more than 3 days; everything else 3–4.</div>'
-      + '<div class="portstepper"><button data-k="portdec" onclick="portDec()">−</button><div class="portval">'+U.portions+'</div><button data-k="portinc" onclick="portInc()">+</button></div>';
+    const ss = stepServ(r, U.step-1), shared = rounds>1 && U.step-1 < cookFrom(r);
+    h += '<div class="kicker mint">'+r.n+(rounds>1 ? (shared ? ' · prep for all '+U.serv : ' · round '+U.round+' of '+rounds+' · ×'+ss) : ' · ×'+ss)+'</div>'
+      + '<div class="stepnum">'+String(U.step).padStart(2,"0")+'</div>'
+      + '<div class="steptext">'+stepText(r, U.step-1, ss)+'</div>';
   }
+  const lastStep = U.step === n;
+  const label = U.step===0 ? "Start" : !lastStep ? "Next" : (U.round < rounds ? "Round "+(U.round+1)+" of "+rounds : "Done");
   h += '</div><div class="cookfoot hlist">'
-    + '<button class="backb" data-k="cookprev" onclick="prevStep()">←</button>'
-    + '<button class="cta" data-k="cooknext" onclick="nextStep()">'+(last ? "Into the fridge" : (U.step===r.steps.length-1 ? "Done cooking" : "Next"))+'</button>'
+    + '<button class="backb" data-k="cookprev" aria-label="back" onclick="prevStep()">←</button>'
+    + '<button class="cta" data-k="cooknext" onclick="nextStep()">'+label+'</button>'
     + '</div>';
   return {show:true, html:h};
 }
 function renderTabBar(c){
-  const TABS = [["tonight","今夜","Tonight"],["week","献立","Week"],["shop","買物","Shop"],["fridge","冷蔵","Fridge"],["save","貯金","Saved"]];
+  const TABS = [["tonight","今夜","Tonight"],["week","献立","Week"],["shop","買物","Shop"],["save","貯金","Saved"]];
   const shopDone = c ? c.rows.filter(r=>S.bought[r.id]).length : 0;
-  const fridgeN = S.fridge.reduce((a,f)=>a+f.portions,0);
   document.getElementById("tabbar").innerHTML = TABS.map(([t,jp,en])=>{
     let badge = "";
     if (t==="shop" && c && shopDone) badge = " "+shopDone+"/"+c.rows.length;
-    if (t==="fridge" && fridgeN) badge = " "+fridgeN;
     return '<button class="tabbtn'+(S.tab===t?" on":"")+'" data-k="tab'+t+'"'+(S.tab===t?' aria-current="page"':"")
       + ' onclick="setTab(\''+t+'\')"><span class="tabjp" lang="ja">'+jp+'</span><span class="taben">'+en+badge+'</span></button>';
   }).join("");
@@ -1184,10 +1253,9 @@ function render(){
   document.getElementById("tab-tonight").innerHTML = tonightHTML(c);
   document.getElementById("tab-week").innerHTML = weekHTML(c);
   document.getElementById("tab-shop").innerHTML = shopHTML(c);
-  document.getElementById("tab-fridge").innerHTML = fridgeHTML();
   document.getElementById("tab-save").innerHTML = saveHTML();
   renderTabBar(c);
-  ["tonight","week","shop","fridge","save"].forEach(t=>{
+  ["tonight","week","shop","save"].forEach(t=>{
     document.getElementById("tab-"+t).className = "wrap tab"+(S.tab===t?" on":"");
   });
   const sh = sheetHTML(c);
@@ -1211,6 +1279,7 @@ function render(){
     if (overlaid) el.setAttribute("inert",""); else el.removeAttribute("inert");
   });
   document.body.classList.toggle("noscroll", overlaid);
+  document.body.classList.toggle("cooking", ck.show);
 
   /* put back what the user had typed, then where they were */
   if (U._clearSpent) { U._clearSpent = false; }
@@ -1243,13 +1312,13 @@ if (typeof document !== "undefined") {
 /* last resort: a corrupt save must never leave a blank app with no way back, and must never
    leave one that fails again on every reload — so each attempt throws away strictly more */
 try { render(); } catch (e) {
-  delete S.plan; S.protein = {}; S.bought = {}; S.fridge = []; S.tab = "tonight";
+  delete S.plan; S.protein = {}; S.bought = {}; S.tab = "tonight";
   S.log = S.log.filter(l=>l && typeof l.d==="string" && Number.isFinite(l.spent) && Number.isFinite(l.meals));
   save();
   try { render(); } catch (e2) {
     try { localStorage.removeItem("lmp"); } catch (e3) {}
-    S = {owned:{oil:true}, locked:[], bought:{}, protein:{}, log:[], N:7, v:2, tab:"tonight", price:{}, mugi:false, fridge:[], day:0};
-    U = { effort:null, heroIdx:0, sheet:null, cook:null, step:0, portions:2, toast:null, _toastTimer:null };
+    S = {owned:{oil:true}, locked:[], bought:{}, protein:{}, log:[], recent:[], N:7, v:2, tab:"tonight", price:{}, mugi:false};
+    U = { effort:null, heroIdx:0, sheet:null, cook:null, step:0, serv:1, round:1, priceAll:false, toast:null, _toastTimer:null };
     try { render(); } catch (e4) {
       document.getElementById("tab-tonight").className = "wrap tab on";
       document.getElementById("tab-tonight").innerHTML = '<div class="emptycard">Something went wrong, so your saved week was cleared. Reload and tap Generate my week.</div>';
