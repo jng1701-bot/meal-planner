@@ -206,13 +206,14 @@ S.mugi = true; ev("save()");
 const after = ev("compute()");
 const mugiRow = after.rows.find(r => r.id === "mugi");
 const nonCookinCups = after.picks.reduce((a, r) => a + (r.cookin ? 0 : (r.rice || 0) * after.servings[r.id]), 0);
+/* barley is bag stock now: it never sits in the weekly rows, it asks for a pack via the shelf */
+ok("barley never appears as a weekly row", !mugiRow);
 if (nonCookinCups > 0) {
-  ok("barley row appears when toggle on", !!mugiRow);
   eq("mugiCups excludes cook-in dishes", after.mugiCups, nonCookinCups);
-  ok("barley cost > 0", mugiRow && mugiRow.cost > 0);
-  ok("toggle raises the bill", after.food > before.food);
+  ok("the toggle asks the shelf for barley", after.needed.includes("mugi"));
+  eq("the toggle leaves the weekly bill alone while the pack lasts", after.food, before.food);
 } else {
-  ok("no plain-rice dishes in this plan, barley correctly absent", !mugiRow);
+  ok("no plain-rice dishes in this plan, no barley asked for", !after.needed.includes("mugi"));
 }
 eq("rice cups unchanged by the toggle", after.riceGo, before.riceGo);
 
@@ -233,7 +234,7 @@ S.mugi = true;
 S.plan = ["rcchahan", "rcrisotto"];
 const onlyCookin = ev("compute()");
 eq("cook-in-only plan needs no barley", onlyCookin.mugiCups, 0);
-ok("cook-in-only plan has no barley row", !onlyCookin.rows.some(r => r.id === "mugi"));
+ok("cook-in-only plan asks the shelf for no barley", !onlyCookin.needed.includes("mugi"));
 S.mugi = false;
 
 /* ---------- price editing ---------- */
@@ -385,12 +386,9 @@ delete S.aircap;
 ok("no air-fryer stepper anywhere", !/Air fryer fits/.test(D.body.innerHTML));
 
 /* ---------- barley cost tracks the smaller portion ---------- */
-S.plan = ["curry"]; S.N = 4; S.mugi = false;
-const plainFood = ev("compute()").food;
-S.mugi = true;
-const mugiFood = ev("compute()").food;
-const perServing = (mugiFood - plainFood) / 4;
-ok("barley adds roughly ¥20 a serving, not ¥40", perServing > 8 && perServing < 32, Math.round(perServing));
+S.plan = ["curry"]; S.N = 4; S.mugi = true;
+const perServing = ev("compute()").mugiCups * 50 * ING.mugi.p / 4;
+ok("barley works out at roughly ¥20 a serving, not ¥40", perServing > 8 && perServing < 32, Math.round(perServing));
 ok("mugi copy no longer claims ¥40", !/about ¥40 a serving/.test(D.body.innerHTML));
 S.mugi = false;
 
@@ -631,7 +629,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
   ok("the sheet opens", sheet.className.includes("show"));
   ok("it names the dish", /Japanese curry/.test(sheet.innerHTML));
   ok("it gives hands-on time, servings and gear", /hands on/.test(sheet.innerHTML) && /this week/.test(sheet.innerHTML) && /gear/.test(sheet.innerHTML));
-  ok("it says how long to the table", /~35 min \+ rice/.test(sheet.innerHTML) && /to the table/.test(sheet.innerHTML));
+  ok("it says how long to the table, all rounds included", /~70 min \+ rice/.test(sheet.innerHTML) && /to the table/.test(sheet.innerHTML));
   ok("it says how long it keeps", /3 days · freezes/.test(sheet.innerHTML) && /keeps/.test(sheet.innerHTML));
   ok("it lists the per-serving ingredients", /Chicken thigh 120 g/.test(sheet.innerHTML));
   ok("it offers the protein swap on a flex dish", !!sheet.querySelector('[data-k="sheetcycle"]'));
@@ -724,7 +722,8 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
   /* every side-rice dish gets a rice instruction; every self-rice dish gets none */
   R.forEach(r => {
     const t = ev("riceFirstText")(r, 2), k = ev("riceKind")(r);
-    if (k === "side") ok(r.id + ": side rice is started before cooking", /Rice first|Hot rice/.test(t), t);
+    if (k === "side" && r.simmer) ok(r.id + ": a cooker braise says the cooker is busy, never 'cook rice now'", /busy/.test(t) && !/Hot rice|quick-cook/.test(t), t);
+    else if (k === "side") ok(r.id + ": side rice is started before cooking", /Rice first|Hot rice/.test(t), t);
     else if (k === "cooked") ok(r.id + ": cooked-rice dish says so", /cooked rice/.test(t), t);
     else ok(r.id + ": no rice instruction when the dish has none of its own to wait on", t === "", t);
   });
@@ -792,21 +791,15 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
   S.log = [];
 }
 
-/* ---------- rice was free in every total until now ---------- */
+/* ---------- rice is bag stock, never a weekly row ---------- */
 {
   S.price = {}; S.plan = ["curry"]; S.N = 4; S.mugi = false;
   const c = ev("compute()");
-  const riceRow = c.rows.find(r => r.id === "rice");
-  ok("rice appears in the grocery list", !!riceRow, c.rows.map(r => r.id).join(","));
-  ok("it is priced by the gram of dry rice", riceRow && riceRow.cost > 0);
-  ok("the amount matches the cooker cups", riceRow && /\d+ g/.test(riceRow.disp), riceRow && riceRow.disp);
-  const withRice = c.food;
-  /* a gifted bag costs nothing, and the planner has to be able to say so */
+  ok("rice is not in the grocery rows", !c.rows.some(r => r.id === "rice"), c.rows.map(r => r.id).join(","));
+  ok("a rice week asks the shelf for rice", c.riceGo > 0 && c.needed.includes("rice"));
+  /* a price of zero is still a real answer for anything else that was gifted */
   ev("setPrice('rice', 0)");
   eq("a price of zero is accepted, not rejected", S.price.rice, 0);
-  const free = ev("compute()").food;
-  ok("a free bag drops out of the bill", free < withRice, withRice + " -> " + free);
-  ok("but the rice is still on the list to buy", ev("compute()").rows.some(r => r.id === "rice"));
   ev("setPrice('rice', -5)");
   eq("a negative price is still nonsense", S.price.rice, 0);
   S.price = {}; S.plan = undefined; S.N = 7;
@@ -1183,6 +1176,397 @@ ok("no recipe step mentions a tube",
     users.filter(r => !TXT(r).some(s => /tsp[^.]{0,30}(garlic|ginger) paste/i.test(s))).map(r => r.id).join(","));
 }
 ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chunks|cubes|strips|half-moons|pieces|slabs)/.test(s))));
+
+/* ---------- user-test fixes, 17 Sep 2026 ---------- */
+{
+  /* 1. the meal count must not strand the week on one dish */
+  S.locked = []; S.v = 2; S.N = 7; S.plan = undefined; ev("plan(true)");
+  for (let i = 0; i < 6; i++) ev("stepMeals(-1)");
+  eq("a one-meal week has one dish", S.plan.length, 1);
+  for (let i = 0; i < 13; i++) ev("stepMeals(1)");
+  eq("stepping back up to 14 meals restores the dish count", S.plan.length, ev("dishCount(14, 2)"));
+  let stuck = 0;
+  for (let t = 0; t < 30; t++) {
+    S.plan = undefined; S.N = 7; ev("plan(true)");
+    for (let i = 0; i < 12; i++) { ev("stepMeals(" + (Math.random() < 0.5 ? -1 : 1) + ")"); if (S.plan.length !== ev("dishCount(S.N, S.v)")) stuck++; }
+  }
+  eq("random meal-count walks never leave the wrong number of dishes", stuck, 0);
+
+  /* 2. max batch never plans more servings than keep + freeze allows */
+  S.v = 1; S.N = 7; let unsafe = 0;
+  for (let i = 0; i < 120; i++) {
+    S.plan = undefined; ev("plan(true)");
+    const cc = ev("compute()"), r = cc.picks[0];
+    if (cc.servings[r.id] > ev("keepDaysOf")(r) && !r.freeze) unsafe++;
+  }
+  eq("max batch only picks dishes that freeze when a week outlasts the fridge", unsafe, 0);
+  S.plan = ["curry"]; S.N = 7; ev("setTab('week')");
+  ok("the rhythm splits a batch bigger than its keep days", /box 3 for the fridge and freeze the other 4/.test(tabHTML("week")), tabHTML("week").match(/keeps \d days[^<]*/));
+  S.plan = ["karaage"]; ev("render()");
+  ok("a raw-freezing dish is bagged raw, not cooked then frozen", /bag the other 4 raw for the freezer/.test(tabHTML("week")));
+  S.v = 2;
+
+  /* 3 + 4. the cooker braise: honest rice line, never planned below its minimum */
+  ok("the chashu rice line says the cooker is busy", /busy for ~95 min/.test(ev("riceFirstText")(R.find(r => r.id === "rcchashu"), 3)));
+  S.plan = ["rcchashu", "karaage", "afmiso"]; S.N = 6;
+  eq("a planned chashu gets at least its minimum servings", ev("compute()").servings.rcchashu, 3);
+  S.N = 4; S.plan = ["rcchashu", "karaage"];
+  ok("even in a small week", ev("compute()").servings.rcchashu >= 3);
+  ok("a week too small for its minimum does not pick it", !ev("fitsWeek")(R.find(r => r.id === "rcchashu"), 5, 3));
+  ev("U.planServ = 2; startCook('rcchashu', 2)");
+  ok("cooking it from a smaller count says it was bumped and what to buy", /Bumped to ×3[^<]*Shop for 1 more/.test(D.getElementById("cook-overlay").innerHTML));
+  ev("quitCook()");
+
+  /* 5. quick means quick */
+  S.plan = undefined; ev("save()");
+  ev("U.effort=1;U.heroIdx=0");
+  const quick = ev("candidates(compute())");
+  ok("with no plan, 'something quick' leads with a dish on the table within 35 min", quick[0].r.ready <= 35, quick[0].r.id + " " + quick[0].r.ready);
+  ok("the quick ones all come before the slow ones", (() => { let seenSlow = false; return quick.every(o => { if (o.r.ready > 35) seenSlow = true; return !(seenSlow && o.r.ready <= 35); }); })());
+
+  /* 7. a reload mid-cook resumes; quit can be undone */
+  S.plan = ["curry"]; S.N = 3; ev("render()");
+  ev("startCook('curry', 3)"); ev("nextStep()"); ev("nextStep()");
+  ok("cook progress is saved", JSON.parse(W.localStorage.getItem("lmp")).cooking.step === 2);
+  {
+    const { w } = boot(JSON.parse(W.localStorage.getItem("lmp")));
+    eq("a reload reopens the dish", w.eval("U.cook"), "curry");
+    eq("at the same step", w.eval("U.step"), 2);
+    ok("with the overlay showing", w.document.getElementById("cook-overlay").className.includes("show"));
+    w.close();
+  }
+  {
+    const { w, errs } = boot({ cooking: { id: "rccurry", step: 3, round: 1, serv: 2 }, N: 7 });
+    ok("a saved cook for a retired dish is dropped", w.eval("U.cook") === null && errs.length === 0);
+    w.close();
+  }
+  ev("quitCook()");
+  ok("quitting mid-recipe offers an undo", /Left Japanese curry at step 2/.test(ev("U.toast ? U.toast.msg : ''")) && ev("!!U.toast.undo"));
+  ev("runToastUndo()");
+  ok("undo puts you back where you were", ev("U.cook") === "curry" && ev("U.step") === 2);
+  ev("quitCook()"); ev("U.toast=null");
+  ok("and a finished or quit cook leaves nothing saved", JSON.parse(W.localStorage.getItem("lmp")).cooking === undefined);
+
+  /* 8. a cleared price is not a free item */
+  S.price = {}; ev("setPrice('onion', '')");
+  eq("blank price input changes nothing", S.price.onion, undefined);
+  ev("setPrice('onion', '999999')");
+  eq("an absurd price is refused", S.price.onion, undefined);
+
+  /* 9. ticks survive a re-roll where they still apply */
+  S.locked = []; S.plan = ["curry", "karaage"]; S.N = 5; S.bought = { onion: true, chicken: true, nosuch: true }; ev("render()");
+  ev("plan(true)");
+  const rowsNow = ev("compute()").rows.map(r => r.id);
+  ok("a re-roll keeps ticks for items still on the list", Object.keys(S.bought).every(id => rowsNow.includes(id)));
+  ok("and says so when it kept any", Object.keys(S.bought).length === 0 || /basket tick/.test(ev("U.toast.msg")));
+  ev("U.toast=null");
+
+  /* 10. retired ids are pruned on load */
+  {
+    const { w } = boot({ plan: ["rccurry", "afsaba", "curry"], locked: ["rccurry", "sabarice", "curry"], N: 7 });
+    eq("retired dishes leave the plan", w.eval("JSON.stringify(S.plan)"), JSON.stringify(["curry"]));
+    eq("and the locks", w.eval("JSON.stringify(S.locked)"), JSON.stringify(["curry"]));
+    w.close();
+  }
+
+  /* 11. own-rice dishes are counted as separate runs */
+  S.plan = ["hainan", "tabuta", "curry"]; S.N = 7; ev("setTab('week')");
+  ok("two plate dishes are two cooker runs", /each cook their own rice — \d more cooker runs, one at a time/.test(tabHTML("week")), (tabHTML("week").match(/[^.]*own rice[^.]*/) || [""])[0]);
+
+  /* 13. rounds add up */
+  eq("three rounds of karaage add two basket cycles", ev("readyTotal")(R.find(r => r.id === "karaage"), 6), 40 + 30);
+  eq("two pots of curry take two curries' time", ev("readyTotal")(R.find(r => r.id === "curry"), 6), 70);
+
+  /* lows */
+  ok("afmiso compares itself to the right dish", !TXT(R.find(r => r.id === "afmiso")).some(s => /teriyaki/.test(s)));
+  ok("onigiri rice matches the rice line", /330 g cooked rice/.test(TXT(R.find(r => r.id === "afonigiri"))[0]));
+  ok("no fraction of an eggplant", !/[½⅓¼]\s*eggplant/.test(TXT(R.find(r => r.id === "afnasu")).join(" ")));
+  ["belachan", "chinchalok"].forEach(k => ok("the shelf tracks " + k, !!CONDS[k] && ev("SHELF_SEED").includes(k)));
+  R.forEach(r => {
+    const txt = TXT(r).join(" ").toLowerCase();
+    [["belachan", /belachan/], ["chinchalok", /chinchalok/], ["mayo", /mayo/]].forEach(([k, re]) => {
+      if (re.test(txt)) ok(r.id + ": lists " + k + " it mentions", r.conds.includes(k));
+    });
+    if (/\d+ ml \(\d tsp\) oil|\d+ ml \(\d tbsp\) oil| ml oil/.test(txt)) ok(r.id + ": lists the oil it uses", r.conds.includes("oil"));
+  });
+  ok("the pan crowding tip waits for a real crowd", ev("gearTips")(R.find(r => r.id === "shogayaki"), 2).length === 0 && ev("gearTips")(R.find(r => r.id === "soboro"), 4).length > 0);
+  S.plan = ["curry"]; S.N = 3; S.log = [{ d: "2026-09-10", spent: 1500, meals: 7 }]; ev("setTab('save')");
+  ok("one logged week is singular", /1 week logged/.test(tabHTML("save")));
+  S.log = []; ev("render()");
+  const spent = D.getElementById("spentInput"); spent.value = "5000000"; ev("logWeek()");
+  eq("an absurd receipt total is refused", S.log.length, 0);
+  ev("U.toast=null");
+  ev("setTab('shop')");
+  ok("meat is shown as a floor to buy trays against", /at least \d+ g/.test(tabHTML("shop")));
+  ok("html no longer pins the body height (the tab bar hid the last row)", !/html,body\{height:100%\}/.test(fs.readFileSync(HTML, "utf8")));
+  S.plan = undefined; S.N = 7; ev("render()");
+}
+
+/* ---------- FEATURE A: rice and barley are bag stock, not weekly groceries ---------- */
+{
+  const STOCK = ev("STOCK");
+  ok("STOCK names rice and mugi", !!STOCK.rice && !!STOCK.mugi);
+  eq("rice is a 5 kg bag", STOCK.rice.disp, "5 kg bag");
+  eq("the bag price is the bag price", STOCK.rice.p, 4200);
+  ok("barley is a pack at a pack price", STOCK.mugi.disp === "1 pack" && STOCK.mugi.p > 200 && STOCK.mugi.p < 800);
+  eq("stock is seeded as owned: rice", S.owned.rice, true);
+  eq("stock is seeded as owned: mugi", S.owned.mugi, true);
+  eq("and the seeding is recorded so it runs once", S.stockSeeded, true);
+
+  S.plan = ["curry"]; S.N = 4; S.mugi = true; S.bought = {}; S.carry = {}; ev("setTab('shop')");
+  let c = ev("compute()");
+  ok("no rice row while the bag is in stock", !c.rows.some(r => r.id === "rice"));
+  ok("no barley row while the pack is in stock", !c.rows.some(r => r.id === "mugi"));
+  ok("the cook schedule still knows its rice", c.riceGo > 0 && c.sideCups > 0 && c.mugiCups > 0);
+  ok("no rice or barley anywhere in the weekly list", !D.querySelector('[data-k="shoprice"]') && !D.querySelector('[data-k="shopmugi"]'));
+  ok("and no top-up asked for either", !D.querySelector('[data-k="needrice"]') && !D.querySelector('[data-k="needmugi"]'));
+  const foodOwned = c.food;
+
+  /* savings headline: the Save tab counts logged receipts, and the placeholder counts weekly food — neither moves with the bag */
+  S.log = [{ d: "2026-09-10", spent: 1500, meals: 7 }]; ev("setTab('save')");
+  const headline = () => D.querySelector("#tab-save .bignum").textContent;
+  const placeholder = () => D.getElementById("spentInput").getAttribute("placeholder");
+  const h0 = headline(), p0 = placeholder();
+  ev("toggleCond('rice')");
+  eq("marking rice out: the savings headline is unchanged", headline(), h0);
+  eq("marking rice out: the weekly food figure is unchanged", placeholder(), p0);
+  eq("the weekly food figure excludes the bag either way", ev("compute()").food, foodOwned);
+  S.log = [];
+
+  /* out of rice: exactly one bag row, in the shelf top-up, and ticking it restocks */
+  eq("rice is now marked out", S.owned.rice, false);
+  ev("setTab('shop')");
+  c = ev("compute()");
+  ok("still no weekly rice row when out", !c.rows.some(r => r.id === "rice"));
+  ok("the week asks the shelf for rice", c.needed.includes("rice"));
+  const bagRows = D.querySelectorAll('[data-k="needrice"]');
+  eq("exactly one bag row", bagRows.length, 1);
+  ok("the bag row says 5 kg bag at the bag price", /5 kg bag/.test(bagRows[0].textContent) && /¥4,200/.test(bagRows[0].textContent));
+  ok("it sits in the shelf top-up, not the category list", /Shelf top-up/.test(tabHTML("shop")));
+  ok("no second place to say you are out of rice", D.querySelectorAll('[data-k$="rice"]').length === 2, [...D.querySelectorAll('[data-k$="rice"]')].map(e => e.getAttribute("data-k")).join(","));
+  bagRows[0].click();
+  eq("ticking the bag row puts rice back in stock", S.owned.rice, true);
+  ok("and the bag row is gone", !D.querySelector('[data-k="needrice"]'));
+
+  S.owned.mugi = false; ev("render()");
+  const packRows = D.querySelectorAll('[data-k="needmugi"]');
+  eq("out of barley: exactly one pack row", packRows.length, 1);
+  ok("the pack row says 1 pack", /1 pack/.test(packRows[0].textContent));
+  packRows[0].click();
+  eq("ticking the pack row restocks barley", S.owned.mugi, true);
+  S.mugi = false; ev("render()");
+  ok("with the blend off no barley is asked for even when out", (S.owned.mugi = false, !ev("compute()").needed.includes("mugi")));
+  S.owned.mugi = true;
+
+  /* shelf grid */
+  ev("render()");
+  const riceBtn = D.querySelector('#tab-shop .condgrid [data-k="condrice"]'), mugiBtn = D.querySelector('#tab-shop .condgrid [data-k="condmugi"]');
+  ok("the shelf grid shows rice", !!riceBtn);
+  ok("the shelf grid shows barley", !!mugiBtn);
+  eq("rice reports in stock", riceBtn && riceBtn.getAttribute("aria-pressed"), "true");
+  eq("barley reports in stock", mugiBtn && mugiBtn.getAttribute("aria-pressed"), "true");
+  ok("the rice button is labelled for a screen reader", riceBtn && /Rice \(米 5kg\), in stock/.test(riceBtn.getAttribute("aria-label")));
+  riceBtn.click();
+  eq("tapping rice in the grid marks it out", D.querySelector('[data-k="condrice"]').getAttribute("aria-pressed"), "false");
+  ok("which puts the bag on the top-up", !!D.querySelector('[data-k="needrice"]'));
+  ev("toggleCond('rice')");
+  eq("rice restocked", S.owned.rice, true);
+
+  /* a save from the previous build boots clean: no carry, no stockSeeded, rice never owned */
+  const { w, errs } = boot({ plan: ["curry"], N: 4, owned: { oil: true }, shelfSeeded: true, tab: "shop", mugi: true });
+  ok("previous-build save boots without error", errs.length === 0, errs[0]);
+  eq("rice is seeded as owned", w.eval("S.owned.rice"), true);
+  eq("barley is seeded as owned", w.eval("S.owned.mugi"), true);
+  eq("the seed is recorded", w.eval("S.stockSeeded"), true);
+  eq("and written to storage immediately", JSON.parse(w.localStorage.getItem("lmp")).stockSeeded, true);
+  ok("carry starts empty", w.eval("JSON.stringify(S.carry)") === "{}");
+  const oldShop = w.document.getElementById("tab-shop").innerHTML;
+  ok("its list has no rice", !/data-k="shoprice"|data-k="needrice"/.test(oldShop));
+  ok("its list has no barley", !/data-k="shopmugi"|data-k="needmugi"/.test(oldShop));
+  ok("but its shelf shows the bag", /data-k="condrice"/.test(oldShop));
+  w.close();
+  { /* an explicit "out of rice" survives the seed */
+    const { w } = boot({ owned: { rice: false } });
+    eq("an explicit out-of-rice is not overwritten by the seed", w.eval("S.owned.rice"), false);
+    w.close();
+  }
+  S.plan = undefined; S.N = 7; S.mugi = false; S.bought = {}; ev("render()");
+}
+
+/* ---------- FEATURE B: leftover pieces carry over, and the planner uses them up ---------- */
+{
+  const today = (() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); })();
+  const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  const near = (a, b) => Math.abs(a - b) < 1e-6;
+  eq("carry boost constant", ev("CARRY_BOOST"), 1.8);
+  eq("onion keeps two weeks", ev("CARRY_DAYS").onion, 14);
+  eq("tofu keeps three days", ev("CARRY_DAYS").tofu, 3);
+  eq("the date is built locally, not from toISOString", ev("localDate()"), today);
+  eq("fractions: half", ev("frac")(0.5), "½");
+  eq("fractions: two thirds", ev("frac")(0.67), "⅔");
+  eq("fractions: one and a quarter", ev("frac")(1.25), "1¼");
+  eq("fractions: a whole", ev("frac")(2), "2");
+  eq("fractions: odd amounts get one decimal", ev("frac")(0.4), "0.4");
+
+  /* sanitiser */
+  {
+    const { w, errs } = boot({ carry: {
+      onion: { q: 0.5, d: today },                 // good
+      egg: { q: 0.5, d: daysAgo(10) },             // 10 days: eggs keep 14
+      tomato: { q: 0.5, d: daysAgo(6) },           // 6 days: tomatoes keep 4 -> expired
+      tofu: { q: 1, d: daysAgo(5) },               // 5 days: tofu keeps 3 -> expired
+      nasu: { q: 0.5, d: daysAgo(7) },             // 7 days: default-ish 5 -> expired
+      chicken: { q: 1, d: today },                 // gram unit
+      nothing: { q: 1, d: today },                 // unknown id
+      carrot: { q: -1, d: today },                 // negative
+      potato: { q: "1", d: today },                // not a number
+      negi: { q: 0.5, d: "garbage" },              // bad date
+      cucumber: { q: 0.5 },                        // no date
+      salmon: "half"                               // not an object
+    } });
+    ok("garbage carry boots without error", errs.length === 0, errs[0]);
+    const kept = Object.keys(w.eval("S.carry")).sort().join(",");
+    eq("only the sound, unexpired entries survive", kept, "egg,onion");
+    w.close();
+  }
+  {
+    const { w } = boot({ carry: [1, 2] });
+    ok("an array carry becomes an empty object", w.eval("JSON.stringify(S.carry)") === "{}");
+    w.close();
+  }
+
+  /* rolling a new week banks what the old one left over */
+  const curry = R.find(r => r.id === "curry");
+  const per = Object.fromEntries(curry.ing);
+  S.carry = {}; S.plan = ["curry"]; S.N = 1; S.v = 2; S.locked = [];
+  S.bought = { chicken: true, onion: true, carrot: true, potato: true, roux: true };
+  ev("U.toast=null"); ev("plan(true)");
+  ok("a roll makes a different week", !(S.plan.length === 1 && S.plan[0] === "curry"));
+  ok("onion leftover banked", S.carry.onion && near(S.carry.onion.q, 1 - per.onion), JSON.stringify(S.carry.onion));
+  ok("carrot leftover banked", S.carry.carrot && near(S.carry.carrot.q, 1 - per.carrot), JSON.stringify(S.carry.carrot));
+  ok("potato leftover banked", S.carry.potato && near(S.carry.potato.q, 1 - per.potato), JSON.stringify(S.carry.potato));
+  eq("dated local today", S.carry.onion.d, today);
+  ok("gram items never carry", !S.carry.chicken && !S.carry.roux);
+  ok("the toast offers undo", ev("U.toast && !!U.toast.undo"));
+  ev("runToastUndo()");
+  eq("new-week undo restores the plan", S.plan.join(","), "curry");
+  eq("new-week undo restores the carry", JSON.stringify(S.carry), "{}");
+
+  /* partial ticks: an item skipped while others were ticked was not bought.
+     curry x3: onion 1.5 (buy 2), carrot 0.9 with 0.25 in hand (buy 1, unticked), potato 1.8 (unticked) */
+  S.carry = { carrot: { q: 0.25, d: today } }; S.plan = ["curry"]; S.N = 3; S.v = 1;
+  S.bought = { onion: true, chicken: true };
+  ev("U.toast=null"); ev("plan(true)");
+  ok("ticked onion carries", S.carry.onion && near(S.carry.onion.q, 0.5), JSON.stringify(S.carry.onion));
+  eq("unticked carrot does not, and its old entry is left alone", S.carry.carrot && S.carry.carrot.q, 0.25);
+  ok("unticked potato does not", !S.carry.potato);
+  ev("U.toast=null");
+
+  /* the ledger: a piece already in hand is used up, whether or not it made the list */
+  S.carry = { onion: { q: 1, d: today } }; S.plan = ["curry"]; S.N = 1; S.v = 2;
+  S.bought = { chicken: true, carrot: true, potato: true, roux: true };
+  ok("a covered piece makes no row", !ev("compute().rows.some(r=>r.id==='onion')"));
+  ev("plan(true)");
+  ok("the covered onion is drawn down, not left whole", S.carry.onion && near(S.carry.onion.q, 0.5), JSON.stringify(S.carry.onion));
+  ev("U.toast=null");
+  S.carry = { onion: { q: 0.25, d: today } }; S.plan = ["curry"]; S.N = 1;
+  S.bought = { chicken: true, onion: true, carrot: true, potato: true, roux: true };
+  ev("plan(true)");
+  ok("a part piece plus a bought one leaves the remainder", S.carry.onion && near(S.carry.onion.q, 0.75), JSON.stringify(S.carry.onion));
+  ev("U.toast=null");
+
+  /* no ticks at all: the paper way, so everything counts - but only once the week is old.
+     Re-rolling on Sunday afternoon must not bank leftovers from lists that never went to LIFE. */
+  S.carry = {}; S.plan = ["curry"]; S.N = 1; S.v = 2; S.bought = {};
+  S.planDate = today;
+  ev("plan(true)");
+  ok("a fresh unshopped list banks nothing", !S.carry.onion && !S.carry.carrot && !S.carry.potato, JSON.stringify(S.carry));
+  eq("a roll stamps the plan date", S.planDate, today);
+  ev("U.toast=null");
+  S.carry = {}; S.plan = ["curry"]; S.N = 1; S.bought = {};
+  S.planDate = (d => { d.setDate(d.getDate()-3); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); })(new Date());
+  ev("plan(true)");
+  ok("with no ticks every piece carries", !!S.carry.onion && !!S.carry.carrot && !!S.carry.potato);
+  ev("U.toast=null");
+  S.planDate = "garbage"; ev("save()");
+
+  /* the next list subtracts what is in the fridge */
+  S.carry = { onion: { q: 0.5, d: today } }; S.plan = ["curry"]; S.N = 3; S.bought = {};
+  let c = ev("compute()");
+  let row = c.rows.find(r => r.id === "onion");
+  ok("onion still listed when the fridge does not cover it", !!row);
+  eq("the buy count is reduced", row && row.disp, "1 pc · have ½");
+  eq("cost follows the reduced count", row && row.cost, 1 * ev("priceOf")("onion"));
+  ok("the raw requirement is kept for the next roll", row && near(row.req, 1.5) && near(row.q, 1.0));
+  S.N = 1; c = ev("compute()");
+  ok("full coverage drops the row", !c.rows.some(r => r.id === "onion"), c.rows.map(r => r.id).join(","));
+  ok("the rest of the list is untouched", c.rows.some(r => r.id === "carrot") && c.rows.some(r => r.id === "chicken"));
+  S.carry = { onion: { q: 0.47, d: today } }; c = ev("compute()");
+  ok("within a twentieth counts as covered", !c.rows.some(r => r.id === "onion"));
+  S.carry = { carrot: { q: 1, d: today } }; S.N = 3; c = ev("compute()");
+  eq("a leftover bigger than the need drops the row too", c.rows.some(r => r.id === "carrot"), false);
+  S.carry = { onion: { q: 0.5, d: today } }; ev("setTab('shop')");
+  ok("the shop shows the have text", /1 pc · have ½/.test(tabHTML("shop")));
+
+  /* compute() expiry */
+  S.carry = { tomato: { q: 0.5, d: daysAgo(6) }, onion: { q: 0.5, d: today } };
+  ev("compute()");
+  ok("compute drops an expired leftover", !S.carry.tomato && !!S.carry.onion);
+
+  /* the "have" chip */
+  S.carry = {}; S.plan = ["curry"]; S.N = 3; S.bought = {}; ev("U.toast=null"); ev("setTab('shop')");
+  const chip = D.querySelector('[data-k="haveonion"]');
+  ok("each piece row gets a have chip", !!chip);
+  ok("gram rows get none", !D.querySelector('[data-k="havechicken"]'));
+  eq("the chip is a real button, not nested in the checkbox", chip && chip.tagName + "/" + chip.closest('[role="checkbox"]'), "BUTTON/null");
+  eq("it is labelled", chip && chip.getAttribute("aria-label"), "Already have Onion");
+  ok("it is tall enough to tap", /min-height:44px/.test(fs.readFileSync(HTML, "utf8").match(/\.havechip\{[^}]*\}/)[0]));
+  ok("no nested buttons anywhere", ![...D.querySelectorAll("button button")].length);
+  chip.click();
+  ok("the chip banks the whole requirement", S.carry.onion && S.carry.onion.q === 2 && S.carry.onion.d === today, JSON.stringify(S.carry.onion));
+  ok("and the row disappears", !D.querySelector('[data-k="shoponion"]'));
+  ok("with a toast", /Onion: using what you have/.test(D.body.innerHTML));
+  ok("that offers undo", ev("U.toast && !!U.toast.undo"));
+  ev("runToastUndo()");
+  ok("undo clears the carry", !S.carry.onion);
+  ok("and the row is back", !!D.querySelector('[data-k="shoponion"]'));
+  S.carry = { onion: { q: 0.25, d: daysAgo(1) } }; ev("render()");
+  D.querySelector('[data-k="haveonion"]').click();
+  ev("runToastUndo()");
+  eq("undo restores the previous entry, not nothing", S.carry.onion && S.carry.onion.q, 0.25);
+  S.bought = { onion: true }; ev("render()");
+  ok("a ticked row has no chip", !D.querySelector('[data-k="haveonion"]') && !!D.querySelector('[data-k="shoponion"]'));
+  S.bought = {};
+
+  /* planner nudge */
+  S.carry = {};
+  const w0 = ev("dishWeight")(curry, 2, false);
+  S.carry = { onion: { q: 0.5, d: today } };
+  const w1 = ev("dishWeight")(curry, 2, false);
+  ok("a dish that uses a leftover is boosted 1.8×", near(w1 / w0, 1.8), w1 / w0);
+  S.carry = { onion: { q: 0.1, d: today } };
+  ok("a crumb is not worth chasing", near(ev("dishWeight")(curry, 2, false), w0));
+  const noOnion = R.find(r => !r.ing.some(([id]) => id === "onion"));
+  S.carry = {};
+  const n0 = ev("dishWeight")(noOnion, 2, false);
+  S.carry = { onion: { q: 0.5, d: today } };
+  ok("a dish without the leftover is not boosted", near(ev("dishWeight")(noOnion, 2, false), n0));
+
+  /* the Week tab says what is being used up */
+  S.carry = {}; S.plan = ["curry"]; S.N = 3; ev("setTab('week')");
+  ok("nothing said when the fridge is empty", !/Using up/.test(tabHTML("week")));
+  S.carry = { onion: { q: 0.5, d: today }, carrot: { q: 0.67, d: today } }; ev("render()");
+  ok("leftovers and the dish that eats them", /Using up: ½ onion, ⅔ carrot → Japanese curry/.test(tabHTML("week")), tabHTML("week").match(/Using up[^<]*/));
+  S.plan = [noOnion.id]; S.carry = { onion: { q: 0.5, d: today } }; ev("render()");
+  ok("says so when nothing on the plan uses them", /Using up: ½ onion — nothing this week uses them/.test(tabHTML("week")), tabHTML("week").match(/Using up[^<]*/));
+  S.carry = {}; ev("render()");
+  ok("and disappears again", !/Using up/.test(tabHTML("week")));
+
+  /* carry persists */
+  S.carry = { onion: { q: 0.5, d: today } }; ev("save()");
+  eq("carry is written to storage", JSON.parse(W.localStorage.getItem("lmp")).carry.onion.q, 0.5);
+  S.carry = {}; S.plan = undefined; S.N = 7; S.bought = {}; ev("U.toast=null"); ev("save()"); ev("render()");
+}
 
 /* ---------- report ---------- */
 console.log("\n" + "=".repeat(52));

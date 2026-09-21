@@ -15,13 +15,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0f141a; --ink:#eef2f5; --sub:#c3cfd9; --muted:#8b99a6; --muted2:#7d8b99; --dim:#6f7f8d; --faint:#43525f;
+  --bg:#0f141a; --ink:#eef2f5; --sub:#c3cfd9; --muted:#8b99a6; --muted2:#7d8b99; --dim:#6f7f8d; --faint:#627180;
   --mint:#7fd4a8; --warm:#e8825a; --warmsoft:#f0c3ad;
   --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.14); --line3:rgba(255,255,255,.16);
-  --row-off:#2a3542; --condoff:#5d6b78;
+  --row-off:#2a3542; --condoff:#76848f;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%}
+html{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);min-height:100%;
   font:16px/1.5 "Zen Kaku Gothic New",-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
   padding-bottom:calc(84px + env(safe-area-inset-bottom));}
@@ -98,7 +98,7 @@ body.cooking #toast{bottom:calc(128px + env(safe-area-inset-bottom))}
 .varoff{background:var(--bg);color:var(--muted2);padding:12px 6px;font-size:12.5px;font-weight:700;line-height:1.3}
 .ghostbtn{width:100%;margin-top:14px;background:none;border:1px solid var(--line3);color:var(--ink);padding:15px;font-size:15px;font-weight:700;cursor:pointer}
 .ghostbtn:active{background:#151d25}
-.ghostbtn.small{width:auto;margin-top:10px;padding:10px 14px;font-size:13.5px}
+.ghostbtn.small{width:auto;margin-top:10px;padding:10px 14px;font-size:13.5px;min-height:44px}
 .dividerlist{display:flex;flex-direction:column}
 .dishrow{border-top:1px solid var(--line);padding:16px 0;display:flex;gap:14px;align-items:flex-start}
 .dishnum{font-size:11px;font-weight:900;color:var(--muted2);padding-top:5px;min-width:16px}
@@ -122,6 +122,9 @@ body.cooking #toast{bottom:calc(128px + env(safe-area-inset-bottom))}
 .clearlink{background:none;border:none;color:var(--muted2);font-size:12.5px;font-weight:700;padding:12px 0;cursor:pointer;min-height:44px}
 .ghead2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700;padding:26px 0 2px}
 .shoprow{width:100%;border:none;border-top:1px solid var(--line);background:none;display:flex;align-items:center;gap:14px;padding:14px 0;cursor:pointer;text-align:left}
+.shopline{display:flex;align-items:center;border-top:1px solid var(--line)}
+.shopline .shoprow{border-top:none;flex:1;min-width:0}
+.havechip{flex:0 0 auto;min-height:44px;margin-left:10px;padding:0 10px;background:none;border:1px solid var(--line3);color:var(--muted2);font-size:12px;font-weight:700;cursor:pointer}
 .checkbox{width:20px;height:20px;border:1.5px solid var(--muted);display:flex;align-items:center;justify-content:center;color:#0f141a;font-size:12px;font-weight:900;flex:0 0 20px}
 .checkbox.on{border-color:var(--mint);background:var(--mint)}
 .shopmain{flex:1;min-width:0}
@@ -248,8 +251,15 @@ const CONDS = {
   panko:{n:"Panko breadcrumbs",jp:"パン粉",p:150},
   pepper:{n:"Black pepper",jp:"ブラックペッパー",p:130},
   ponzu:{n:"Ponzu",jp:"ポン酢",p:342},
-  cheese:{n:"Grated parmesan",jp:"粉チーズ",p:320}
+  cheese:{n:"Grated parmesan",jp:"粉チーズ",p:320},
+  /* both come from Singapore/Malaysia, not LIFE — prices are rough jar estimates, only shown if one runs out */
+  belachan:{n:"Belachan chilli",jp:"ブラチャン（サンバル）",p:700},
+  chinchalok:{n:"Chinchalok",jp:"チンチャロク",p:600}
 };
+/* Bought by the bag, not the week: a 5 kg sack lasts a month or two, so rice and barley sit on
+   the shelf like a condiment and only reach the list once marked out. */
+const STOCK = { rice:{n:"Rice",jp:"米 5kg",p:4200,disp:"5 kg bag"}, mugi:{n:"Mochi mugi",jp:"もち麦",p:400,disp:"1 pack"} };
+const shelfItem = k => CONDS[k] || STOCK[k];
 /* ============ INGREDIENTS ============ */
 const ING = {
   chicken:{n:"Chicken thigh",jp:"鶏もも肉",u:"g",p:1.07,cat:"meat"},
@@ -309,7 +319,7 @@ const RECIPES = [
   ing:[["mixedbeans",80],["cantomato",100],["onion",0.5],["carrot",0.3],["bacon",30]], rice:0.5, conds:["torigara","garlic","oil"],
   steps:["Dice {0.5 onion} and {0.3 carrot} small. Cut {30 g} bacon into 1 cm strips.","Pot on medium with 15 ml (1 tbsp) oil. Bacon in first for 1 min, then the onion and carrot for 3 min until the onion turns translucent.","Add {80 g} drained mixed beans, {100 g} canned tomato, {100 ml} water, {1 tsp} chicken stock powder and {1 tsp} garlic paste. It is thick on purpose — a soup base is what lets the pot hold the batch.","Bring to a boil, then simmer on medium-low 12 min with the lid ajar, stirring twice so the bottom does not catch.","Taste, and add salt only if it needs it. Loosen each bowl with 100 ml water as it reheats. Keeps 3 days in the fridge and a month in the freezer, and it is better on day two."]},
  {id:"belachan", tier:"A", n:"Belachan steamed chicken breast", jp:"よだれ鶏（ベラチャン）", gear:["pot"], time:"10 min", ready:35, eff:1, batch:true, liquid:170, freeze:"slices freeze well",
-  ing:[["chickenbreast",150],["cucumber",0.3],["negi",0.2]], after:["cucumber","negi"], rice:0.5, conds:["sesame","soy","ginger"],
+  ing:[["chickenbreast",150],["cucumber",0.3],["negi",0.2]], after:["cucumber","negi"], rice:0.5, conds:["sesame","soy","ginger","belachan"],
   steps:["Lay {150 g} chicken breast in the pot in one layer. Add cold water to cover it by 2 cm, {1 tsp} ginger paste and the green tops of a green onion.","Bring it to a boil, then turn the heat OFF completely and put the lid on. Leave it 15 min. Poaching off-heat is the whole trick — breast turns dry and stringy the moment it actually boils.","Check the thickest part is white all the way through. Lift it out, rest 5 min, slice 1 cm thick across the grain.","Sauce: {1 tsp} belachan + {15 ml} soy sauce + {5 ml} sesame oil, mixed in a small bowl.","Over rice with sliced cucumber and the white of the green onion. It keeps 3 days and is good cold. Keep the poaching water: that is chicken stock."]},
  {id:"butadaikon", tier:"A", n:"Pork & daikon simmer", jp:"豚バラ大根", gear:["pot"], time:"30 min", ready:45, eff:2, batch:true, liquid:250, flex:true,
   ing:[["pork",100],["daikon",150]], rice:0.5, conds:["soy","mirin","sake","ginger","sesame"],
@@ -324,7 +334,7 @@ const RECIPES = [
   ing:[["gpork",60],["lentil",40],["onion",0.5],["cantomato",100],["fveg",50],["roux",25]], after:["roux"], rice:0.5, conds:["garlic","ginger","oil"],
   steps:["Dice {0.5 onion} as small as you can manage. Pot on medium with 15 ml (1 tbsp) oil, {1 tsp} each garlic and ginger paste, and the onion — fry ~3 min until it turns translucent.","Add {60 g} ground pork. Break it apart with the spatula and fry until no pink remains.","Add {100 g} canned tomato, {40 g} red lentils, {50 g} frozen veg and {150 ml} water. Simmer on medium-low 15 min, stirring now and then — the lentils collapse into the sauce and thicken it for you. Splash in more water if it tightens too far.","Heat OFF, melt in {1 roux block|roux blocks} ({25 g}). Back on low ~2 min until thick.","Serve over rice. Once cool, portion into boxes: 3 days in the fridge, a month in the freezer."]},
  {id:"nikujaga", tier:"A", n:"Nikujaga (meat & potato stew)", jp:"肉じゃが", gear:["pot"], time:"25 min", ready:40, eff:2, batch:true, liquid:125, flex:true,
-  ing:[["pork",100],["potato",1],["onion",0.5],["carrot",0.3]], rice:0.5, conds:["mentsuyu"],
+  ing:[["pork",100],["potato",1],["onion",0.5],["carrot",0.3]], rice:0.5, conds:["mentsuyu","oil"],
   steps:["Cut {1 potato|potatoes} into quarters, {0.5 onion} into wedges and {0.3 carrot} into chunks.","Pot on medium-high, 5 ml (1 tsp) oil. Brown {100 g} pork for about 1 min.","Add the vegetables, then {100 ml} water and {25 ml} mentsuyu (1 part mentsuyu to 4 parts water). It only comes halfway up — nikujaga steams under the lid rather than swimming.","Bring to a boil, skim the foam, then lid on and simmer medium-low 15–20 min, turning everything over once, until a fork goes into the potato with no resistance.","Heat off and rest 10 min before eating — it soaks up flavour as it cools. Keeps 3 days, and it is better tomorrow."]},
  {id:"soboro", tier:"A", n:"Soboro don (meat & egg)", jp:"そぼろ丼", gear:["pan","rice"], time:"12 min", ready:15, eff:1, batch:true, cap:4, crowd:true, freeze:"the meat freezes well",
   ing:[["gpork",120],["egg",2]], rice:0.5, conds:["soy","mirin","sake","ginger"],
@@ -336,7 +346,7 @@ const RECIPES = [
   ing:[["chickenbreast",150],["cucumber",0.3]], after:["cucumber"], rice:0.5, conds:["torigara","ginger","garlic","sesame","soy"],
   steps:[PLATE_RICE,"Rub {150 g} chicken breast, left whole, with {1 tsp} chicken stock powder, {1 tsp} garlic paste and {1 tsp} ginger paste. Lay it flat on the cooking plate — spread out, not stacked.","Slide the plate in above the rice, lid down, press white rice. When it beeps (about 50 min), lift the plate straight out — never leave it in on keep-warm.","Rest the chicken 5 min. Tip the juices from the plate over the rice and fold them through with the paddle: that is where the chicken-rice flavour comes from. Slice the chicken 1 cm thick across the grain and check it is white all the way through.","Sauce: {15 ml} soy sauce + {5 ml} sesame oil. Slice {0.3 cucumber|cucumbers}. Chicken and sauce over the rice."]},
  {id:"kimchirice", tier:"B", plate:true, n:"Pork-kimchi mazegohan", jp:"豚キムチ混ぜご飯", gear:["rice"], time:"5 min prep", ready:55, eff:1, batch:true, cap:2, flex:true,
-  ing:[["pork",100],["kimchi",80]], rice:0.5, conds:["torigara","sesame"],
+  ing:[["pork",100],["kimchi",80]], rice:0.5, conds:["torigara","sesame","belachan"],
   steps:[PLATE_RICE,"Spread {80 g} kimchi over the cooking plate, lay {100 g} pork over it in loose single slices, and sprinkle {1 tsp} chicken stock powder on top. Keep it as flat as you can — piled food cooks unevenly and can boil over.","Plate in, lid down, white rice. When it beeps, lift the plate straight out and check the pork: no pink anywhere.","Tip everything on the plate, juices included, onto the rice and fold it through with the paddle.","{5 ml} sesame oil over the top. A dab of belachan works."]},
  {id:"takikomi", tier:"B", plate:true, n:"Chicken & mushroom mazegohan", jp:"鶏ときのこの混ぜご飯", gear:["rice"], time:"7 min prep", ready:60, eff:1, batch:true, cap:2, freeze:"press into balls while warm and freeze",
   ing:[["chicken",80],["shimeji",50],["carrot",0.3]], rice:0.5, conds:["mentsuyu"],
@@ -351,7 +361,7 @@ const RECIPES = [
   ing:[["chicken",150],["fbroc",80]], rice:0.5, conds:["soy","mirin","garlic"],
   steps:["Cut {150 g} chicken thigh into big chunks, 4 or 5 from each 150 g.","Marinade: {15 ml} soy sauce + {15 ml} mirin + {1 tsp} garlic paste. Toss the chicken in it — 10 min minimum, overnight is better. Extra portions can go into freezer bags now.","Preheat 3 min at 180 °C. Chicken in a single layer, skin up, 15 min total. Two servings fills the 4.2 L basket; a third would stack and steam.","At the 10-minute mark, scatter {80 g} frozen broccoli around the chicken, straight from frozen.","Done when the juices run clear when you poke the thickest piece (or 75 °C inside). Serve with rice."]},
  {id:"karaage", tier:"C", n:"Air-fryer karaage", jp:"唐揚げ", gear:["air","rice"], time:"10 min work", ready:40, eff:1, batch:true, cap:2, freeze:"freeze raw in the marinade",
-  ing:[["chicken",150],["cabbage",50]], rice:0.5, conds:["soy","garlic","ginger","katakuriko","oil"],
+  ing:[["chicken",150],["cabbage",50]], rice:0.5, conds:["soy","garlic","ginger","katakuriko","oil","mayo"],
   steps:["Cut {150 g} chicken thigh into 4 cm chunks — keep the skin on.","Marinade: {15 ml} soy sauce + {1 tsp} each garlic and ginger paste. 15 min minimum. Extra portions freeze raw in the marinade, in bags; thaw overnight in the fridge.","Tip {15 g} potato starch onto a plate. Roll each chunk until it is dusted white on every side.","Pat {5 ml} oil over the dusted pieces with your fingers — never aerosol spray, it strips the ceramic coating. Dry starch stays pale and floury.","Preheat 3 min at 190 °C. Single layer with gaps: 8 min, flip every piece, 5 more min. Golden outside, juices clear inside = done. Two servings is the honest limit of the 4.2 L basket.","Serve with {50 g} shredded cabbage and rice. Squeeze of mayo optional but encouraged."]},
  {id:"afroast", tier:"C", n:"Air-fryer chicken & potato roast", jp:"鶏とじゃがいものバスケットロースト", gear:["air"], time:"5 min work", ready:35, eff:1, batch:true, cap:2, freeze:"freeze raw in the marinade",
   ing:[["chicken",150],["potato",0.7],["onion",0.3]], conds:["oil","soy","pepper"],
@@ -363,7 +373,7 @@ const RECIPES = [
   ing:[["chicken",150],["egg",0.5],["cabbage",50]], rice:0.5, conds:["katakuriko","panko","oil","mayo","soy"],
   steps:["Butterfly {150 g} chicken thigh open so it lies flat and even. Even thickness is what makes or breaks a katsu.","Set out three stations: potato starch on a plate, a beaten egg in a bowl, {30 g} panko on a second plate. Dust with starch, dip in egg, then press the panko on hard — pressing is what stops it falling off in the basket.","Pat {5 ml} oil over the crumbs with your fingers until no white powder is left. Never aerosol spray: it strips the ceramic coating, and dry panko stays pale.","Preheat 3 min at 190 °C. One cutlet, flat, with nothing touching it: 8 min, flip, 5 min more. Breaded food needs the basket to itself — a second serving is a second round.","Done when the crumb is deep gold and the juices run clear where you cut into the thickest part (75 °C inside). Pale crumb means it needs longer, not hotter.","Slice into 2 cm strips, {50 g} shredded cabbage alongside, rice. Mayo and soy sauce mixed 1:1 is a passable tonkatsu sauce."]},
  {id:"afgyoza", tier:"C", n:"Air-fryer frozen gyoza set", jp:"冷凍餃子（エアフライヤー）", gear:["air","rice"], time:"5 min work", ready:15, eff:0, batch:false, cap:1, keep:3,
-  ing:[["gyoza",300],["cabbage",50]], rice:0.5, conds:["oil","soy","sesame"],
+  ing:[["gyoza",300],["cabbage",50]], rice:0.5, conds:["oil","soy","sesame","belachan"],
   steps:["Preheat 3 min at 190 °C. {12 frozen gyoza|frozen gyoza} straight from the freezer into the basket, flat side down, in one layer with gaps. No thawing, no water. Twelve is what one layer holds, so a second serving is a second round.","Wipe {5 ml} oil over the tops so the wrappers blister instead of drying out.","10 min. No flipping, no steaming step, no pan to scrub.","From minute 8, watch through the window: done when the wrappers are blistered gold and the edges have gone crisp.","Dip: {15 ml} soy sauce + a drop of sesame oil, and belachan if you want fire. {50 g} shredded cabbage and rice on the side."]},
  {id:"aftofu", tier:"C", n:"Air-fryer crispy tofu with ponzu", jp:"揚げ出し豆腐風", gear:["air","rice"], time:"5 min work", ready:25, eff:1, batch:false, cap:2,
   ing:[["tofu",1],["negi",0.2]], after:["negi"], rice:0.5, conds:["katakuriko","oil","ponzu","sesame"],
@@ -381,7 +391,7 @@ const RECIPES = [
   ing:[["pasta",100],["bacon",40],["shimeji",60]], conds:["mentsuyu","garlic"],
   steps:["Cut {40 g} bacon into strips, cut the base off {60 g} shimeji and tear it apart.","Pot on medium. Bacon, shimeji and {1 tsp} garlic paste, fry 2 min until the mushrooms soften.","Add {300 ml} water + {30 ml} mentsuyu. Boil, then add {100 g} pasta snapped in half.","Stir every couple of minutes for ~10 min until the liquid is almost fully absorbed — what remains IS the sauce.","A knob of butter at the end if you have it. Eat from the pot, now."]},
  {id:"chinchalok", tier:"E", n:"Chinchalok omelette don", jp:"チンチャロクオムレツ丼", gear:["pan","rice"], time:"7 min", ready:7, eff:1, batch:false, cap:1, keep:1,
-  ing:[["egg",3],["negi",0.2]], rice:0.5, conds:["oil"],
+  ing:[["egg",3],["negi",0.2]], rice:0.5, conds:["oil","chinchalok","belachan"],
   steps:["Beat {3 egg|eggs} with {1 tsp} chinchalok and a small handful of sliced green onion. NO extra salt — chinchalok brings plenty.","Pan on medium-high with 15 ml (1 tbsp) oil. Give it a full minute to get properly hot — the egg should sizzle on contact.","Pour in. Wait 10 seconds, then drag the edges toward the middle with the spatula, tilting the pan so raw egg fills the gaps. 3–4 drags total.","When the top is still slightly glossy, stop — slide it out over rice. It finishes cooking from its own heat. Belachan on the side for fire."]},
  {id:"iwashi", tier:"E", n:"Iwashi kabayaki don", jp:"いわし蒲焼き丼", gear:["rice"], time:"2 min", ready:2, eff:0, batch:false, cap:2, keep:1,
   ing:[["sardine",1],["negi",0.2]], rice:0.5, conds:["mayo"],
@@ -415,7 +425,7 @@ const RECIPES = [
   steps:["Take {180 g} chicken wings, about 6. Pat them properly dry with kitchen paper — wet skin steams instead of crisping, and this is the whole battle with wings.","Salt generously, a heavy grind of black pepper, and {5 ml} oil rubbed over with your fingers. Never aerosol spray, it strips the ceramic coating.","Preheat 3 min at 190 °C. Wings in one layer, not touching — about 6 is what the basket floor holds, so a second serving is a second round. 12 min, then flip each one and give it 8 more.","Done when the skin is taut and browned and the juices run clear where the wing meets the drumette. Wings are forgiving — 3 more minutes makes them better, not worse.","{50 g} shredded cabbage and rice. Squeeze {5 ml} soy sauce over the wings while they are still hot."]},
  {id:"afmiso", tier:"C", n:"Air-fryer miso chicken", jp:"鶏の味噌焼き", gear:["air","rice"], time:"5 min work", ready:40, eff:1, batch:true, cap:2, flex:true, freeze:"freeze raw in the marinade",
   ing:[["chicken",150],["fbroc",70]], rice:0.5, conds:["miso","mirin","sake","garlic"],
-  steps:["Cut {150 g} chicken thigh into big chunks, 4 or 5 from each 150 g.","Marinade: {18 g} miso (1 tbsp for each 18 g), {15 ml} mirin, {15 ml} sake and {1 tsp} garlic paste, mixed smooth before the chicken goes in. 15 min minimum, overnight is better.","Wipe most of the marinade off before it goes in the basket. Miso left thick on the surface burns black long before the middle is done.","Preheat 3 min at 180 °C — lower than the teriyaki because miso has sugar in it. Single layer, 15 min.","Frozen broccoli ({70 g}) in for the last 5 min. Done when the juices run clear at the thickest piece, or 75 °C inside.","Extra portions freeze raw in the marinade in a bag, and they cure a little deeper as they thaw."]},
+  steps:["Cut {150 g} chicken thigh into big chunks, 4 or 5 from each 150 g.","Marinade: {18 g} miso (1 tbsp for each 18 g), {15 ml} mirin, {15 ml} sake and {1 tsp} garlic paste, mixed smooth before the chicken goes in. 15 min minimum, overnight is better.","Wipe most of the marinade off before it goes in the basket. Miso left thick on the surface burns black long before the middle is done.","Preheat 3 min at 180 °C, not the 190 °C karaage gets — miso has sugar in it and burns. Single layer, 15 min.","Frozen broccoli ({70 g}) in for the last 5 min. Done when the juices run clear at the thickest piece, or 75 °C inside.","Extra portions freeze raw in the marinade in a bag, and they cure a little deeper as they thaw."]},
  {id:"afmeatball", tier:"C", n:"Air-fryer pork meatballs", jp:"肉団子", gear:["air","rice"], time:"10 min work", ready:30, eff:1, batch:true, cap:2, freeze:"freeze raw or cooked",
   ing:[["gpork",120],["onion",0.3],["egg",0.5]], rice:0.5, conds:["katakuriko","ginger","soy","mirin","sesame"],
   steps:["Mix {120 g} ground pork, {0.3 onion} diced very small, {0.5 egg|eggs} beaten, {10 g} potato starch, {1 tsp} ginger paste and {15 ml} soy sauce. Mix with one hand until sticky.","Roll into {6 ball|balls} about 3 cm across. Wet hands stop the mix sticking to you.","Preheat 3 min at 180 °C. Balls in one layer with gaps — 12 is what the basket floor holds, so two servings a round. Stacking them turns meatballs grey and steamed.","12 min, shaking the basket once at the halfway mark.","Cut one open to check: no pink at the centre. Glaze while hot with {15 ml} mirin and {5 ml} soy sauce stirred together, plus a drop of sesame oil.","They freeze cooked and reheat in the fryer at 180 °C in 5 min."]},
@@ -423,11 +433,11 @@ const RECIPES = [
   ing:[["gpork",130],["onion",0.3],["egg",0.5]], rice:0.5, conds:["panko","pepper","oil","soy","mirin"],
   steps:["Dice {0.3 onion} small and soften it 2 min in the microwave, then let it cool. Warm onion cooks the egg in the mix and the patty turns crumbly.","Mix {130 g} ground pork with the cooled onion, {0.5 egg|eggs} beaten, {15 g} panko, salt and a lot of black pepper. Work it until tacky, then throw it between your hands a few times to knock the air out — trapped air splits a patty.","Shape into {1 oval|ovals} about 2 cm thick with a dent pressed into the middle, so each rises flat instead of into a ball.","Preheat 3 min at 180 °C, brush the tops with {5 ml} oil, 15 min.","Done when the juices run clear where you press the middle, or 75 °C inside. Pink juice means 3 more minutes.","Sauce in the resting time: {15 ml} mirin and {15 ml} soy sauce stirred into the fat left in the basket. Rice, and whatever vegetable is cheap."]},
  {id:"afnasu", tier:"C", n:"Air-fryer eggplant with miso", jp:"なすの味噌田楽", gear:["air","rice"], time:"4 min work", ready:22, eff:1, batch:false, cap:2,
-  ing:[["nasu",1.5],["negi",0.2]], after:["negi"], rice:0.5, conds:["miso","mirin","oil","sesame"],
-  steps:["Halve {1.5 eggplant|eggplants} lengthways and score the cut faces in a diamond pattern about 5 mm deep. The scoring is what lets the heat into the middle.","Brush the cut faces with {10 ml} oil. Eggplant drinks oil, so brush rather than pour or it goes greasy.","Preheat 3 min at 200 °C. Cut side up, 12 min.","Meanwhile stir {18 g} miso with {15 ml} mirin into a paste.","Spread the miso over the cut faces and give it 3 more minutes, watching through the window — miso catches fast. Done when a chopstick slides into the flesh with no resistance and the top is bubbling.","Sesame oil, green onion, rice."]},
+  ing:[["nasu",1],["negi",0.2]], after:["negi"], rice:0.5, conds:["miso","mirin","oil","sesame"],
+  steps:["Halve {1 eggplant|eggplants} lengthways (Japanese eggplants are small — one is a serving) and score the cut faces in a diamond pattern about 5 mm deep. The scoring is what lets the heat into the middle.","Brush the cut faces with {10 ml} oil. Eggplant drinks oil, so brush rather than pour or it goes greasy.","Preheat 3 min at 200 °C. Cut side up, 12 min.","Meanwhile stir {18 g} miso with {15 ml} mirin into a paste.","Spread the miso over the cut faces and give it 3 more minutes, watching through the window — miso catches fast. Done when a chopstick slides into the flesh with no resistance and the top is bubbling.","Sesame oil, green onion, rice."]},
  {id:"afonigiri", tier:"C", cooked:true, n:"Air-fryer yaki-onigiri", jp:"焼きおにぎり", gear:["air"], time:"8 min work", ready:20, eff:1, batch:true, cap:2, keep:3, freeze:"freeze them cooked",
   ing:[], rice:1, conds:["soy","mentsuyu","sesame"],
-  steps:["Take {300 g} cooked rice, ideally a day old from the fridge — fresh hot rice is too wet to hold an edge and falls apart in the basket.","Wet your hands, salt them, and press the rice into {2 firm triangle|firm triangles}. Press harder than feels right. A loose onigiri disintegrates.","Mix {15 ml} soy sauce with {15 ml} mentsuyu and a few drops of sesame oil. Brush one side.","Preheat 3 min at 200 °C. Onigiri in one layer on baking paper cut to size, brushed side up, 8 min. Four is what the basket floor holds — two servings.","Flip, brush the other side, 5 more min. Done when the brushed faces have gone deep gold and crackle under the brush.","They freeze cooked — 6 min at 180 °C straight from frozen."]},
+  steps:["Take {330 g} cooked rice, ideally a day old from the fridge — fresh hot rice is too wet to hold an edge and falls apart in the basket.","Wet your hands, salt them, and press the rice into {2 firm triangle|firm triangles}. Press harder than feels right. A loose onigiri disintegrates.","Mix {15 ml} soy sauce with {15 ml} mentsuyu and a few drops of sesame oil. Brush one side.","Preheat 3 min at 200 °C. Onigiri in one layer on baking paper cut to size, brushed side up, 8 min. Four is what the basket floor holds — two servings.","Flip, brush the other side, 5 more min. Done when the brushed faces have gone deep gold and crackle under the brush.","They freeze cooked — 6 min at 180 °C straight from frozen."]},
 ];
 /* ============ PHYSICAL LIMITS ============
    Every cap below is a physical claim, derived here or asserted in test.js — never a wish. */
@@ -492,13 +502,27 @@ const GEARLABEL = {rice:"rice cooker", pot:"pot", pan:"pan", air:"air fryer"};
 /* The shelf staples. A bottle of any of these is a one-time buy that lasts months, so the
    planner must not keep asking for them — see the seeding step in the state block. */
 const SHELF_SEED = ["soy","mirin","sake","mentsuyu","sesame","torigara","dashi","miso",
-  "mayo","garlic","ginger","oil","katakuriko","panko","pepper","ponzu"];
+  "mayo","garlic","ginger","oil","katakuriko","panko","pepper","ponzu","belachan","chinchalok"];
 /* Selection weighting. The air fryer and the rice cooker cost real money; the pot did not,
    and left to itself the planner reached for the pot nearly every time. */
 const APPLIANCE_BIAS = 2.4;
 const BATCH_BIAS = 2.5;   /* when one dish has to cover 3+ meals, batchable dishes matter more */
 const REPEAT_DAMP = 0.25; /* a dish picked in the last few rolls has to fight to come back */
 const RECENT_KEEP = 12;
+const CARRY_BOOST = 1.8;  /* a dish that eats the half-onion in the fridge beats one that opens a new one */
+/* how long a cut piece is still worth planning around, in days */
+const CARRY_DAYS = {onion:14, carrot:14, potato:14, negi:5, cucumber:4, tomato:4, egg:14, tofu:3, nasu:5};
+const localDate = () => { const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const daysSince = d => { const t = Date.parse(d||""); return isNaN(t) ? Infinity : (Date.now()-t)/864e5; };
+const carryFresh = (id, e) => (todayMidnight() - new Date(e.d+"T00:00:00")) / 864e5 <= (CARRY_DAYS[id] || 5);
+function pruneCarry(){ Object.keys(S.carry).forEach(k=>{ if (!carryFresh(k, S.carry[k])) delete S.carry[k]; }); }
+/* a leftover reads as a kitchen fraction, not 0.67 */
+function frac(x){
+  const w = Math.floor(x + 1e-9), f = x - w;
+  if (f < 0.02) return String(w);
+  const F = [[0.5,"½"],[0.33,"⅓"],[0.67,"⅔"],[0.25,"¼"],[0.75,"¾"]].find(([v])=>Math.abs(f-v) < 0.03);
+  return F ? (w || "")+F[1] : String(Math.round(x*10)/10);
+}
 const isApplianceDish = r => r.gear.includes("air") || r.cookin === true || r.plate === true || r.simmer === true;
 const yen = x => (x<0?"−":"")+"¥"+Math.abs(Math.round(x)).toLocaleString();
 const rec = id => RECIPES.find(r=>r.id===id);
@@ -524,7 +548,7 @@ try { S = JSON.parse(localStorage.getItem("lmp")||"{}"); } catch(e) { S = {}; }
 if (typeof S !== "object" || S === null || Array.isArray(S)) S = {};
 const isObj = x => x && typeof x === "object" && !Array.isArray(x);
 S.owned = isObj(S.owned) ? S.owned : {};
-S.locked = Array.isArray(S.locked) ? S.locked : [];
+S.locked = Array.isArray(S.locked) ? S.locked.filter(x=>typeof x==="string" && !!rec(x)) : [];
 S.recent = Array.isArray(S.recent) ? S.recent.filter(x=>typeof x==="string" && !!rec(x)).slice(0,RECENT_KEEP) : [];
 S.bought = isObj(S.bought) ? S.bought : {};
 /* a swap must be a whole cut on a dish that allows it — mince and whole cuts are different dishes */
@@ -537,6 +561,11 @@ S.tab = ["tonight","week","shop","save"].includes(S.tab) ? S.tab
   : (S.tab==="plan" ? "week" : "tonight"); /* migrate from the old tab set: plan->week, cook/anything else->tonight */
 S.price = isObj(S.price) ? Object.fromEntries(Object.entries(S.price).filter(([k,v])=>ING[k] && typeof v==="number" && isFinite(v) && v>=0)) : {};
 S.mugi = S.mugi === true;
+/* leftover pieces: only a piece-unit ingredient, a positive count and a real date survive */
+S.planDate = typeof S.planDate==="string" && /^\d{4}-\d{2}-\d{2}$/.test(S.planDate) ? S.planDate : null;
+S.carry = isObj(S.carry) ? Object.fromEntries(Object.entries(S.carry).filter(([k,e])=>ING[k] && ING[k].u==="pc" && isObj(e)
+  && typeof e.q==="number" && isFinite(e.q) && e.q>0 && typeof e.d==="string" && /^\d{4}-\d{2}-\d{2}$/.test(e.d) && !isNaN(Date.parse(e.d)))) : {};
+pruneCarry();
 /* The shelf used to start at {oil:true} and nothing ever filled it in, so the Shop tab kept
    billing a full pantry of condiments as one-time purchases, week after week, for bottles
    bought months ago. Seed the staples once. Only keys that were never set are touched, so a
@@ -546,14 +575,27 @@ if (S.shelfSeeded !== true) {
   S.shelfSeeded = true;
   try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {}
 }
+/* rice and barley used to be billed every week by the gram; they are bag stock, seeded as in */
+if (S.stockSeeded !== true) {
+  Object.keys(STOCK).forEach(k=>{ if (S.owned[k] === undefined) S.owned[k] = true; });
+  S.stockSeeded = true;
+  try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {}
+}
 /* legacy fields from older saves: dropped, never resurrected */
 delete S.stepdone; delete S.kit; delete S.aircap; delete S.fridge; delete S.day;
-if (S.plan !== undefined) { S.plan = Array.isArray(S.plan) ? S.plan.filter(x=>typeof x==="string") : undefined; if (S.plan && !S.plan.length) S.plan = undefined; }
+/* retired recipe ids are dropped here, or the header counts meals for dishes that no longer render */
+if (S.plan !== undefined) { S.plan = Array.isArray(S.plan) ? S.plan.filter(x=>typeof x==="string" && !!rec(x)) : undefined; if (S.plan && !S.plan.length) S.plan = undefined; }
+/* an unfinished cook survives a reload: the dish, step, round and servings */
+if (!(isObj(S.cooking) && typeof S.cooking.id==="string" && rec(S.cooking.id)
+  && Number.isInteger(S.cooking.step) && S.cooking.step>=0 && S.cooking.step<=rec(S.cooking.id).steps.length
+  && Number.isInteger(S.cooking.round) && S.cooking.round>=1
+  && Number.isInteger(S.cooking.serv) && S.cooking.serv>=1 && S.cooking.serv<=8)) delete S.cooking;
 function save(){ try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {} }
 const priceOf = id => S.price[id] !== undefined ? S.price[id] : ING[id].p;
 
 /* ============ EPHEMERAL UI STATE (not persisted — resets on load) ============ */
 let U = { effort:null, heroIdx:0, sheet:null, cook:null, step:0, serv:1, round:1, priceAll:false, toast:null, _toastTimer:null };
+if (S.cooking) { U.cook = S.cooking.id; U.step = S.cooking.step; U.round = Math.min(S.cooking.round, roundsFor(rec(S.cooking.id), S.cooking.serv)); U.serv = S.cooking.serv; }
 /* inline handlers can only see globals, and a script-scoped `let` is not one — so the panel's
    open state is written through a function, or it silently collapses on the next render */
 let priceOpen = false;
@@ -572,13 +614,26 @@ function runToastUndo(){
 
 /* ============ ACTIONS ============ */
 function setTab(t){ S.tab=t; save(); render(); try{ scrollTo(0,0); }catch(e){} }
+/* how many dishes a week of N meals gets at each variety setting */
+function dishCount(N, v){ return N<=2 ? N : v===1 ? 1 : v===2 ? Math.min(3, Math.max(2, Math.ceil(N/3))) : Math.min(N, 6); }
+/* what a dish needs to qualify for this week: short weeks cook fresh; max batch needs a batchable
+   dish; and when one dish covers more meals than it keeps, it must freeze */
+function fitsWeek(r, N, v){
+  const k = dishCount(N, v), per = Math.ceil(N / k);
+  if (N<=2 && r.batch) return false;
+  if (N>2 && v===1 && !r.batch) return false;
+  if (per > keepDaysOf(r) && !r.freeze) return false;
+  if (r.minServ && per < r.minServ) return false;
+  return true;
+}
 function stepMeals(d){
   S.N = Math.min(14, Math.max(1, S.N+d)); save();
   if (!S.plan) { render(); return; }
-  /* reshuffle when short-week mode would exclude something already picked, or when there are
-     now more dishes than meals — otherwise a dish ends up at ×0 servings and ¥0 of groceries */
-  const mustReshuffle = (S.N<=2 && S.plan.some(id=>{ const r = rec(id); return r && r.batch; }))
-    || S.plan.length > S.N;
+  /* Reshuffle whenever the current dishes no longer suit the week: the wrong number of dishes for
+     this meal count (stepping up from a one-dish short week used to leave 14 servings of pasta),
+     or a dish that no longer fits (a batch dish in a short week, a non-freezer over its keep days). */
+  const mustReshuffle = S.plan.length !== dishCount(S.N, S.v)
+    || S.plan.some(id=>{ const r = rec(id); return !r || !fitsWeek(r, S.N, S.v); });
   plan(mustReshuffle ? true : "keep");
 }
 function setVariety(v){ S.v=v; save(); plan(true); }
@@ -593,6 +648,7 @@ function dishWeight(r, v, wantBatch){
   if (wantBatch && r.batch) w *= BATCH_BIAS;
   if (v===1) w *= (r.cap || 1);
   if (S.recent.includes(r.id)) w *= REPEAT_DAMP;
+  if (r.ing.some(([id])=>S.carry[id] && S.carry[id].q >= 0.25)) w *= CARRY_BOOST;
   return w;
 }
 function pickWeighted(pool, k, v, wantBatch){
@@ -609,29 +665,51 @@ function pickWeighted(pool, k, v, wantBatch){
 function plan(reshuffle){
   const N = S.N, v = S.v;
   const short = N<=2;
-  const k = short ? N : v===1 ? 1 : v===2 ? Math.min(3, Math.max(2, Math.ceil(N/3))) : Math.min(N, 6);
-  let pool = eligible();
-  if (short) pool = pool.filter(r=>!r.batch);
-  else if (v===1) pool = pool.filter(r=>r.batch);
+  const k = dishCount(N, v);
+  const pool = eligible().filter(r=>fitsWeek(r, N, v));
   const locked = pool.filter(r=>S.locked.includes(r.id)).slice(0,k);
+  const benched = S.locked.map(rec).filter(r=>r && !locked.includes(r));
   let picks = [...locked];
   let undid = false, prevPlan = null;
   if (reshuffle!=="keep" || !S.plan) {
-    if (S.plan) { prevPlan = { plan:[...S.plan], bought:{...S.bought} }; undid = true; }
-    S.bought = {};
+    if (S.plan) {
+      prevPlan = { plan:[...S.plan], bought:{...S.bought}, carry:{...S.carry}, planDate:S.planDate }; undid = true;
+      /* what the old week left over. Ticked rows were bought; a list with no ticks at all was
+         shopped from paper, so it counts whole. A row skipped while others were ticked was not
+         bought, and leaves nothing. */
+      const prev = compute(), anyTick = Object.values(S.bought).some(Boolean);
+      /* a list with no ticks only counts as shopped once the week is actually old; re-rolling
+         three times on Sunday afternoon must not bank leftovers from lists that never went to LIFE */
+      const shopped = anyTick || daysSince(S.planDate) >= 2;
+      if (prev && shopped) Object.entries(prev.pcReq).forEach(([id,req])=>{
+        const row = prev.rows.find(r=>r.id===id);
+        if (row && anyTick && !S.bought[id]) return;
+        const have = S.carry[id] ? S.carry[id].q : 0;
+        const bought = row ? Math.ceil(row.q) : 0;
+        const left = have + bought - req;
+        if (left > 0.05) S.carry[id] = { q:left, d:localDate() }; else delete S.carry[id];
+      });
+    }
     const rest = pool.filter(r=>!picks.some(p=>p.id===r.id));
     picks = picks.concat(pickWeighted(rest, k - picks.length, v, N/k>=3));
     S.plan = picks.map(r=>r.id);
+    /* ticks survive a re-roll for anything still on the new list; the rest are dropped */
+    const onList = new Set((compute()||{rows:[]}).rows.map(x=>x.id));
+    S.bought = Object.fromEntries(Object.entries(S.bought).filter(([id,v])=>v && onList.has(id)));
     S.recent = [...S.plan, ...S.recent.filter(id=>!S.plan.includes(id))].slice(0, RECENT_KEEP);
     U.heroIdx = 0; /* a new week means the old "Nah" position means nothing */
+    S.planDate = localDate();
   }
   save(); render();
-  if (undid) flash("New week generated", ()=>{ S.plan=prevPlan.plan; S.bought=prevPlan.bought; save(); render(); });
+  if (undid) {
+    const kept = Object.keys(S.bought).length, note = [];
+    if (kept) note.push(kept+" basket tick"+(kept>1?"s":"")+" kept");
+    if (benched.length) note.push(benched.map(r=>r.n).join(", ")+" "+(benched.length>1?"don't":"doesn't")+" fit this week, so "+(benched.length>1?"they sit":"it sits")+" out");
+    flash("New week generated"+(note.length?" · "+note.join(" · "):""), ()=>{ S.plan=prevPlan.plan; S.bought=prevPlan.bought; S.carry=prevPlan.carry; S.planDate=prevPlan.planDate; save(); render(); });
+  }
 }
 function swap(id){
-  let pool = eligible().filter(r=>!S.plan.includes(r.id));
-  if (S.N<=2) pool = pool.filter(r=>!r.batch);
-  else if (S.v===1) pool = pool.filter(r=>r.batch);
+  const pool = eligible().filter(r=>!S.plan.includes(r.id) && fitsWeek(r, S.N, S.v));
   if (!pool.length) return;
   const nu = pickWeighted(pool, 1, S.v, false)[0]; /* a swap should favour the appliances too */
   const prevPlan = [...S.plan], prevLocked = [...S.locked];
@@ -646,6 +724,14 @@ function lock(id){
 }
 function toggleCond(id){ S.owned[id]=!S.owned[id]; save(); render(); }
 function toggleBought(id){ S.bought[id]=!S.bought[id]; save(); render(); }
+/* "already have it": the whole requirement goes into carry and the row disappears */
+function haveIt(id){
+  const c = compute(), r = c && c.rows.find(x=>x.id===id);
+  if (!r || ING[id].u !== "pc") return;
+  const prev = S.carry[id];
+  S.carry[id] = { q:Math.ceil(r.req), d:localDate() }; save(); render();
+  flash(ING[id].n+": using what you have", ()=>{ if (prev) S.carry[id]=prev; else delete S.carry[id]; save(); render(); });
+}
 function clearTicks(){
   const prevBought = {...S.bought};
   S.bought={}; save(); render();
@@ -662,7 +748,9 @@ function cycleProtein(rid){
 function logWeek(){
   const el = document.getElementById("spentInput");
   const v = +el.value;
+  /* a stray extra zero should not become the savings headline */
   if (!v || v<0 || !isFinite(v)) return;
+  if (v > 100000) { flash("That is more than ¥100,000 for a week — check the receipt total."); return; }
   S.log.push({d:todayMidnight().toISOString().slice(0,10), spent:v, meals:S.N});
   U._clearSpent = true;
   save(); render();
@@ -676,7 +764,10 @@ function delLog(i){
 }
 function toggleMugi(){ S.mugi = !S.mugi; save(); render(); }
 function setPrice(id, v){
+  /* a cleared field means "no change", not "free" — zero has to be typed on purpose */
+  if (v === "" || v === null || (typeof v === "string" && !v.trim())) { render(); return; }
   v = +v;
+  if (v > 100000) { render(); return; }
   const it = ING[id];
   /* zero is a real answer: a gifted bag of rice costs nothing and should not inflate the bill */
   if (!it || !isFinite(v) || v<0) { render(); return; }
@@ -731,12 +822,22 @@ function closeSheet(){ U.sheet = null; render(); }
 function startCook(rid, serv){
   const r = rec(rid); if (!r) return;
   clearTimeout(U._toastTimer); U.toast = null;
-  U.sheet=null; U.cook=rid; U.step=0; U.round=1; U.serv=Math.max(defaultServ(r), serv||1); render();
+  U.sheet=null; U.cook=rid; U.step=0; U.round=1; U.serv=Math.max(defaultServ(r), serv||1);
+  U.planServ = serv||1; persistCook(); render();
 }
-function quitCook(){ U.cook=null; U.step=0; U.round=1; render(); }
+function persistCook(){
+  if (U.cook) S.cooking = {id:U.cook, step:U.step, round:U.round, serv:U.serv}; else delete S.cooking;
+  save();
+}
+function quitCook(){
+  const was = U.cook ? {cook:U.cook, step:U.step, round:U.round, serv:U.serv} : null;
+  U.cook=null; U.step=0; U.round=1; persistCook(); render();
+  /* leaving mid-recipe is one tap away from a wet thumb, so it can be taken back */
+  if (was && was.step>0) flash("Left "+rec(was.cook).n+" at step "+was.step, ()=>{ Object.assign(U, was); persistCook(); render(); });
+}
 function cookServ(d){
   const r = rec(U.cook); if (!r) return;
-  U.serv = Math.min(8, Math.max(defaultServ(r), U.serv + d)); render();
+  U.serv = Math.min(8, Math.max(defaultServ(r), U.serv + d)); persistCook(); render();
 }
 /* servings cooked in round k of this session: full rounds first, the remainder last */
 function roundServ(r, total, k){
@@ -752,17 +853,17 @@ function prevStep(){
   if (U.round>1 && U.step===cookFrom(rec(U.cook))+1) { U.round--; U.step = rec(U.cook).steps.length; }
   else if (U.step>0) U.step--;
   else U.cook=null;
-  render();
+  persistCook(); render();
 }
 function nextStep(){
   const r = rec(U.cook); if (!r) { U.cook=null; render(); return; }
-  if (U.step < r.steps.length) { U.step++; render(); return; }
+  if (U.step < r.steps.length) { U.step++; persistCook(); render(); return; }
   const rounds = roundsFor(r, U.serv);
-  if (U.round < rounds) { U.round++; U.step = cookFrom(r)+1; render(); return; }
+  if (U.round < rounds) { U.round++; U.step = cookFrom(r)+1; persistCook(); render(); return; }
   const kd = keepDaysOf(r);
   const msg = "Done. " + (kd===1 ? "Eat it now." : "Leftovers keep "+kd+" days"+(r.freeze?" · "+r.freeze:"")+".");
   U.cook=null; U.step=0; U.round=1; U.effort=null; U.heroIdx=0;
-  save(); render();
+  persistCook(); render();
   flash(msg);
 }
 
@@ -776,12 +877,16 @@ function compute(){
   /* An even split ignores the gear: 7 meals over curry (3 a pot) and karaage (2 a basket) came
      out 4/3, which is two rounds of each. Move servings from a dish that overflows its gear to
      one with room, so the week cooks in as few rounds as the gear allows. */
+  /* a dish with a minimum fill (the simmer menu) takes at least that many, from the others */
+  picks.forEach(r=>{ while (r.minServ && servings[r.id] < r.minServ) {
+    const donor = picks.filter(o=>o!==r && servings[o.id] > Math.max(1, o.minServ||1)).sort((a,b)=>servings[b.id]-servings[a.id])[0];
+    if (!donor) break; servings[donor.id]--; servings[r.id]++; } });
   const rnd = r => Math.ceil(servings[r.id] / (r.cap || 2));
   const total = () => picks.reduce((a,r)=>a+rnd(r), 0);
   for (let pass=0, better=true; better && pass<40; pass++) {
     better = false;
     picks.forEach(a=>picks.forEach(b=>{
-      if (a===b || servings[a.id]<=1) return;
+      if (a===b || servings[a.id]<=Math.max(1, a.minServ||1)) return;
       const before = total(); servings[a.id]--; servings[b.id]++;
       if (total() < before) better = true; else { servings[a.id]++; servings[b.id]--; }
     }));
@@ -794,19 +899,26 @@ function compute(){
     if (S.mugi && !r.cookin) mugiCups += (r.rice||0)*s;
     ingsOf(r).forEach(([id,q])=>{ g[id]=(g[id]||0)+q*s; });
   });
-  if (mugiCups > 0) g.mugi = (g.mugi||0) + mugiCups*50;
-  /* rice was never costed at all, so the grocery total ran ~20% light and the savings
-     headline ran the same amount heavy. Set its price to 0 in Shop while a gifted bag lasts. */
-  if (riceGo > 0) g.rice = (g.rice||0) + Math.round(riceGo*150);
+  pruneCarry();
   let food = 0;
-  const rows = Object.entries(g).map(([id,q])=>{
+  /* a piece already in the fridge comes off the count before rounding; q is what is left to buy,
+     req the whole requirement, so a roll can work out the new leftover */
+  const rows = Object.entries(g).map(([id,req])=>{
     const it = ING[id];
+    const have = it.u==="pc" && S.carry[id] ? S.carry[id].q : 0;
+    const q = Math.max(0, req - have);
+    if (have && q <= 0.05) return null;
     const buy = it.u==="pc" ? Math.ceil(q) : Math.ceil(q/50)*50;
     const cost = buy*priceOf(id); food += cost;
-    return {id, cat:it.cat, n:it.n, jp:it.jp, disp: it.u==="pc" ? buy+(buy>1?" pcs":" pc") : buy+" g", cost};
-  });
-  const needed = [...new Set(picks.flatMap(r=>r.conds))];
-  return {picks, servings, N, rows, food, riceGo, sideCups, mugiCups, needed};
+    /* meat and fish trays are sold by weight, not in 50 g steps: pick trays adding up to at least this */
+    return {id, cat:it.cat, n:it.n, jp:it.jp, q, req, cost,
+      disp: it.u==="pc" ? buy+(buy>1?" pcs":" pc")+(have?" · have "+frac(have):"") : it.cat==="meat" ? "at least "+buy+" g" : buy+" g"};
+  }).filter(Boolean);
+  /* rice and barley are bag stock (see STOCK): they join the shelf top-up, never the weekly rows */
+  const needed = [...new Set([...picks.flatMap(r=>r.conds), ...(riceGo>0?["rice"]:[]), ...(mugiCups>0?["mugi"]:[])])];
+  /* every piece requirement, covered or not, so a roll can settle the leftover ledger */
+  const pcReq = Object.fromEntries(Object.entries(g).filter(([id])=>ING[id].u==="pc"));
+  return {picks, servings, N, rows, food, riceGo, sideCups, mugiCups, needed, pcReq};
 }
 
 /* A week is only 2–3 dishes, so it usually cannot answer all three effort questions —
@@ -830,7 +942,11 @@ function candidates(c){
   const eff = U.effort;
   const planned = c ? c.picks : [];
   const inPlan = planned.filter(r=>r.eff<=eff).map(r=>({kind:"cook", r, eff:r.eff, serv:c.servings[r.id]}));
-  const offPlan = rotated(RECIPES.filter(r=>r.eff===eff && !planned.some(p=>p.id===r.id)), eff)
+  /* within a tier, dishes that are actually on the table soon come first — "something quick" at
+     7:30 pm should not lead with an hour in the rice cooker */
+  const soonCut = eff===0 ? 20 : eff===1 ? 35 : 999;
+  const offAll = RECIPES.filter(r=>r.eff===eff && !planned.some(p=>p.id===r.id));
+  const offPlan = [...rotated(offAll.filter(r=>r.ready<=soonCut), eff), ...rotated(offAll.filter(r=>r.ready>soonCut), eff+7)]
     .map(r=>({kind:"offplan", r, eff:r.eff}));
   if (eff===2) {
     /* asked for a batch day: answer with an anchor. If the week has none, an off-plan
@@ -840,7 +956,7 @@ function candidates(c){
     return [...anchors, ...offPlan, ...others];
   }
   /* asked for something easy: the plan first, hardest first, then the roster */
-  return [...inPlan.sort((a,b)=>b.eff-a.eff), ...offPlan];
+  return [...inPlan.sort((a,b)=>(b.eff-a.eff) || (a.r.ready-b.r.ready)), ...offPlan];
 }
 function roundsFor(r, s){ return (!r.cap || s <= r.cap) ? 1 : Math.ceil(s / r.cap); }
 function roundsLabel(r, s){
@@ -849,7 +965,12 @@ function roundsLabel(r, s){
   return n + " rounds";
 }
 /* minutes to the table; side rice is its own clock, so it is named rather than added in */
-function readyLabel(r){ return "ready ~"+r.ready+" min"+(riceKind(r)==="side" ? " + rice" : ""); }
+function readyLabel(r, s){ return "ready ~"+readyTotal(r, s||1)+" min"+(riceKind(r)==="side" ? " + rice" : ""); }
+/* every extra round adds its cooking time: a basket cycle for the air fryer, the whole dish otherwise */
+function readyTotal(r, s){
+  const extra = roundsFor(r, s) - 1;
+  return r.ready + extra * (r.gear.includes("air") ? 15 : r.ready);
+}
 function capLabel(r){
   if (!r.cap) return "no limit";
   return r.cap + " a round";
@@ -860,7 +981,7 @@ function gearTips(r, s){
   if (cp && s>cp) t.push(cp===1
     ? "This dish only works one serving at a time — do "+s+" quick rounds back-to-back."
     : "×"+s+" servings won't fit in one go — cook "+Math.ceil(s/cp)+" rounds of ~"+cp+".");
-  if (r.crowd) t.push("Doing 2+ servings at once? Split into rounds — a crowded 26 cm pan steams instead of sears.");
+  if (r.crowd && s >= 3) t.push("Three or more servings: split into rounds — a crowded 26 cm pan steams instead of sears.");
   if (r.plate) t.push("Cooking plate: plain rice underneath only, food spread out rather than piled, and lift the plate out when it beeps — never keep warm with it in. Tiger caps the rice at 1 go with the plate in: half a cup a serving, two servings a run.");
   if (r.minServ && s < r.minServ) t.push("The simmer menu needs at least "+r.minServ+" servings in the pot, or it sits under the bottom mark and can boil over.");
   return t;
@@ -919,7 +1040,7 @@ function answeredHTML(c){
 function heroHTML(hero){
   const r = hero.r;
   const off = hero.kind==="offplan";
-  const tag = (off ? "Not in this week's plan · " : (r.eff===2?"Batch anchor · ":"Cook fresh · ")) + r.time + " · " + readyLabel(r);
+  const tag = (off ? "Not in this week's plan · " : (r.eff===2?"Batch anchor · ":"Cook fresh · ")) + r.time + " · " + readyLabel(r, hero.serv);
   const gearTxt = r.gear.map(g=>GEARLABEL[g]).join(" + ");
   const perRound = r.cap ? Math.min(hero.serv||r.cap, r.cap) : (hero.serv||1);
   const why = cap1(gearTxt)+". "+(off
@@ -936,7 +1057,7 @@ function heroHTML(hero){
     + '</div>';
 }
 function altRowHTML(o,i){
-  const meta = o.r.time+" · "+readyLabel(o.r)+" · "+o.r.gear.map(g=>GEARLABEL[g]).join(" + ");
+  const meta = o.r.time+" · "+readyLabel(o.r, o.serv)+" · "+o.r.gear.map(g=>GEARLABEL[g]).join(" + ");
   const badge = o.kind==="offplan" ? "off plan" : (o.r.eff===2?"batch":"cook");
   return '<button class="altrow" data-k="alt'+i+'" onclick="openSheet(\''+o.r.id+'\')">'
     + '<span class="altbody"><span class="altn">'+o.r.n+'</span><span class="altmeta">'+meta+'</span></span>'
@@ -972,11 +1093,19 @@ function weekHTML(c){
         + '</div>';
     });
     h += '</div>';
+    h += usingUpHTML(c);
     h += rhythmHTML(c);
   } else {
     h += '<div class="emptycard" style="margin-top:24px">Tap <b>Generate my week</b> to get dishes, a grocery list, and a cook schedule.</div>';
   }
   return h;
+}
+/* the fridge leftovers, and which of this week's dishes eat them */
+function usingUpHTML(c){
+  const ids = Object.keys(S.carry); if (!ids.length) return "";
+  const uses = c.picks.filter(r=>ingsOf(r).some(([id])=>S.carry[id]));
+  return '<div class="subline" data-k="usingup">Using up: '+ids.map(id=>frac(S.carry[id].q)+" "+ING[id].n.toLowerCase()).join(", ")
+    +(uses.length ? " → "+uses.map(r=>r.n).join(", ") : " — nothing this week uses them")+'</div>';
 }
 /* what the other appliances do while a batch anchor cooks — the whole point of a cook day */
 function pairingFor(r, c, riceRun){
@@ -1000,17 +1129,32 @@ function rhythmHTML(c){
   const runs = side ? Math.ceil(side/COOKER.white) : 0;
   const run1 = Math.min(side, COOKER.white), run2 = Math.max(0, side-run1);
   const rows = [];
-  if (bat[0]) rows.push(["日 SUN", "All "+c.servings[bat[0].id]+" servings of "+bat[0].n+" ("+GEARLABEL[bat[0].gear[0]]+")."+rounds(bat[0])+" "+pairingFor(bat[0], c, run1)+(bat[0].freeze?" "+cap1(bat[0].freeze)+".":"")]);
-  if (bat[1]) rows.push(["水 WED", "Top up with "+bat[1].n+" ("+GEARLABEL[bat[1].gear[0]]+")."+rounds(bat[1])+" "+pairingFor(bat[1], c, run2)]);
+  /* a batch bigger than its fridge life is split on the day: the rest goes in the freezer at once */
+  const keepLine = r => {
+    const s = c.servings[r.id], kd = keepDaysOf(r);
+    if (s <= kd) return r.freeze ? " "+cap1(r.freeze)+"." : "";
+    const extra = s - kd;
+    return /raw/.test(r.freeze||"")
+      ? " It keeps "+kd+" days cooked, so cook "+kd+" and bag the other "+extra+" raw for the freezer; cook those from frozen later in the week."
+      : " It keeps "+kd+" days, so box "+kd+" for the fridge and freeze the other "+extra+" the same day.";
+  };
+  if (bat[0]) rows.push(["日 SUN", "All "+c.servings[bat[0].id]+" servings of "+bat[0].n+" ("+GEARLABEL[bat[0].gear[0]]+")."+rounds(bat[0])+" "+pairingFor(bat[0], c, run1)+keepLine(bat[0])]);
+  if (bat[1]) rows.push(["水 WED", "Top up with "+bat[1].n+" ("+GEARLABEL[bat[1].gear[0]]+")."+rounds(bat[1])+" "+pairingFor(bat[1], c, run2)+keepLine(bat[1])]);
   bat.slice(2).forEach(r=>rows.push(["ALSO", "Batch "+r.n+" ("+c.servings[r.id]+" servings)."+rounds(r)]));
   quick.forEach(r=>rows.push([r.time.replace(" min"," MIN").toUpperCase(), r.n+" × "+c.servings[r.id]+", cooked fresh — "+(r.batch?"batchable, but at this size fresher is easier":"too quick to be worth batching")+"."+rounds(r)]));
-  const own = c.picks.filter(r=>riceKind(r)==="self").map(r=>r.n);
+  const own = c.picks.filter(r=>riceKind(r)==="self");
   let riceTxt = side
     ? side+" cooker cup"+(side>1?"s":"")+" of side rice ("+Math.round(side*150)+" g dry). The JAJ-A550 takes 3 a run"
       + (runs>1 ? ", so "+runs+" runs: "+run1+" with Sunday's cook, "+run2+" with Wednesday's" : ", so one run")
       + ". Freeze what you will not eat in 2 days — the 355 ml pots or flat in bags, 3 min in the microwave."
     : "No side rice this week.";
-  if (own.length) riceTxt += " "+own.join(", ")+(own.length>1?" cook":" cooks")+" its own rice, on a separate run.";
+  /* the cooker does one thing at a time: every self-rice dish is its own run, per round */
+  if (own.length) {
+    const runsOwn = own.reduce((a,r)=>a+roundsFor(r, c.servings[r.id]), 0);
+    riceTxt += own.length===1 && runsOwn===1
+      ? " "+own[0].n+" cooks its own rice, on a separate run."
+      : " "+own.map(r=>r.n).join(" and ")+(own.length>1?" each cook":" cooks")+" their own rice — "+runsOwn+" more cooker run"+(runsOwn>1?"s":"")+", one at a time, on different days.";
+  }
   if (S.mugi && c.mugiCups>0) riceTxt += " Mochi-mugi on: add "+Math.round(c.mugiCups*50)+" g barley across the plain rice (50 g per cup) plus 100 ml extra water per cup, same cycle. Seasoned-rice dishes stay white.";
   rows.push(["米 RICE", riceTxt]);
   let h = '<div class="bigrow" style="margin:38px 0 4px;align-items:center"><h3 class="sectionlabel">The rhythm</h3>'
@@ -1059,11 +1203,14 @@ function shopHTML(c){
     h += '<h3 class="ghead2 jpx">'+CATS[cat]+'</h3>';
     items.forEach(r=>{
       const on = !!S.bought[r.id];
-      h += '<button class="shoprow" data-k="shop'+r.id+'" role="checkbox" aria-checked="'+on+'" onclick="toggleBought(\''+r.id+'\')">'
+      /* the "have" chip sits beside the checkbox, not inside it — nested buttons are invalid */
+      h += '<div class="shopline"><button class="shoprow" data-k="shop'+r.id+'" role="checkbox" aria-checked="'+on+'" onclick="toggleBought(\''+r.id+'\')">'
         + '<span class="checkbox'+(on?" on":"")+'">'+(on?"✓":"")+'</span>'
         + '<span class="shopmain" style="opacity:'+(on?".38":"1")+'"><span class="shopn'+(on?" strike":"")+'">'+r.n+'</span><span class="shopjp jp">'+r.jp+'</span></span>'
         + '<span class="shopamt" style="opacity:'+(on?".38":"1")+'"><span class="shopqty">'+r.disp+'</span><span class="shopcost">'+yen(r.cost)+'</span></span>'
-        + '</button>';
+        + '</button>'
+        + (ING[r.id].u==="pc" && !on ? '<button class="havechip" data-k="have'+r.id+'" aria-label="Already have '+r.n+'" onclick="haveIt(\''+r.id+'\')">have</button>' : '')
+        + '</div>';
     });
   });
   h += '</div>';
@@ -1073,10 +1220,11 @@ function shopHTML(c){
       + '<div class="detailsnote" style="margin:2px 0 0">A bottle lasts months, so these only appear while the shelf below says you are out of one. Tap to put it back in stock.</div>'
       + '<div class="dividerlist">';
     need.forEach(k=>{
+      const it = shelfItem(k);
       h += '<button class="shoprow" data-k="need'+k+'" role="checkbox" aria-checked="false" onclick="toggleCond(\''+k+'\')">'
         + '<span class="checkbox"></span>'
-        + '<span class="shopmain"><span class="shopn">'+CONDS[k].n+'</span><span class="shopjp jp">'+CONDS[k].jp+'</span></span>'
-        + '<span class="shopamt"><span class="shopqty">'+yen(CONDS[k].p)+'</span><span class="shopcost">one-time</span></span>'
+        + '<span class="shopmain"><span class="shopn">'+it.n+'</span><span class="shopjp jp">'+it.jp+'</span></span>'
+        + '<span class="shopamt"><span class="shopqty">'+(it.disp||yen(it.p))+'</span><span class="shopcost">'+(it.disp?yen(it.p):"one-time")+'</span></span>'
         + '</button>';
     });
     h += '</div>';
@@ -1104,7 +1252,7 @@ function priceTuneHTML(c){
 }
 function shelfHTML(){
   return '<h3 class="sectionlabel" style="margin:38px 0 8px">The shelf · <span lang="ja">調味料</span></h3>'
-    + '<div class="condgrid">'+Object.entries(CONDS).map(([k,cd])=>'<button class="condbtn'+(S.owned[k]?" on":"")+'" data-k="cond'+k+'" aria-pressed="'+!!S.owned[k]+'" title="'+cd.jp+'" aria-label="'+cd.n+' ('+cd.jp+')'+(S.owned[k]?", in stock":", out of stock")+'" onclick="toggleCond(\''+k+'\')">'+cd.n+'</button>').join("")+'</div>'
+    + '<div class="condgrid">'+Object.entries({...CONDS, ...STOCK}).map(([k,cd])=>'<button class="condbtn'+(S.owned[k]?" on":"")+'" data-k="cond'+k+'" aria-pressed="'+!!S.owned[k]+'" title="'+cd.jp+'" aria-label="'+cd.n+' ('+cd.jp+')'+(S.owned[k]?", in stock":", out of stock")+'" onclick="toggleCond(\''+k+'\')">'+cd.n+'</button>').join("")+'</div>'
     + '<div class="footnote" style="margin-top:10px;padding-top:0;border-top:none">Mint means you have it. Tap anything you have run out of and it joins the shopping list.</div>';
 }
 /* ============ RENDER: Saved ============ */
@@ -1114,7 +1262,7 @@ function saveHTML(){
   const c = compute();
   let h = '<h2 class="eyebrow"><span lang="ja">貯金</span> · Not eating out</h2>'
     + '<div class="bignum mint" style="margin-top:16px">'+yen(totSaved)+'</div>'
-    + '<div class="subline">'+(S.log.length ? S.log.length+" weeks logged · "+yen(totSpent)+" spent, against "+yen(EAT_OUT)+" a meal outside" : "Log a receipt and this starts counting.")+'</div>'
+    + '<div class="subline">'+(S.log.length ? S.log.length+" week"+(S.log.length>1?"s":"")+" logged · "+yen(totSpent)+" spent, against "+yen(EAT_OUT)+" a meal outside" : "Log a receipt and this starts counting.")+'</div>'
     + '<div class="hlist row2" style="margin-top:28px">'
     + '<input type="number" id="spentInput" inputmode="numeric" min="0" placeholder="'+(c?Math.round(c.food):"1700")+'" aria-label="What this week cost in yen" onkeydown="if(event.key===\'Enter\')logWeek()" data-k="spentinput">'
     + '<button class="logbtn" data-k="logweek" onclick="logWeek()">Log it</button></div>'
@@ -1142,7 +1290,7 @@ function sheetHTML(c){
   const planned = !!(c && c.servings[r.id]);
   const serv = planned ? c.servings[r.id] : defaultServ(r);
   const kd = keepDaysOf(r);
-  const facts = [[r.time,"hands on"], ["~"+r.ready+" min"+(riceKind(r)==="side"?" + rice":""),"to the table"],
+  const facts = [[r.time,"hands on"], ["~"+readyTotal(r, serv)+" min"+(riceKind(r)==="side"?" + rice":""),"to the table"],
     planned ? ["×"+serv+" · "+roundsLabel(r, serv),"this week"] : ["—","not planned"],
     [capLabel(r),"per round"],
     [r.gear.map(g=>GEARLABEL[g]).join(" + "),"gear"],
@@ -1178,6 +1326,7 @@ function riceFirstText(r, serv){
   if (k === "none" || k === "self") return "";
   const cups = Math.round(r.rice*serv*2)/2, g = Math.round(cups*150);
   if (k === "cooked") return "This needs "+Math.round(cups*330)+" g of cooked rice, ideally a day old. None in the fridge? Cook "+cups+" cup"+(cups>1?"s":"")+" now on quick-cook ("+COOKER.quickMin+" min) and let it cool.";
+  if (r.simmer) return "The rice cooker is busy for ~"+r.ready+" min with this. Want fresh rice? Cook "+cups+" cup"+(cups>1?"s":"")+" first and set it aside — or microwave frozen rice pots at the end.";
   if (r.gear.every(g=>g==="rice")) return "Hot rice: microwave a frozen rice pot for 3 min, or cook "+cups+" cup"+(cups>1?"s":"")+" ("+g+" g) on quick-cook, "+COOKER.quickMin+" min.";
   const lead = 50 - r.ready;
   const when = lead >= 10 ? "this takes ~"+r.ready+" min, so start prepping in about "+(Math.round(lead/5)*5)+" min" : "this takes about as long, so start both now";
@@ -1206,7 +1355,8 @@ function cookHTML(){
       + '<div class="setupline">'+(rounds===1
           ? "One go — "+(r.cap ? capLabel(r).replace(" a round"," fit")+" the "+GEARLABEL[r.gear[0]] : "no limit")+"."
           : rounds+" rounds of up to "+r.cap+" — the "+GEARLABEL[r.gear[0]]+" holds "+r.cap+". "+(cookFrom(r)>0 ? "Prep is done once for all of it; the cooking steps repeat for each round." : "The steps repeat for each round, with the amounts for that round."))+'</div>'
-      + '<div class="setupline">'+cap1(readyLabel(r))+'.</div>'
+      + (U.planServ && U.serv > U.planServ && U.serv === defaultServ(r) ? '<div class="setupline warm">Bumped to ×'+U.serv+' — the '+(r.simmer?"simmer menu":GEARLABEL[r.gear[0]])+' needs at least '+r.minServ+' servings. Shop for '+(U.serv-U.planServ)+' more.</div>' : '')
+      + '<div class="setupline">'+cap1(readyLabel(r, U.serv))+(rounds>1 ? ' for all '+rounds+' rounds' : '')+'.</div>'
       + (rice ? '<div class="setupline mint">'+rice+'</div>' : '')
       + tips.map(t=>'<div class="setupline warm">'+t+'</div>').join("");
   } else {
@@ -1242,6 +1392,7 @@ function toastHTML(){
 
 /* ============ TOP-LEVEL RENDER ============ */
 function render(){
+  if (U._stale && !U.cook && !U.sheet) { U._stale = false; try { location.reload(); return; } catch(e) {} }
   const ae = document.activeElement;
   const fk = ae && ae.dataset ? ae.dataset.k : null;
   /* tabs are replaced wholesale via innerHTML, which wipes anything half-typed.
@@ -1302,6 +1453,13 @@ function render(){
 }
 /* Escape backs out of whatever is on top */
 if (typeof document !== "undefined") {
+  /* another tab on this origin saved: reload so this tab does not overwrite it on its next save.
+     Not mid-typing or mid-cook — that waits until the overlay closes. */
+  window.addEventListener("storage", e=>{
+    if (e.key !== "lmp") return;
+    const typing = document.activeElement && document.activeElement.tagName === "INPUT";
+    if (!U.cook && !U.sheet && !typing) location.reload(); else U._stale = true;
+  });
   document.addEventListener("keydown", e=>{
     if (e.key !== "Escape") return;
     if (U.cook) { quitCook(); }

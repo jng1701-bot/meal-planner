@@ -61,11 +61,23 @@ Work out what fits before deciding what you want to fit.
   (cutting, marinating, coating) is done once for the whole batch; only the steps from the
   preheat on repeat.
 
+## Stock and leftovers
+
+Rice and mochi-mugi are bought by the bag (`STOCK`), so they never appear as weekly grocery
+rows: they sit on the shelf beside the condiments and only reach the list, as one bag or one
+pack, when tapped out. The cook schedule still counts cups. Leftover pieces carry over: when a
+week is rolled, each piece-unit item that was bought (ticked, or on an untouched list that is at
+least two days old by `S.planDate` — a Sunday re-roll spree banks nothing) settles the ledger
+`have + ceil(to buy) − required` into `S.carry` with a local date; the next list subtracts it ("1 pc · have ½"),
+drops a fully covered row, and the planner favours dishes that use it up (`CARRY_BOOST`). A
+"have" chip on any piece row banks the whole requirement on the spot. Entries expire after
+`CARRY_DAYS`.
+
 ## Files
 
 - `index.html` — the whole app. No build, no dependencies. Vanilla JS, state in
   `localStorage` under the key `lmp`.
-- `test.js` — jsdom harness, ~2,840 assertions. **Keep it committed.** It has been lost twice.
+- `test.js` — jsdom harness, ~3,015 assertions. **Keep it committed.** It has been lost twice.
 
 ## Running the tests
 
@@ -94,11 +106,24 @@ files** on `main`, drop `index.html`, `test.js` and `README.md`, commit.
 - Condiments are a one-time shelf (`SHELF_SEED`), shown on Shop. If a bottle is re-billed every
   week, that is the bug.
 - Selection is weighted, not sorted (`dishWeight` / `pickWeighted`).
-- Anything the week consumes belongs in `compute()`, including rice. A price of 0 means "given
-  to me".
+- Anything the week consumes belongs in `compute()`. A price of 0 means "given to me".
+- Rice and barley are `STOCK`, not grocery rows: while `S.owned[id]` is true they are silent,
+  and the weekly food figure never includes a bag. Out of stock shows exactly one row, in the
+  shelf top-up, and ticking it restocks.
+- `S.carry` holds only piece-unit ids with a positive count and a local `YYYY-MM-DD`; anything
+  else is dropped at boot, and expired entries are dropped at boot and in `compute()`.
+- A roll banks leftovers only for rows that were bought; an item left unticked while others
+  were ticked banks nothing. New-week Undo restores plan, ticks and carry together.
+- A carried piece comes off the count before rounding; a row covered to within 0.05 is omitted.
 - Every recipe states `ready` (minutes to the table, side rice excluded). Tonight shows it.
 - Shelf life: cooked meat and fish 3 days, everything else 4, eat-now dishes `keep: 1`. Any
   "keeps N days" in the steps must match `keepDaysOf` — the test enforces it.
 - No mackerel in the roster.
+- `fitsWeek(r, N, v)` decides what may be planned: short weeks cook fresh, max batch needs a
+  batchable dish, a dish covering more meals than it keeps must freeze, and `minServ` must fit.
+  `stepMeals` reshuffles whenever the dish count or any dish stops fitting.
+- An unfinished cook is saved as `S.cooking` and resumes after a reload; Quit mid-recipe has Undo.
+- Re-rolling keeps basket ticks for items still on the list. A blank price input is "no change".
+- Another tab saving reloads this one (unless mid-cook or mid-typing) instead of overwriting it.
 - Air-fryer steps: preheat 3 min for skin or coating, one layer with gaps, never aerosol oil
   spray, never over 200 °C.
