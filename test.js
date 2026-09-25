@@ -1,5 +1,6 @@
 /* Lazy Meal Planner — jsdom test harness
- * Run:  npm i jsdom && node test.js
+ * Run:  npm i jsdom && node test.js      (SEED=n node test.js to try another planner seed)
+ * Runs in Asia/Tokyo with a seeded Math.random, and every top-level section starts from resetAll().
  *
  * Keep this file in the repo. It has been lost twice with session scratch folders.
  *
@@ -14,6 +15,11 @@
  * every text check runs on the rendered words, not the template.
  * Cooking is a full-screen overlay (#cook-overlay), dish details a sheet (#sheet-overlay).
  */
+/* One clock and one dice for every run: the app is used in Tokyo, and the planner's statistical
+   tests should not pass or fail by luck. TZ must be set before any Date is made. */
+process.env.TZ = "Asia/Tokyo";
+function mulberry32(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const SEED = +(process.env.SEED || 20260925);
 const fs = require("fs");
 const path = require("path");
 const { JSDOM, VirtualConsole } = require("jsdom");
@@ -37,12 +43,21 @@ const dom = new JSDOM(fs.readFileSync(HTML, "utf8"), {
   runScripts: "dangerously",
   pretendToBeVisual: true,
   url: "https://localhost/",
-  virtualConsole: vc
+  virtualConsole: vc,
+  beforeParse(w) { w.Math.random = mulberry32(SEED); }
 });
 const W = dom.window;
 const D = W.document;
 const ev = expr => W.eval(expr);
 const tabHTML = t => D.getElementById("tab-" + t).innerHTML;
+/* Each top-level section starts from a clean, sanitised state — the same one a first launch gets —
+   so no section passes or fails because of what an earlier one left in S or U. */
+function resetAll() {
+  W.eval("clearTimeout(U._toastTimer); clearTimeout(U._toastTimer)");
+  W.localStorage.clear();
+  /* S is emptied and re-sanitised in place: the suite holds a reference to the same object */
+  W.eval("STALE = false; Object.keys(S).forEach(k => delete S[k]); loadState(S); U = freshU(); render()");
+}
 
 ok("no script errors on load", consoleErrors.length === 0, consoleErrors.slice(0, 3).join(" | "));
 
@@ -362,6 +377,7 @@ ok("the reference row is collapsed, not a stack of open cards",
 
 /* ---------- clutter budget ---------- */
 {
+  resetAll();
   S.plan = ["udon", "curry"]; S.N = 4; ev("render()");
   const week = tabHTML("week"), shop = tabHTML("shop");
   ok("no kettle tip", !/Boil the 0.8 L kettle/.test(week));
@@ -508,9 +524,16 @@ R.filter(r => r.gear.includes("pan") && (r.cap || 0) > 2).forEach(r =>
 ok("no step claims a week in the fridge",
   !R.some(r => TXT(r).some(s => /a week in the fridge|keeps a week/i.test(s))),
   R.filter(r => TXT(r).some(s => /a week in the fridge|keeps a week/i.test(s))).map(r => r.id).join(","));
-ok("cooked meat and fish get three days, everything else four, unless the dish is eat-now",
-  R.every(r => ev("keepDaysOf(rec('" + r.id + "'))") === (r.keep || (r.ing.some(([i]) => ING[i].cat === "meat") ? 3 : 4))),
-  R.filter(r => ev("keepDaysOf(rec('" + r.id + "'))") !== (r.keep || (r.ing.some(([i]) => ING[i].cat === "meat") ? 3 : 4))).map(r => r.id).join(","));
+/* fixed expectations, not a copy of keepDaysOf's own formula */
+{
+  const kd = ev("keepDaysOf");
+  eq("meat or fish: three days", kd({ ing: [["chicken", 100], ["onion", 1]] }), 3);
+  eq("salmon counts as fish", kd({ ing: [["salmon", 1]] }), 3);
+  eq("no meat: four days", kd({ ing: [["tofu", 1], ["cabbage", 100]] }), 4);
+  eq("an explicit keep wins", kd({ keep: 1, ing: [["chicken", 100]] }), 1);
+  const FIXED = { curry: 3, nikujaga: 3, aftofu: 1, udon: 1, tompasta: 1, rcrisotto: 1, chinchalok: 1, afgyoza: 3, tomatorice: 3, yakiudon: 1 };
+  Object.entries(FIXED).forEach(([id, d]) => eq("keeps " + d + " days: " + id, kd(R.find(r => r.id === id)), d));
+}
 R.forEach(r => {
   const claims = [...TXT(r).join(" ").matchAll(/[Kk]eeps (?:it )?(\d) days|(\d) days in the fridge|(\d) days chilled/g)].map(m => +(m[1] || m[2] || m[3]));
   const kd = ev("keepDaysOf(rec('" + r.id + "'))");
@@ -520,6 +543,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- tonight: the effort question ---------- */
 {
+  resetAll();
   S.plan = ["curry", "udon", "tunamayo"]; S.N = 6; S.cooked = {};
   ev("U.effort = null; render(); setTab('tonight')");
   ok("the question is asked first", /How much/.test(tabHTML("tonight")));
@@ -626,6 +650,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- the dish sheet ---------- */
 {
+  resetAll();
   S.plan = ["curry"]; S.N = 4; ev("render()");
   ev("openSheet('curry')");
   const sheet = D.getElementById("sheet-overlay");
@@ -646,6 +671,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- cook mode ---------- */
 {
+  resetAll();
   S.plan = ["curry"]; S.N = 3; ev("render()");
   ev("startCook('curry', 3)");
   const cook = D.getElementById("cook-overlay");
@@ -752,6 +778,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- scaled quantities read like a cookbook ---------- */
 {
+  resetAll();
   const fq = ev("fmtQty");
   eq("15 ml reads as a tablespoon", fq(15, "ml"), "15 ml (1 tbsp)");
   eq("5 ml reads as a teaspoon", fq(5, "ml"), "5 ml (1 tsp)");
@@ -768,6 +795,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- undo covers everything destructive ---------- */
 {
+  resetAll();
   S.plan = ["curry", "keema"]; S.N = 6; S.bought = { chicken: true }; ev("render()");
   ev("clearTicks()");
   ok("clearing the basket offers an undo", ev("!!(U.toast && U.toast.undo)"));
@@ -790,6 +818,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- the savings log ---------- */
 {
+  resetAll();
   S.log = []; S.N = 7; ev("setTab('save')");
   const input = D.getElementById("spentInput");
   ok("there is somewhere to type the receipt total", !!input);
@@ -809,6 +838,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- rice is bag stock, never a weekly row ---------- */
 {
+  resetAll();
   S.price = {}; S.plan = ["curry"]; S.N = 4; S.mugi = false;
   const c = ev("compute()");
   ok("rice is not in the grocery rows", !c.rows.some(r => r.id === "rice"), c.rows.map(r => r.id).join(","));
@@ -823,6 +853,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- a name must never read as a quantity ---------- */
 {
+  resetAll();
   /* "Mentsuyu (3x)" meant 3-times concentrate, but sitting in a shopping list next to rows
      that really do carry counts, it read as "buy three of them" — and did, for months. */
   const QTY = /\(\s*[0-9]+\s*[xX×]\s*\)|\(\s*[xX×]\s*[0-9]+\s*\)/;
@@ -843,6 +874,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- the shelf: a bottle bought once must not be billed every week ---------- */
 {
+  resetAll();
   /* The default shelf was {oil:true} and nothing ever filled it in, so the Shop tab kept
      asking for mentsuyu, soy and mirin as one-time purchases months after they were bought. */
   const SEED = ev("SHELF_SEED");
@@ -959,6 +991,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- the rice line must match the dish ---------- */
 {
+  resetAll();
   S.plan = ["curry", "rcchahan"]; S.N = 4; ev("render()");
   ev("openSheet('curry')");
   ok("a half-cup dish says half a cup", /75 g \(½ cup\)/.test(D.getElementById("sheet-overlay").innerHTML),
@@ -978,6 +1011,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- every dish says whether it fits in one go ---------- */
 {
+  resetAll();
   eq("a dish inside its capacity is one go", ev("roundsFor")(R.find(r => r.id === "curry"), 3), 1);
   eq("beyond it, the rounds are counted", ev("roundsFor")(R.find(r => r.id === "curry"), 9), 3);
   eq("a dish with no cap never splits", ev("roundsFor")({ cap: undefined }, 8), 1);
@@ -1002,6 +1036,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- the week plans around the gear ---------- */
 {
+  resetAll();
   S.locked = []; S.plan = ["curry", "karaage"]; S.N = 5; S.mugi = false;
   let cc = ev("compute()");
   eq("servings follow the gear: curry takes the pot's three", cc.servings.curry, 3);
@@ -1036,6 +1071,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- the rice cooker is a cooker, not just a rice pot ---------- */
 {
+  resetAll();
   const cooker = R.filter(r => r.cookin || r.plate || r.simmer);
   ok("the rice cooker has real range", cooker.length >= 10, cooker.length + " dishes");
   ok("it does more than seasoned rice",
@@ -1054,6 +1090,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- max-batch mode should not pick a 2-serving basket ---------- */
 {
+  resetAll();
   /* Max-batch used to sort by capacity and take the top, which meant it returned only the nine
      cap-4 pot and pan dishes: no air fryer, no rice cooker, and the same handful every roll.
      Capacity is now a weight, not a ranking, so the contract is a spread of dishes that still
@@ -1086,6 +1123,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- the appliances cost money; the planner should reach for them ---------- */
 {
+  resetAll();
   S.locked = []; S.recent = [];
   [1, 2, 3].forEach(v => {
     S.v = v; S.N = 7;
@@ -1102,6 +1140,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- a fresh roll should not hand back the week you just rejected ---------- */
 {
+  resetAll();
   S.locked = []; S.v = 2; S.N = 7; S.plan = undefined; S.recent = [];
   ev("plan(true)");
   const first = [...S.plan];
@@ -1119,6 +1158,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- stepping the meal count never strands a dish at zero ---------- */
 {
+  resetAll();
   let worst = 99;
   for (let trial = 0; trial < 40; trial++) {
     S.locked = []; S.v = 3; S.N = 9; S.plan = undefined; ev("save()");
@@ -1133,6 +1173,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- accessibility ---------- */
 {
+  resetAll();
   S.plan = ["curry"]; S.N = 4; S.bought = {}; ev("setTab('shop')");
   const row = D.querySelector('#tab-shop [data-k]');
   ok("shopping rows carry a stable focus key", !!row);
@@ -1196,6 +1237,7 @@ ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chu
 
 /* ---------- user-test fixes, 17 Sep 2026 ---------- */
 {
+  resetAll();
   /* 1. the meal count must not strand the week on one dish */
   S.locked = []; S.v = 2; S.N = 7; S.plan = undefined; ev("plan(true)");
   for (let i = 0; i < 6; i++) ev("stepMeals(-1)");
@@ -1320,6 +1362,7 @@ ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chu
 
 /* ---------- FEATURE A: rice and barley are bag stock, not weekly groceries ---------- */
 {
+  resetAll();
   const STOCK = ev("STOCK");
   ok("STOCK names rice and mugi", !!STOCK.rice && !!STOCK.mugi);
   eq("rice is a 5 kg bag", STOCK.rice.disp, "5 kg bag");
@@ -1411,6 +1454,7 @@ ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chu
 
 /* ---------- FEATURE B: leftover pieces carry over, and the planner uses them up ---------- */
 {
+  resetAll();
   const today = (() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); })();
   const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
   const near = (a, b) => Math.abs(a - b) < 1e-6;
@@ -1418,6 +1462,15 @@ ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chu
   eq("onion keeps two weeks", ev("CARRY_DAYS").onion, 14);
   eq("tofu keeps three days", ev("CARRY_DAYS").tofu, 3);
   eq("the date is built locally, not from toISOString", ev("localDate()"), today);
+  {
+    /* 01:30 on 25 Sep in Tokyo is still 24 Sep in UTC: the app must say the 25th */
+    const RealDate = W.Date;
+    W.eval("window.__RD = Date; Date = class extends window.__RD { constructor(...a) { if (a.length) super(...a); else super('2026-09-24T16:30:00Z'); } static now() { return new window.__RD('2026-09-24T16:30:00Z').getTime(); } }");
+    eq("just after midnight in Tokyo, the date is Tokyo's", ev("localDate()"), "2026-09-25");
+    eq("where toISOString would have said yesterday", ev("new Date().toISOString().slice(0,10)"), "2026-09-24");
+    W.eval("Date = window.__RD");
+    ok("the real Date is back", W.Date === RealDate || ev("Date === window.__RD"));
+  }
   eq("fractions: half", ev("frac")(0.5), "½");
   eq("fractions: two thirds", ev("frac")(0.67), "⅔");
   eq("fractions: one and a quarter", ev("frac")(1.25), "1¼");
@@ -1622,6 +1675,7 @@ ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chu
 
 /* ---------- the weekly fridge check ---------- */
 {
+  resetAll();
   const today = (() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); })();
   const FQ = ev("FRIDGE_Q");
   ok("every fridge item is a real, perishable pantry item", Object.keys(FQ).every(id => ING[id] && ["meat", "veg", "other"].includes(ING[id].cat)));
@@ -1650,7 +1704,11 @@ ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chu
   ok("nothing banked for an item left at none", !S.carry.onion);
   eq("the check is dated", S.fridgeDate, today);
   ok("the week uses the chicken", ev("compute()").picks.some(r => ev("ingsOf")(r).some(([i]) => i === "chicken")), S.plan.join(","));
+  /* pin the week so the check does not depend on which chicken dishes the roll drew */
+  const rolled = S.plan; S.plan = ["curry"]; S.N = 4;
   const row = ev("compute()").rows.find(r => r.id === "chicken");
+  eq("curry ×4 needs 480 g; 300 in the fridge leaves 200 to buy", row && row.disp, "buy at least 200 g · have 300 of 480");
+  S.plan = rolled; S.N = 7;
   ok("the list subtracts the grams already in the fridge", !!row && /^buy at least \d+ g · have 300 of \d+$/.test(row.disp) && row.q === row.req - 300, row && row.disp);
   ok("the Week tab says what is being used up", /Using up: 300 g chicken thigh/.test(tabHTML("week")), (tabHTML("week").match(/Using up[^<]*/) || [""])[0]);
   ok("and offers the check again", /Fridge check/.test(tabHTML("week")));
@@ -1706,6 +1764,7 @@ ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chu
   ok("the dish sheet links its source in a new tab", a && /kikkoman/.test(a.href) && a.target === "_blank" && /noopener/.test(a.rel)); ev("closeSheet()"); }
 /* ---------- 25 Sep 2026 UI/UX audit: regressions ---------- */
 {
+  resetAll();
   const today = ev("localDate()");
   const reset = () => { S.plan = undefined; S.bought = {}; S.carry = {}; S.cooked = {}; S.locked = []; S.N = 7; S.v = 2; S.fridgeDate = today; ev("U.toast=null; U.effort=null"); ev("save()"); ev("render()"); };
   reset();
@@ -1825,6 +1884,28 @@ ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chu
   ev("setTab('shop')"); ev("flash('x', ()=>{})"); ev("setTab('week')");
   ok("switching tabs clears a stale toast", !ev("U.toast"));
   reset();
+}
+
+/* ---------- tidy-up pass: schema, one fraction formatter, the log's meal count ---------- */
+{
+  resetAll();
+  eq("saves carry a schema version", S.schema, ev("SCHEMA"));
+  { const { w } = boot({ owned: { soy: false } });
+    ok("a pre-versioning save runs every migration", w.eval("S.schema") === w.eval("SCHEMA") && w.eval("S.owned.mirin") === true && w.eval("S.owned.salt") === true);
+    ok("and a bottle marked out stays out", w.eval("S.owned.soy") === false); w.close(); }
+  { const { w } = boot({ schema: 2, owned: {} });
+    ok("a current save runs none", w.eval("S.owned.mirin") === undefined && w.eval("S.owned.salt") === undefined); w.close(); }
+  { const { w } = boot({ schema: 1, owned: { salt: false } });
+    ok("a v1 save only gets the salt step, and respects an explicit 'out'", w.eval("S.owned.salt") === false && w.eval("S.schema") === 2); w.close(); }
+  const f = ev("frac");
+  eq("leftover formatting keeps odd amounts honest", f(0.4), "0.4");
+  eq("recipe formatting snaps to a kitchen fraction", f(0.4, true), "⅓");
+  eq("recipe formatting never goes below a quarter", f(0.05, true), "¼");
+  eq("recipe formatting rounds up to the next whole", f(1.9, true), "2");
+  ok("there is only one formatter", ev("typeof fmtCount") === "undefined");
+  S.N = 5; ev("setTab('save')");
+  ok("the log button says how many meals it credits", /Log · 5 meals/.test(tabHTML("save")));
+  S.N = 7; ev("setTab('tonight')");
 }
 
 /* ---------- 25 Sep 2026 receipt ---------- */

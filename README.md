@@ -58,6 +58,17 @@ fried rice 34–45.
   chips keep the real leftover amount; "Nothing to use up" empties the ledger.
 - Units: rice is always "cup (合)", 150 g dry (`RICE_G`); the plate rule lives once in `PLATE_RULE`.
 
+## Save format and tests (tidy-up, 25 Sep 2026)
+
+- `S.schema` (now 2) and an append-only `MIGRATIONS` list replace the ad-hoc seeding flags; saves
+  from before versioning are placed by `shelfSeeded`/`stockSeeded`. Add a migration, bump `SCHEMA`.
+- One fraction formatter, `frac(x, snap)`: honest decimals for leftovers, kitchen fractions for
+  recipe quantities.
+- The Saved tab's button says how many meals it credits ("Log · 7 meals").
+- test.js runs in Asia/Tokyo with a seeded `Math.random` (`SEED=n` to vary it) and resets S/U at
+  the start of every section; the keep-days and local-date tests use fixed expectations, not
+  copies of the app's formulas.
+
 ## Capacity is derived, not asserted
 
 `cap` has been wrong four times, every time because a wanted outcome picked the number. Now:

@@ -565,13 +565,6 @@ const riceKind = r => !r.rice ? "none" : (r.cookin || r.plate) ? "self" : r.cook
 
 /* ============ SCALED STEP TEXT ============ */
 const FRAC = [[0,""],[1/4,"¼"],[1/3,"⅓"],[1/2,"½"],[2/3,"⅔"],[3/4,"¾"],[1,""]];
-function fmtCount(v){
-  let whole = Math.floor(v + 1e-9), rest = v - whole, best = FRAC[0], d = 9;
-  FRAC.forEach(f=>{ const dd = Math.abs(rest - f[0]); if (dd < d - 1e-9) { d = dd; best = f; } });
-  if (best[0] === 1) { whole += 1; best = FRAC[0]; }
-  if (!whole && !best[1]) return "¼";
-  return (whole ? String(whole) : "") + best[1];
-}
 function fmtQty(v, unit, plural){
   if (unit === "g") return (v >= 20 ? Math.round(v/5)*5 : Math.round(v)) + " g";
   if (unit === "ml") {
@@ -580,10 +573,10 @@ function fmtQty(v, unit, plural){
     if (ml <= 15 && ml % 5 === 0) return ml+" ml ("+(ml/5)+" tsp)";
     return ml+" ml";
   }
-  if (unit === "tsp") return (v >= 3 && Math.abs(v/3 - Math.round(v/3)) < 1e-9) ? (v/3)+" tbsp" : fmtCount(v) + " tsp";
+  if (unit === "tsp") return (v >= 3 && Math.abs(v/3 - Math.round(v/3)) < 1e-9) ? (v/3)+" tbsp" : frac(v, true) + " tsp";
   /* nobody beats one and a half eggs: past one, eggs round up to whole */
   if (unit === "egg" && v > 1.01) v = Math.ceil(v - 0.01);
-  return fmtCount(v) + " " + (v > 1.01 ? (plural || unit+"s") : unit);
+  return frac(v, true) + " " + (v > 1.01 ? (plural || unit+"s") : unit);
 }
 /* {150 g}  {15 ml}  {1 tsp}  {0.5 onion}  {1 potato|potatoes} — multiplied by n servings */
 function scaleText(s, n){
@@ -627,11 +620,22 @@ const daysSince = d => isDate(d) ? Math.round((todayMidnight() - new Date(d+"T00
 const carryFresh = (id, e) => (todayMidnight() - new Date(e.d+"T00:00:00")) / 864e5 <= (CARRY_DAYS[id] || 5);
 function pruneCarry(){ Object.keys(S.carry).forEach(k=>{ if (!carryFresh(k, S.carry[k])) delete S.carry[k]; }); }
 /* a leftover reads as a kitchen fraction, not 0.67 */
-function frac(x){
-  const w = Math.floor(x + 1e-9), f = x - w;
-  if (f < 0.02) return String(w);
-  const F = [[0.5,"½"],[0.33,"⅓"],[0.67,"⅔"],[0.25,"¼"],[0.75,"¾"]].find(([v])=>Math.abs(f-v) < 0.03);
-  return F ? (w || "")+F[1] : String(Math.round(x*10)/10);
+/* The one fraction formatter. snap=false (leftovers, cups): show a kitchen fraction only when the
+   amount really is one, otherwise one decimal — the ledger must not round 0.4 of an onion to ⅓.
+   snap=true (recipe quantities): always the nearest kitchen fraction, never below ¼. */
+function frac(x, snap){
+  let w = Math.floor(x + 1e-9);
+  const f = x - w;
+  if (!snap) {
+    if (f < 0.02) return String(w);
+    const F = FRAC.slice(1, -1).find(([v])=>Math.abs(f-v) < 0.03);
+    return F ? (w || "")+F[1] : String(Math.round(x*10)/10);
+  }
+  let best = FRAC[0], d = 9;
+  FRAC.forEach(p=>{ const dd = Math.abs(f - p[0]); if (dd < d - 1e-9) { d = dd; best = p; } });
+  if (best[0] === 1) { w += 1; best = FRAC[0]; }
+  if (!w && !best[1]) return "¼";
+  return (w ? String(w) : "") + best[1];
 }
 const gearText = r => r.gear.map(g=>GEARLABEL[g]).join(" + ");
 const isApplianceDish = r => r.gear.includes("air") || r.cookin === true || r.plate === true || r.simmer === true;
@@ -662,6 +666,21 @@ const isDate = d => typeof d==="string" && /^\d{4}-\d{2}-\d{2}$/.test(d) && !isN
 const validLog = l => isObj(l) && isDate(l.d) && Number.isFinite(l.spent) && Number.isFinite(l.meals);
 /* One sanitiser for every path in: boot, and each tier of the crash recovery at the bottom.
    Anything it does not recognise is dropped or reset, so a poisoned save heals on load. */
+/* Save-format versions. Each entry lifts a save from version i to i+1; add to the end, never edit.
+   Saves from before versioning are placed by the flags they carry (shelfSeeded/stockSeeded). */
+const SCHEMA = 2;
+const MIGRATIONS = [
+  /* 0 → 1. The shelf used to start at {oil:true} and nothing ever filled it in, so the Shop tab
+     kept billing a full pantry of condiments as one-time purchases for bottles bought months ago.
+     Seed the staples once, and rice/barley as bag stock. Only keys never set are touched, so a
+     condiment deliberately marked as run out stays marked. */
+  S=>{
+    if (S.shelfSeeded !== true) { SHELF_SEED.forEach(k=>{ if (S.owned[k] === undefined) S.owned[k] = true; }); S.shelfSeeded = true; }
+    if (S.stockSeeded !== true) { Object.keys(STOCK).forEach(k=>{ if (S.owned[k] === undefined) S.owned[k] = true; }); S.stockSeeded = true; }
+  },
+  /* 1 → 2 (25 Sep 2026): salt joined the shelf; every kitchen has it */
+  S=>{ if (S.owned.salt === undefined) S.owned.salt = true; }
+];
 function loadState(raw){
   S = isObj(raw) ? raw : {};
   S.owned = isObj(S.owned) ? S.owned : {};
@@ -686,23 +705,10 @@ function loadState(raw){
   S.fridgeDate = isDate(S.fridgeDate) ? S.fridgeDate : null;
   /* what the cook wizard finished this week, so Tonight offers the boxes instead of cooking again */
   S.cooked = isObj(S.cooked) ? Object.fromEntries(Object.entries(S.cooked).filter(([k,e])=>rec(k) && isObj(e) && isDate(e.d))) : {};
-  /* The shelf used to start at {oil:true} and nothing ever filled it in, so the Shop tab kept
-     billing a full pantry of condiments as one-time purchases, week after week, for bottles
-     bought months ago. Seed the staples once. Only keys that were never set are touched, so a
-     condiment deliberately marked as run out stays marked. */
-  if (S.shelfSeeded !== true) {
-    SHELF_SEED.forEach(k=>{ if (S.owned[k] === undefined) S.owned[k] = true; });
-    S.shelfSeeded = true;
-    try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {}
-  }
-  /* rice and barley used to be billed every week by the gram; they are bag stock, seeded as in */
-  if (S.stockSeeded !== true) {
-    Object.keys(STOCK).forEach(k=>{ if (S.owned[k] === undefined) S.owned[k] = true; });
-    S.stockSeeded = true;
-    try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {}
-  }
-  /* salt joined the shelf on 25 Sep 2026; every kitchen has it, so it starts in stock */
-  if (S.owned.salt === undefined) S.owned.salt = true;
+  /* one-time data migrations, in order, recorded in S.schema so each runs exactly once */
+  const from = Number.isInteger(S.schema) ? S.schema : (S.shelfSeeded===true && S.stockSeeded===true ? 1 : 0);
+  for (let v = from; v < SCHEMA; v++) MIGRATIONS[v](S);
+  if (from < SCHEMA) { S.schema = SCHEMA; try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {} }
   /* legacy fields from older saves: dropped, never resurrected */
   delete S.stepdone; delete S.kit; delete S.aircap; delete S.fridge; delete S.day;
   /* retired recipe ids are dropped here, or the header counts meals for dishes that no longer render */
@@ -1551,7 +1557,7 @@ function saveHTML(){
     + '<div class="subline">'+(S.log.length ? S.log.length+" week"+(S.log.length>1?"s":"")+" logged · "+yen(totSpent)+" spent, against "+yen(EAT_OUT)+" a meal outside" : "Log a receipt and this starts counting.")+'</div>'
     + '<div class="hlist row2" style="margin-top:28px">'
     + '<input type="number" id="spentInput" inputmode="numeric" min="0" placeholder="¥ e.g. '+(c?Math.round(c.food):"1700")+'" aria-label="What this week cost in yen" onkeydown="if(event.key===\'Enter\')logWeek()" data-k="spentinput">'
-    + '<button class="logbtn" data-k="logweek" onclick="logWeek()">Log it</button></div>'
+    + '<button class="logbtn" data-k="logweek" onclick="logWeek()">Log · '+S.N+' meal'+(S.N>1?"s":"")+'</button></div>'
     + '<div class="footnote" style="margin-top:10px;padding-top:0;border-top:none">What the LIFE receipt actually said this week.</div>';
   h += '<div class="dividerlist" style="margin-top:30px">';
   if (S.log.length) {
