@@ -44,6 +44,20 @@ fried rice 34–45.
   everything else gets a `carryBoost`. The list subtracts what is there. Re-rolls within 3 days
   do not ask again; "Fridge check" on Week reopens it.
 
+## Flow after the 25 Sep audit
+
+- **One servings answer.** `sessionServ(r, c)` is what one cooking session makes: the week's
+  servings for a batch, what keeps for a raw-freeze batch bigger than its fridge life, one for
+  anything cooked fresh. The rhythm rows (Cook ×N), the dish sheet and Tonight all use it.
+- **Rice runs** are listed run by run (≤3 cups each), each tied to a cook day that exists.
+- **Cooked, not counted.** Finishing the wizard on a batch records `S.cooked[id] = {d, serv}`.
+  Tonight then leads Zero effort / Something quick with "Reheat the …" until the fridge life
+  runs out (or "Finished them"), and stops offering to cook it again. No box counts, by design.
+  A new week (fridge check) clears it.
+- **New week = fridge check.** It clears last week's basket ticks and cooked marks. Untouched
+  chips keep the real leftover amount; "Nothing to use up" empties the ledger.
+- Units: rice is always "cup (合)", 150 g dry (`RICE_G`); the plate rule lives once in `PLATE_RULE`.
+
 ## Capacity is derived, not asserted
 
 `cap` has been wrong four times, every time because a wanted outcome picked the number. Now:
@@ -86,10 +100,13 @@ Work out what fits before deciding what you want to fit.
 
 Rice and mochi-mugi are bought by the bag (`STOCK`), so they never appear as weekly grocery
 rows: they sit on the shelf beside the condiments and only reach the list, as one bag or one
-pack, when tapped out. The cook schedule still counts cups. Leftover pieces carry over: when a
-week is rolled, each piece-unit item that was bought (ticked, or on an untouched list that is at
-least two days old by `S.planDate` — a Sunday re-roll spree banks nothing) settles the ledger
-`have + ceil(to buy) − required` into `S.carry` with a local date; the next list subtracts it ("1 pc · have ½"),
+pack, when tapped out. The cook schedule still counts cups. Leftovers carry over in their own
+unit (pieces or grams): when a week is rolled, each item that was bought (ticked, or on an
+untouched list that is at least two days old by `S.planDate` — a Sunday re-roll spree banks
+nothing) settles the ledger `have + bought − required` (pieces rounded up, grams in the list's
+50 g steps; gram scraps under 20 g are dropped) into `S.carry` with a local date. The weekly
+fridge check then shows that ledger and whatever he confirms replaces it (`f:true`). The next
+list subtracts it ("1 pc · have ½", "buy at least 450 g · have 300 of 750"),
 drops a fully covered row, and the planner favours dishes that use it up (`CARRY_BOOST`). A
 "have" chip on any piece row banks the whole requirement on the spot. Entries expire after
 `CARRY_DAYS`.
@@ -131,10 +148,12 @@ files** on `main`, drop `index.html`, `test.js` and `README.md`, commit.
 - Rice and barley are `STOCK`, not grocery rows: while `S.owned[id]` is true they are silent,
   and the weekly food figure never includes a bag. Out of stock shows exactly one row, in the
   shelf top-up, and ticking it restocks.
-- `S.carry` holds only piece-unit ids with a positive count and a local `YYYY-MM-DD`; anything
-  else is dropped at boot, and expired entries are dropped at boot and in `compute()`.
+- `S.carry` holds pantry ids (pieces or grams) with a positive amount and a local `YYYY-MM-DD`;
+  anything else is dropped by `loadState()`, and expired entries at boot and at the top of
+  `render()`. `compute()` is pure — it never changes state.
 - A roll banks leftovers only for rows that were bought; an item left unticked while others
-  were ticked banks nothing. New-week Undo restores plan, ticks and carry together.
+  were ticked banks nothing. Undo after any roll — including a fridge check, a meal-count step
+  or a variety change — restores `snapshot()`: plan, ticks, carry, dates, N, variety, recents.
 - A carried piece comes off the count before rounding; a row covered to within 0.05 is omitted.
 - Every recipe states `ready` (minutes to the table, side rice excluded). Tonight shows it.
 - Shelf life: cooked meat and fish 3 days, everything else 4, eat-now dishes `keep: 1`. Any
@@ -142,9 +161,13 @@ files** on `main`, drop `index.html`, `test.js` and `README.md`, commit.
 - No mackerel in the roster.
 - `fitsWeek(r, N, v)` decides what may be planned: short weeks cook fresh, max batch needs a
   batchable dish, a dish covering more meals than it keeps must freeze, and `minServ` must fit.
-  `stepMeals` reshuffles whenever the dish count or any dish stops fitting.
+  `stepMeals` reshuffles whenever the dish count or any dish stops fitting — unless the week is
+  already shopped (anything ticked): then the dishes stay, servings respread, and the toast
+  offers **Replan**. A variety change on a shopped week does nothing until Replan is tapped.
 - An unfinished cook is saved as `S.cooking` and resumes after a reload; Quit mid-recipe has Undo.
 - Re-rolling keeps basket ticks for items still on the list. A blank price input is "no change".
-- Another tab saving reloads this one (unless mid-cook or mid-typing) instead of overwriting it.
+- Another tab saving reloads this one (unless mid-cook or mid-typing) instead of overwriting it;
+  until that reload (`STALE`), `save()` writes only this tab's unfinished cook into the other save.
+- One sanitiser, `loadState(raw)`, serves boot and every tier of the crash recovery.
 - Air-fryer steps: preheat 3 min for skin or coating, one layer with gaps, never aerosol oil
   spray, never over 200 °C.

@@ -520,7 +520,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 
 /* ---------- tonight: the effort question ---------- */
 {
-  S.plan = ["curry", "udon", "tunamayo"]; S.N = 6;
+  S.plan = ["curry", "udon", "tunamayo"]; S.N = 6; S.cooked = {};
   ev("U.effort = null; render(); setTab('tonight')");
   ok("the question is asked first", /How much/.test(tabHTML("tonight")));
   eq("three ways to answer", D.querySelectorAll("#tab-tonight .effrow").length, 3);
@@ -555,7 +555,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
         const cand = ev("candidates(compute())");
         const hero = cand[0];
         heroes.push(hero.r.id);
-        if (hero.r.eff > k) harder++;
+        if (hero.kind !== "reheat" && hero.r.eff > k) harder++;
         ev("render()");
         if (hero.kind === "offplan" && !/Not in this week's plan/.test(tabHTML("tonight"))) unlabelled++;
       }
@@ -618,9 +618,10 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
     S.plan = ["curry", "udon", "tunamayo"]; S.N = 6; ev("save()");
   }
 
-  ok("Tonight never talks about the fridge", !/fridge|portions? already/i.test(tabHTML("tonight")));
+  /* 25 Sep: Tonight offers what the wizard finished (no box counting), but never a box ledger */
+  ok("Tonight never counts boxes", !/portions? already|boxes left|\d+ boxes/i.test(tabHTML("tonight")));
   ev("backToAsk()");
-  ok("not even on the question screen", !/fridge/i.test(tabHTML("tonight")));
+  ok("not even on the question screen", !/boxes left/i.test(tabHTML("tonight")));
 }
 
 /* ---------- the dish sheet ---------- */
@@ -635,7 +636,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
   ok("it says how long it keeps", /3 days · freezes/.test(sheet.innerHTML) && /keeps/.test(sheet.innerHTML));
   ok("it lists the per-serving ingredients", /Chicken thigh 120 g/.test(sheet.innerHTML));
   ok("it offers the protein swap on a flex dish", !!sheet.querySelector('[data-k="sheetcycle"]'));
-  ok("and a way into cooking", /Cook it · 5 steps/.test(sheet.innerHTML));
+  ok("and a way into cooking", /Cook ×4 · 5 steps/.test(sheet.innerHTML));
   ok("the page behind it is inert", D.getElementById("main").hasAttribute("inert"));
   ok("focus moves into the sheet", sheet.contains(D.activeElement));
   D.dispatchEvent(new W.KeyboardEvent("keydown", { key: "Escape" }));
@@ -653,7 +654,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
   ok("it opens on a before-you-start screen", /Before you start/.test(cook.innerHTML));
   ok("with the servings to cook", /×3/.test(cook.innerHTML));
   ok("and whether it fits in one go", /One go — 3 fit the pot/.test(cook.textContent), cook.textContent.slice(0, 200));
-  ok("and the rice cooker is told to start first", /Rice first: 1.5 cups \(225 g\) in the cooker now/.test(cook.textContent));
+  ok("and the rice cooker is told to start first", /Rice for these 3: 1½ cups \(225 g\) in the cooker now/.test(cook.textContent));
   ok("with a lead time worked out from the dish", /start prepping in about 15 min/.test(cook.textContent));
   ok("and a frozen-rice way out", /frozen rice/.test(cook.textContent));
   eq("one dot per recipe step", cook.querySelectorAll(".dot").length, n);
@@ -670,7 +671,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
   ok("liquids scale too", /510 ml water/.test(D.getElementById("cook-overlay").textContent));
   ok("frying oil does not", !/45 ml \(3 tbsp\) oil/.test(TXT(R.find(r => r.id === "curry"), 3).join(" ")));
   ev("prevStep()");
-  ok("back moves back", /02/.test(D.getElementById("cook-overlay").innerHTML));
+  ok("back moves back", /Step 2 of/.test(D.getElementById("cook-overlay").innerHTML));
   ev("prevStep()"); ev("prevStep()");
   ok("back from step one returns to the setup", /Before you start/.test(D.getElementById("cook-overlay").innerHTML));
   ev("prevStep()");
@@ -682,7 +683,20 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
   ok("the last step says done", /Done</.test(D.getElementById("cook-overlay").innerHTML));
   ev("nextStep()");
   eq("done closes cook mode", ev("U.cook"), null);
-  ok("and says how long leftovers keep", /Leftovers keep 3 days/.test(ev("U.toast ? U.toast.msg : ''")));
+  ok("and says how long the boxes keep", /Boxes keep 3 days — Tonight offers them until (Sun|Mon|Tue|Wed|Thu|Fri|Sat)/.test(ev("U.toast ? U.toast.msg : ''")), ev("U.toast ? U.toast.msg : ''"));
+  ok("the finished batch is remembered", S.cooked.curry && S.cooked.curry.serv === 3);
+  ev("U.effort=0; U.heroIdx=0; render()");
+  const cands0 = ev("candidates(compute())");
+  eq("Tonight's zero-effort answer is now reheating it", cands0[0].kind + ":" + cands0[0].r.id, "reheat:curry");
+  ok("and it says how to reheat it", /Microwave, lid on/.test(tabHTML("tonight")) && /Already cooked · eat by/.test(tabHTML("tonight")));
+  ev("U.effort=2; U.heroIdx=0; render()");
+  ok("batch day no longer offers to cook it again", !ev("candidates(compute())").some(o => o.r.id === "curry" && o.kind === "cook"));
+  ev("finishCooked('curry')");
+  ok("'Finished them' stops the offer", !S.cooked.curry);
+  ev("runToastUndo()"); ok("and can be undone", !!S.cooked.curry);
+  S.cooked = { curry: { d: "2000-01-01", serv: 3 } };
+  ok("a batch past its fridge life is not offered", !ev("candidates(compute())").some(o => o.kind === "reheat"));
+  S.cooked = {}; ev("U.effort=null; render()");
   eq("and the effort question resets for next time", ev("U.effort"), null);
   ok("no portion-into-boxes step remains", !/go in boxes/.test(D.body.innerHTML));
 
@@ -725,7 +739,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
   R.forEach(r => {
     const t = ev("riceFirstText")(r, 2), k = ev("riceKind")(r);
     if (k === "side" && r.simmer) ok(r.id + ": a cooker braise says the cooker is busy, never 'cook rice now'", /busy/.test(t) && !/Hot rice|quick-cook/.test(t), t);
-    else if (k === "side") ok(r.id + ": side rice is started before cooking", /Rice first|Hot rice/.test(t), t);
+    else if (k === "side") ok(r.id + ": side rice is started before cooking", /Rice for these|Hot rice/.test(t), t);
     else if (k === "cooked") ok(r.id + ": cooked-rice dish says so", /cooked rice/.test(t), t);
     else ok(r.id + ": no rice instruction when the dish has none of its own to wait on", t === "", t);
   });
@@ -819,7 +833,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
   eq("chicken stock is the price on the receipt", CONDS.torigara.p, 538);
   eq("curry roux is priced from the receipt", Math.round(ING.roux.p * 185), 353);
   ok("the simmer rule states a minimum as well as a maximum",
-    /1-go and 3-go/.test(fridgeText()) && /under the bottom one/.test(fridgeText()));
+    /1-cup and 3-cup/.test(fridgeText()) && /under the bottom one/.test(fridgeText()));
   ok("mentsuyu still states its strength somewhere",
     /triple-strength/i.test(CONDS.mentsuyu.n) || /3倍/.test(CONDS.mentsuyu.jp));
   /* the dose depends on it, so the strength is not decoration */
@@ -939,7 +953,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
   ok("no step still claims two cups of rice under the plate",
     !R.some(r => TXT(r).some(s => /[Tt]wo cups of rice/.test(s))),
     R.filter(r => TXT(r).some(s => /[Tt]wo cups of rice/.test(s))).map(r => r.id).join(","));
-  ok("the rules state the 1-go plate limit", /caps the rice at 1 go/i.test(fridgeText()));
+  ok("the rules state the 1-go plate limit", /caps the rice at 1 cup/i.test(fridgeText()));
   ok("and the per-menu rice limits", /risotto 1/.test(fridgeText()));
 }
 
@@ -947,11 +961,11 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
 {
   S.plan = ["curry", "rcchahan"]; S.N = 4; ev("render()");
   ev("openSheet('curry')");
-  ok("a half-cup dish says half a cup", /75 g \(half a cooker cup\)/.test(D.getElementById("sheet-overlay").innerHTML),
+  ok("a half-cup dish says half a cup", /75 g \(½ cup\)/.test(D.getElementById("sheet-overlay").innerHTML),
     (D.getElementById("sheet-overlay").innerHTML.match(/rice [^<·]*/) || [""])[0]);
   ev("closeSheet()");
   ev("openSheet('rcchahan')");
-  ok("a full-cup dish says a full cup", /150 g \(1 cooker cup\)/.test(D.getElementById("sheet-overlay").innerHTML));
+  ok("a full-cup dish says a full cup", /150 g \(1 cup\)/.test(D.getElementById("sheet-overlay").innerHTML));
   ev("closeSheet()");
   ok("no dish prints a rice amount that contradicts its own field",
     R.filter(r => r.rice).every(r => {
@@ -1032,7 +1046,7 @@ ok("the risotto is an eat-now dish", ev("keepDaysOf(rec('rcrisotto'))") === 1);
     ok(r.id + ": roux goes in after the cycle, never during",
       TXT(r).some(s => /not put the roux in yet|after the cycle|heat OFF/i.test(s)));
   });
-  ok("the week tab documents the cooker's limits", /plain rice underneath, never seasoned rice/i.test(fridgeText()));
+  ok("the week tab documents the cooker's limits", /plain rice underneath only/i.test(fridgeText()) && /Seasoned rice under the plate/.test(fridgeText()));
   ok("including the thickener rule", /blocks the steam vent|foam blocks/i.test(fridgeText()));
   ok("and the wooden paddle rule", /[Ww]ooden paddle/.test(fridgeText()));
   S.plan = undefined; S.N = 7;
@@ -1448,7 +1462,9 @@ ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chu
   ok("carrot leftover banked", S.carry.carrot && near(S.carry.carrot.q, 1 - per.carrot), JSON.stringify(S.carry.carrot));
   ok("potato leftover banked", S.carry.potato && near(S.carry.potato.q, 1 - per.potato), JSON.stringify(S.carry.potato));
   eq("dated local today", S.carry.onion.d, today);
-  ok("gram items never carry", !S.carry.chicken && !S.carry.roux);
+  /* grams settle too (25 Sep audit): 120 g needed, 150 g bought in 50 g steps, 30 g left */
+  ok("gram leftovers carry in grams", S.carry.chicken && near(S.carry.chicken.q, 30) && !S.carry.chicken.f, JSON.stringify(S.carry.chicken));
+  ok("a settled leftover is arithmetic, not stated", Object.values(S.carry).every(e => !e.f));
   ok("the toast offers undo", ev("U.toast && !!U.toast.undo"));
   ev("runToastUndo()");
   eq("new-week undo restores the plan", S.plan.join(","), "curry");
@@ -1512,8 +1528,10 @@ ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chu
 
   /* compute() expiry */
   S.carry = { tomato: { q: 0.5, d: daysAgo(6) }, onion: { q: 0.5, d: today } };
-  ev("compute()");
-  ok("compute drops an expired leftover", !S.carry.tomato && !!S.carry.onion);
+  ev("render()");
+  ok("a render drops an expired leftover", !S.carry.tomato && !!S.carry.onion);
+  S.carry = { tomato: { q: 0.5, d: daysAgo(6) } }; ev("compute()");
+  ok("compute itself is pure — it leaves the ledger alone", !!S.carry.tomato);
 
   /* the "have" chip */
   S.carry = {}; S.plan = ["curry"]; S.N = 3; S.bought = {}; ev("U.toast=null"); ev("setTab('shop')");
@@ -1560,7 +1578,7 @@ ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chu
   S.carry = { onion: { q: 0.5, d: today }, carrot: { q: 0.67, d: today } }; ev("render()");
   ok("leftovers and the dish that eats them", /Using up: ½ onion, ⅔ carrot → Japanese curry/.test(tabHTML("week")), tabHTML("week").match(/Using up[^<]*/));
   S.plan = [noOnion.id]; S.carry = { onion: { q: 0.5, d: today } }; ev("render()");
-  ok("says so when nothing on the plan uses them", /Using up: ½ onion — nothing this week uses them/.test(tabHTML("week")), tabHTML("week").match(/Using up[^<]*/));
+  ok("says so when nothing on the plan uses them", /Using up: ½ onion — nothing this week uses it/.test(tabHTML("week")), tabHTML("week").match(/Using up[^<]*/));
   S.carry = {}; ev("render()");
   ok("and disappears again", !/Using up/.test(tabHTML("week")));
 
@@ -1633,7 +1651,7 @@ ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chu
   eq("the check is dated", S.fridgeDate, today);
   ok("the week uses the chicken", ev("compute()").picks.some(r => ev("ingsOf")(r).some(([i]) => i === "chicken")), S.plan.join(","));
   const row = ev("compute()").rows.find(r => r.id === "chicken");
-  ok("the list subtracts the grams already in the fridge", !row || (/have 300 g/.test(row.disp) && row.q === row.req - 300), row && row.disp);
+  ok("the list subtracts the grams already in the fridge", !!row && /^buy at least \d+ g · have 300 of \d+$/.test(row.disp) && row.q === row.req - 300, row && row.disp);
   ok("the Week tab says what is being used up", /Using up: 300 g chicken thigh/.test(tabHTML("week")), (tabHTML("week").match(/Using up[^<]*/) || [""])[0]);
   ok("and offers the check again", /Fridge check/.test(tabHTML("week")));
 
@@ -1648,10 +1666,10 @@ ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chu
   W.document.dispatchEvent(new W.KeyboardEvent("keydown", { key: "Escape" }));
   ok("Escape closes the check", !ev("U.fridge"));
 
-  /* skip keeps the arithmetic ledger and still dates the check */
+  /* "Nothing to use up" means it: the ledger is emptied, and the check still dates the week */
   S.fridgeDate = "2000-01-01"; S.carry = { onion: { q: 0.5, d: today } };
   ev("rollWeek()"); ev("fridgeDone(false)");
-  ok("skip keeps the computed leftovers", S.carry.onion && S.carry.onion.q >= 0.5);
+  ok("'Nothing to use up' clears the leftovers", !S.carry.onion, JSON.stringify(S.carry));
   eq("and counts as this week's check", S.fridgeDate, today);
 
   /* must-use: stated raw meat always gets a dish, across many rolls and every variety */
@@ -1686,6 +1704,129 @@ ok("knife cuts still measured in cm", R.some(r => TXT(r).some(s => /\d\s*cm (chu
 
 { ev("openSheet('nikujaga')"); const a = D.querySelector('#sheet-overlay a.srclink');
   ok("the dish sheet links its source in a new tab", a && /kikkoman/.test(a.href) && a.target === "_blank" && /noopener/.test(a.rel)); ev("closeSheet()"); }
+/* ---------- 25 Sep 2026 UI/UX audit: regressions ---------- */
+{
+  const today = ev("localDate()");
+  const reset = () => { S.plan = undefined; S.bought = {}; S.carry = {}; S.cooked = {}; S.locked = []; S.N = 7; S.v = 2; S.fridgeDate = today; ev("U.toast=null; U.effort=null"); ev("save()"); ev("render()"); };
+  reset();
+
+  /* R1: the savings log is dated in local time, not UTC */
+  const logN = S.log.length;
+  ev("setTab('save')"); D.getElementById("spentInput").value = "2000"; ev("logWeek()");
+  eq("a logged week is dated today, local time", S.log[S.log.length - 1].d, today);
+  S.log.splice(logN); ev("save()");
+
+  /* R2: undo after a meal-count step puts the count back too */
+  reset(); S.N = 3; S.v = 1; ev("plan(true)"); const p0 = JSON.stringify(S.plan);
+  ev("stepMeals(-1)"); ev("runToastUndo()");
+  ok("undo after a step restores the meal count with the plan", S.N === 3 && JSON.stringify(S.plan) === p0, S.N + " " + JSON.stringify(S.plan));
+  reset(); ev("plan(true)"); const p1 = JSON.stringify(S.plan); ev("setVariety(3)"); ev("runToastUndo()");
+  ok("undo after a variety change restores the variety", S.v === 2 && JSON.stringify(S.plan) === p1);
+
+  /* R4: the servings rebalance never pushes a non-freezer past its keep days */
+  let over = 0;
+  [2, 3].forEach(v => [4, 5, 6, 7, 8, 9].forEach(N => { for (let i = 0; i < 15; i++) {
+    reset(); S.N = N; S.v = v; ev("plan(true)");
+    const c = ev("compute()"); c.picks.forEach(r => { if (!r.freeze && c.servings[r.id] > ev("keepDaysOf")(r)) over++; });
+  } }));
+  eq("no non-freezer is planned beyond its keep days (v2/v3)", over, 0);
+
+  /* R5: a 14-meal max batch survives a reload mid-cook */
+  reset(); ev("startCook('curry', 14)"); eq("the wizard takes a 14-serving session", ev("U.serv"), 14);
+  { const { w } = boot(JSON.parse(W.localStorage.getItem("lmp"))); eq("and it survives a reload", w.eval("U.cook"), "curry"); w.close(); }
+  ev("quitCook()"); ev("U.toast=null");
+
+  /* recovery: the last-resort state is the boot sanitiser, not a hand-written literal */
+  { const { w, errs } = boot({ plan: ["curry"], log: [{ d: "nope", spent: 1, meals: 1 }] });
+    ok("a bad log entry is dropped at load", errs.length === 0 && w.eval("S.log.length") === 0);
+    w.eval("loadState({}); U = freshU(); render(); setVariety(1)");
+    ok("the recovered state can roll a week without throwing", Array.isArray(w.eval("S.plan")) && w.eval("typeof S.carry") === "object");
+    ok("and keeps the seeded shelf", w.eval("S.owned.soy") === true);
+    w.close(); }
+
+  /* R3: while another tab's save is pending, this tab writes only its unfinished cook */
+  reset(); W.localStorage.setItem("lmp", JSON.stringify({ N: 9, plan: ["keema"] }));
+  ev("STALE = true"); S.N = 4; ev("startCook('curry', 3)");
+  const stored = JSON.parse(W.localStorage.getItem("lmp"));
+  ok("a stale tab does not overwrite the other tab's save", stored.N === 9 && stored.cooking && stored.cooking.id === "curry", JSON.stringify(stored).slice(0, 120));
+  ev("STALE = false"); ev("quitCook()"); ev("U.toast=null"); reset();
+
+  /* shopped week: meal count and variety no longer throw the shopping away */
+  reset(); S.N = 6; ev("plan(true)");
+  const shopPlan = JSON.stringify(S.plan);
+  ev("compute()").rows.forEach(r => { S.bought[r.id] = true; });
+  ev("setVariety(3)");
+  ok("after shopping, a variety change does not reroll", JSON.stringify(S.plan) === shopPlan && S.v === 2);
+  ok("it offers Replan instead", ev("U.toast && U.toast.label") === "Replan");
+  ev("runToastUndo()");
+  ok("Replan does it", S.v === 3 && JSON.stringify(S.plan) !== shopPlan);
+  reset(); S.N = 6; ev("plan(true)"); const sp2 = JSON.stringify(S.plan);
+  ev("compute()").rows.forEach(r => { S.bought[r.id] = true; });
+  ev("stepMeals(4)");
+  ok("after shopping, more meals respread the same dishes", JSON.stringify(S.plan) === sp2 && S.N === 10);
+
+  /* a new week clears last week's ticks; undo restores everything the check changed */
+  reset(); ev("plan(true)"); ev("compute()").rows.forEach(r => { S.bought[r.id] = true; });
+  S.fridgeDate = "2000-01-01"; const snapCarry = JSON.stringify(S.carry);
+  ev("rollWeek()"); ev("fridgeCycle('pork')"); ev("fridgeDone(true)");
+  eq("a new week starts with an empty basket", Object.keys(S.bought).length, 0);
+  ev("runToastUndo()");
+  ok("undo puts back the ticks, the ledger and the old check date",
+    Object.keys(S.bought).length > 0 && JSON.stringify(S.carry) === snapCarry && S.fridgeDate === "2000-01-01");
+
+  /* the check shows the real leftover until he touches it */
+  reset(); S.carry = { potato: { q: 0.5, d: today }, cabbage: { q: 180, d: today } }; S.fridgeDate = "2000-01-01";
+  ev("openFridge()");
+  ok("an untouched chip shows the real amount", /½ · a bit/.test(D.querySelector('[data-k="frpotato"]').textContent), D.querySelector('[data-k="frpotato"]').textContent);
+  ok("and grams too", /180 g · a bit/.test(D.querySelector('[data-k="frcabbage"]').textContent));
+  ev("fridgeDone(true)");
+  ok("confirming keeps the real amounts, not the presets", S.carry.potato.q === 0.5 && S.carry.cabbage.q === 180 && S.carry.potato.f === true);
+  ev("U.toast=null"); reset();
+
+  /* the rhythm and the wizard agree */
+  reset(); S.N = 14; S.v = 1; ev("plan(true)"); ev("setTab('week')");
+  const cw = ev("compute()"), r1 = cw.picks[0], nS = ev("sessionServ")(r1, cw);
+  const btn = D.querySelector('[data-k="rcook' + r1.id + '"]');
+  ok("the Sunday row has a cook button", !!btn);
+  ok("with the same servings the row describes", btn && btn.textContent === "Cook ×" + nS);
+  if (/raw/.test(r1.freeze || "") && cw.servings[r1.id] > ev("keepDaysOf")(r1))
+    ok("a raw-freeze split cooks what keeps", nS === ev("keepDaysOf")(r1));
+  btn.click();
+  eq("the wizard opens at that count", ev("U.serv"), nS);
+  ev("quitCook()"); ev("U.toast=null");
+  /* rice runs never exceed the cooker and never name a missing day */
+  let badRun = 0;
+  [1, 2, 3].forEach(v => [3, 7, 10, 14].forEach(N => { for (let i = 0; i < 6; i++) {
+    reset(); S.N = N; S.v = v; ev("plan(true)"); ev("setTab('week')");
+    const txt = (tabHTML("week").match(/米 RICE<\/div><div class="schedwhat">([^<]*)/) || ["", ""])[1];
+    (txt.match(/(\d*½|\d+) (with|on|another)/g) || []).forEach(m => { const n = parseFloat(m.replace(/^½/, "0.5").replace("½", ".5")); if (n > 3) badRun++; });
+    if (/Wednesday/.test(txt) && !/水 WED/.test(tabHTML("week"))) badRun++;
+  } }));
+  eq("no rice run over 3 cups, and no run tied to a missing Wednesday", badRun, 0);
+
+  /* UI fixes from the audit */
+  reset(); ev("setTab('week')");
+  ok("variety buttons expose their state", D.querySelector('[data-k="v2"]').getAttribute("aria-pressed") === "true" && D.querySelector('[data-k="v1"]').getAttribute("aria-pressed") === "false");
+  S.N = 2; ev("render()");
+  ok("variety is disabled in a short week", D.querySelector('[data-k="v1"]').disabled);
+  reset(); ev("plan(true)"); ev("setTab('week')");
+  const det = D.querySelectorAll("#tab-week details.detailsblock")[0]; det.open = true; det.dispatchEvent(new W.Event("toggle"));
+  ev("toggleMugi()");
+  ok("the rules panel stays open across a re-render", D.querySelectorAll("#tab-week details.detailsblock")[0].open);
+  ev("toggleMugi()"); ev("setRulesOpen(0,false)");
+  ok("cook progress dots are styled", /\.stepdots \.dot\.on\{background:var\(--mint\)\}/.test(D.documentElement.innerHTML));
+  ev("startCook('curry', 2)"); ev("nextStep()");
+  ok("the wizard says which step it is on", /Step 1 of 5/.test(D.getElementById("cook-overlay").textContent));
+  ev("quitCook()"); ev("U.toast=null");
+  /* focus goes back to the opener */
+  const opener = D.querySelector('[data-k="planopen' + S.plan[0] + '"]'); opener.focus(); opener.click();
+  ev("closeSheet()");
+  eq("closing a sheet returns focus to what opened it", D.activeElement && D.activeElement.dataset.k, "planopen" + S.plan[0]);
+  ev("setTab('shop')"); ev("flash('x', ()=>{})"); ev("setTab('week')");
+  ok("switching tabs clears a stale toast", !ev("U.toast"));
+  reset();
+}
+
 /* ---------- 25 Sep 2026 receipt ---------- */
 eq("black pepper priced from the receipt", CONDS.pepper.p, 594);   // 朝岡 黒胡椒中荒 35 g, 550 +8%
 eq("sesame oil priced from the 21 Sep receipt", CONDS.sesame.p, 376); // 348 +8%

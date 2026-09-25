@@ -15,17 +15,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0f141a; --ink:#eef2f5; --sub:#c3cfd9; --muted:#8b99a6; --muted2:#7d8b99; --dim:#6f7f8d; --faint:#627180;
+  --bg:#0f141a; --ink:#eef2f5; --sub:#c3cfd9; --muted:#8b99a6; --muted2:#7d8b99; --dim:#74848f; --faint:#7a8896;
   --mint:#7fd4a8; --warm:#e8825a; --warmsoft:#f0c3ad;
-  --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.14); --line3:rgba(255,255,255,.16);
-  --row-off:#2a3542; --condoff:#76848f;
+  --line:rgba(255,255,255,.09); --line3:rgba(255,255,255,.16);
+  --condoff:#76848f;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);min-height:100%;
   font:16px/1.5 "Zen Kaku Gothic New",-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
   padding-bottom:calc(84px + env(safe-area-inset-bottom));}
-body.noscroll{overflow:hidden;position:fixed;left:0;right:0;top:0;bottom:0}
+body.noscroll{overflow:hidden;position:fixed;left:0;right:0;bottom:0}
+.nowrap{white-space:nowrap}
+:lang(ja){line-break:strict}
 .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 h1,h2,h3{margin:0;font-size:inherit;font-weight:inherit}
 a{color:var(--mint)}
@@ -89,19 +91,20 @@ body.cooking #toast{bottom:calc(128px + env(safe-area-inset-bottom))}
 .altn{font-size:16px;font-weight:700;color:var(--ink)}
 .altmeta{font-size:12.5px;color:var(--muted2);margin-top:1px}
 .altbadge{font-size:12px;font-weight:700}
-.altbadge.mint{color:var(--mint)}
 .altbadge.muted{color:var(--muted2)}
 
 /* ---- week ---- */
 .stepbtn{width:46px;height:46px;font-size:24px;font-weight:700;color:var(--mint);background:var(--bg)}
 .varon{background:var(--ink);color:#0f141a;padding:12px 6px;font-size:12.5px;font-weight:700;line-height:1.3}
+.varon:disabled,.varoff:disabled{opacity:.45;cursor:default}
+#spentInput::placeholder{color:var(--muted)}
 .varoff{background:var(--bg);color:var(--muted2);padding:12px 6px;font-size:12.5px;font-weight:700;line-height:1.3}
 .ghostbtn{width:100%;margin-top:14px;background:none;border:1px solid var(--line3);color:var(--ink);padding:15px;font-size:15px;font-weight:700;cursor:pointer}
 .ghostbtn:active{background:#151d25}
 .ghostbtn.small{width:auto;margin-top:10px;padding:10px 14px;font-size:13.5px;min-height:44px}
 .dividerlist{display:flex;flex-direction:column}
 .dishrow{border-top:1px solid var(--line);padding:16px 0;display:flex;gap:14px;align-items:flex-start}
-.dishnum{font-size:11px;font-weight:900;color:var(--muted2);padding-top:5px;min-width:16px}
+.dishnum{font-size:12px;font-weight:900;color:var(--muted2);padding-top:5px;min-width:16px}
 .dishmain{flex:1;min-width:0}
 .dishopen{background:none;border:none;padding:2px 0;text-align:left;cursor:pointer;display:block;width:100%;min-height:44px}
 .dishname{display:block;font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
@@ -120,7 +123,7 @@ body.cooking #toast{bottom:calc(128px + env(safe-area-inset-bottom))}
 .progtrack{height:3px;background:var(--line);margin-top:18px}
 .progfill{height:3px;background:var(--mint);transition:width .3s ease}
 .clearlink{background:none;border:none;color:var(--muted2);font-size:12.5px;font-weight:700;padding:12px 0;cursor:pointer;min-height:44px}
-.ghead2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700;padding:26px 0 2px}
+.ghead2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700;padding:26px 0 2px}
 .shoprow{width:100%;border:none;border-top:1px solid var(--line);background:none;display:flex;align-items:center;gap:14px;padding:14px 0;cursor:pointer;text-align:left}
 .shopline{display:flex;align-items:center;border-top:1px solid var(--line)}
 .shopline .shoprow{border-top:none;flex:1;min-width:0}
@@ -150,10 +153,11 @@ details.detailsblock[open] summary::after{content:"▴"}
 .condgrid{display:flex;flex-wrap:wrap;gap:1px;background:var(--line);border-top:1px solid var(--line);padding-top:1px}
 .condbtn{background:var(--bg);border:none;padding:13px;cursor:pointer;color:var(--condoff);font-size:13px;font-weight:700;flex:1 1 auto;min-height:44px}
 .condbtn.on{color:var(--mint)}
-.condbtn.fr1{color:var(--mint);opacity:.75}
-.condbtn .frq{display:block;font-size:11.5px;font-weight:500;color:var(--sub);margin-top:2px}
+.condbtn.fr1{color:var(--mint)}
+.condbtn .frq{display:block;font-size:12px;font-weight:500;color:var(--sub);margin-top:2px}
 /* ---- saved ---- */
-.hlist.row2 input{flex:1;min-width:0;background:var(--bg);border:none;color:var(--ink);font:700 17px inherit;padding:15px 14px;outline:none}
+.hlist.row2 input{flex:1;min-width:0;background:var(--bg);border:none;box-shadow:inset 0 -1px 0 var(--line3);color:var(--ink);font:700 17px inherit;padding:15px 14px;outline:none}
+.hlist.row2 input:focus-visible{outline:2px solid var(--mint);outline-offset:-2px}
 .logbtn{background:var(--bg);border:none;color:var(--mint);font-size:14px;font-weight:900;padding:15px 20px;cursor:pointer;white-space:nowrap}
 .logrow2{border-top:1px solid var(--line);padding:14px 0;display:flex;align-items:center;gap:12px}
 .logd{font-size:12.5px;color:var(--muted2);min-width:44px;font-weight:700}
@@ -170,7 +174,7 @@ nav#tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;border-top:1px so
 .tabbtn{flex:1;background:none;border:none;padding:11px 2px 15px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted)}
 .tabbtn.on{color:var(--mint)}
 .tabjp{font-size:15px;font-weight:700;line-height:1}
-.taben{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.taben{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 
 /* ---- sheet ---- */
 #sheet-overlay{position:fixed;inset:0;background:rgba(7,9,11,.7);display:none;align-items:flex-end;z-index:30}
@@ -182,30 +186,30 @@ nav#tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;border-top:1px so
 .sheettitle{min-width:0}
 .sheetname{font-size:24px;font-weight:900;letter-spacing:-.03em;line-height:1.15}
 .sheetjp{font-size:13.5px;margin-top:3px}
-.closeb{background:none;border:none;color:var(--muted2);font-size:20px;cursor:pointer;padding:0;line-height:1}
+.closeb{background:none;border:none;color:var(--muted2);font-size:20px;cursor:pointer;padding:0;line-height:1;min-width:44px;min-height:44px;margin:-12px -12px 0 0;display:inline-flex;align-items:center;justify-content:center}
 .sheetfacts{display:flex;flex-wrap:wrap;gap:14px 20px;margin-top:20px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .factv{font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.01em}
-.factk{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:3px}
+.factk{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:3px}
 .sheetwarn{margin-top:16px;padding-left:12px;border-left:2px solid var(--warm);font-size:13.5px;line-height:1.55;color:var(--warmsoft)}
 .sheeting{font-size:14.5px;line-height:1.65;color:var(--sub);margin-top:8px}
 .sheetconds{font-size:13px;line-height:1.6;color:var(--muted2);margin-top:8px}
-.srclink{color:var(--sub);text-decoration:underline;text-underline-offset:3px;display:inline-block;padding:10px 0}
-.flexbtn{margin-top:16px;background:none;border:1px solid var(--line3);color:var(--ink);padding:11px 16px;font-size:13.5px;font-weight:700;cursor:pointer}
+.srclink{color:var(--sub);text-decoration:underline;text-underline-offset:3px;display:inline-block;padding:12px 0}
+.flexbtn{min-height:44px;margin-top:16px;background:none;border:1px solid var(--line3);color:var(--ink);padding:11px 16px;font-size:13.5px;font-weight:700;cursor:pointer}
 .sheetcard>.cta{margin-top:24px}
 
 /* ---- cook mode ---- */
 #cook-overlay{position:fixed;inset:0;background:#0f141a;display:none;flex-direction:column;z-index:40;overflow:hidden}
 #cook-overlay.show{display:flex;animation:lmpIn .2s ease both}
 .cookhead{padding:calc(20px + env(safe-area-inset-top)) 22px 0;display:flex;align-items:center;gap:14px}
-.quitb{background:none;border:none;color:var(--muted2);font-size:13px;font-weight:700;cursor:pointer;padding:0}
+.quitb{background:none;border:none;color:var(--muted2);font-size:13px;font-weight:700;cursor:pointer;padding:0 12px 0 0;min-height:44px;min-width:44px}
 .stepdots{flex:1;display:flex;gap:4px}
-.stepdots .dot{width:auto;flex:1;height:3px;border-radius:0}
-.wakeb{background:none;border:none;color:var(--muted);font-size:12.5px;font-weight:700;cursor:pointer;padding:0;white-space:nowrap}
+.stepdots .dot{width:auto;flex:1;height:3px;border-radius:0;background:var(--line3)}
+.stepdots .dot.on{background:var(--mint)}
+.wakeb{background:none;border:none;color:var(--muted);font-size:12.5px;font-weight:700;cursor:pointer;padding:0 0 0 12px;white-space:nowrap;min-height:44px}
 .wakeb.on{color:var(--mint)}
 .cookbody{flex:1;overflow-y:auto;padding:34px 22px 22px}
-.stepnum{font-size:70px;line-height:.85;font-weight:900;color:rgba(255,255,255,.09);letter-spacing:-.05em;margin-top:18px}
-.steptext{font-size:22px;line-height:1.45;font-weight:500;letter-spacing:-.01em;margin-top:-16px}
-.portionhint{font-size:14.5px;color:var(--muted2);margin-top:14px;line-height:1.6}
+.stepcount{font-size:13px;font-weight:700;color:var(--muted);margin-top:18px;letter-spacing:.04em}
+.steptext{font-size:22px;line-height:1.45;font-weight:500;letter-spacing:-.01em;margin-top:10px}
 .portstepper{display:flex;align-items:center;gap:1px;margin-top:28px;background:var(--line3)}
 .portstepper button{width:56px;height:56px;background:#0f141a;border:none;color:var(--mint);font-size:26px;font-weight:700;cursor:pointer}
 .portval{flex:1;background:#0f141a;height:56px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900}
@@ -219,7 +223,7 @@ nav#tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;border-top:1px so
   background:var(--ink);color:#0f141a;padding:13px 16px;font-size:13.5px;font-weight:700;display:none;
   align-items:center;justify-content:space-between;gap:12px;z-index:50}
 #toast.show{display:flex;animation:lmpUp .2s ease both}
-#toast button{background:none;border:none;color:inherit;font:900 13px inherit;cursor:pointer;text-decoration:underline;white-space:nowrap}
+#toast button{background:none;border:none;color:inherit;font:900 13px inherit;cursor:pointer;text-decoration:underline;white-space:nowrap;min-height:44px;min-width:44px;padding:0 6px}
 
 button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
 </style>
@@ -523,8 +527,12 @@ const RECIPES = [
    the rim (8.1 cm deep). 1.5 cm is the headroom a simmer needs, so this is the working volume. */
 const POT_ML = 1600;
 /* Tiger JAJ-A550 manual: rice limits by menu (P.30), cook-in extras about 70 g a cup or less
-   (P.7), plate runs 0.5–1 go on the white menu only (P.19), simmer between the 1 and 3 marks
+   (P.7), plate runs 0.5–1 cup on the white menu only (P.19), simmer between the 1 and 3 marks
    (P.17), and the finishing times by menu (P.9). */
+const RICE_G = 150; /* dry grams in one cooker cup (1 合 = 180 ml) */
+/* the one statement of the plate rule: the dish sheet tip and the rice-cooker rules both use it */
+const PLATE_RULE = "Cooking plate: plain rice underneath only, food spread out rather than piled, and lift the plate out when it beeps — never keep warm with it in. Tiger caps the rice at 1 cup (合) with the plate in: half a cup a serving, two servings a run.";
+const cupsText = n => frac(n)+" cup"+(n>1?"s":"");
 const COOKER = { white:3, takikomi:2, risotto:1, chahan:2, plateMax:1, plateMin:0.5, gPerCup:70,
   simmerMinMl:400, simmerMaxMl:1100, whiteMin:"42–52", quickMin:"20–40" };
 const PLATE_G = 220;      /* what spreads in one layer on the cooking plate, per serving (estimate) */
@@ -599,7 +607,7 @@ const CARRY_BOOST = 1.8;  /* a dish that eats the half-onion in the fridge beats
 /* how long a cut piece is still worth planning around, in days */
 const CARRY_DAYS = {onion:14, carrot:14, potato:14, negi:5, cucumber:4, tomato:4, egg:14, tofu:3, piman:7,
   cabbage:10, daikon:7, shimeji:5, kimchi:14, bacon:10,
-  chicken:7, chickenbreast:7, pork:7, gpork:5, porkblock:7, tebasaki:7, salmon:5};
+  chicken:3, chickenbreast:3, pork:3, gpork:2, porkblock:3, tebasaki:3, salmon:3}; /* raw meat: fridge days, not freezer */
 /* The weekly fridge check: the raw things that go off, and what "a bit" and "plenty" mean for
    each, in the pantry's own unit (pieces or grams). Frozen and dry goods keep, so they are not asked. */
 const FRIDGE_Q = {chicken:[150,300], chickenbreast:[150,300], pork:[100,250], gpork:[100,250], bacon:[40,80],
@@ -614,7 +622,8 @@ const carryBoost = id => ING[id].cat==="meat" ? 3 : (CARRY_DAYS[id]||5) <= 5 || 
 const mustUse = id => S.carry[id] && S.carry[id].f
   && (ING[id].cat==="meat" || ING[id].cat==="other" || (CARRY_DAYS[id]||5) <= 5 || (FRIDGE_Q[id] && S.carry[id].q >= FRIDGE_Q[id][1]));
 const localDate = () => { const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
-const daysSince = d => { const t = Date.parse(d||""); return isNaN(t) ? Infinity : (Date.now()-t)/864e5; };
+/* whole local days, the same clock as carryFresh: Date.parse("YYYY-MM-DD") is UTC midnight, 09:00 in Tokyo */
+const daysSince = d => isDate(d) ? Math.round((todayMidnight() - new Date(d+"T00:00:00")) / 864e5) : Infinity;
 const carryFresh = (id, e) => (todayMidnight() - new Date(e.d+"T00:00:00")) / 864e5 <= (CARRY_DAYS[id] || 5);
 function pruneCarry(){ Object.keys(S.carry).forEach(k=>{ if (!carryFresh(k, S.carry[k])) delete S.carry[k]; }); }
 /* a leftover reads as a kitchen fraction, not 0.67 */
@@ -624,6 +633,7 @@ function frac(x){
   const F = [[0.5,"½"],[0.33,"⅓"],[0.67,"⅔"],[0.25,"¼"],[0.75,"¾"]].find(([v])=>Math.abs(f-v) < 0.03);
   return F ? (w || "")+F[1] : String(Math.round(x*10)/10);
 }
+const gearText = r => r.gear.map(g=>GEARLABEL[g]).join(" + ");
 const isApplianceDish = r => r.gear.includes("air") || r.cookin === true || r.plate === true || r.simmer === true;
 const yen = x => (x<0?"−":"")+"¥"+Math.abs(Math.round(x)).toLocaleString();
 const rec = id => RECIPES.find(r=>r.id===id);
@@ -638,77 +648,99 @@ const cap1 = s => s.charAt(0).toUpperCase()+s.slice(1);
 const MEATCYCLE = ["chicken","pork"];
 function ingsOf(r){ return r.ing.map(([id,q])=> (r.flex && S.protein && S.protein[r.id] && id===baseMeat(r)) ? [S.protein[r.id],q] : [id,q]); }
 const EFFORTS = [
-  {k:0, jp:"2分", en:"Zero effort", sub:"Open a can, or boil one pot."},
+  {k:0, jp:"2分", en:"Zero effort", sub:"Reheat a box, open a can, or boil one pot."},
   {k:1, jp:"15分", en:"Something quick", sub:"One pot, one wash."},
-  {k:2, jp:"45分", en:"Batch day", sub:"Cook once, eat three or four times."}
+  {k:2, jp:"45分", en:"Batch day", sub:"Cook once, eat for three days."}
 ];
 
 /* ============ STATE (persisted) ============ */
 let S = {};
-try { S = JSON.parse(localStorage.getItem("lmp")||"{}"); } catch(e) { S = {}; }
-if (typeof S !== "object" || S === null || Array.isArray(S)) S = {};
 const isObj = x => x && typeof x === "object" && !Array.isArray(x);
-S.owned = isObj(S.owned) ? S.owned : {};
-S.locked = Array.isArray(S.locked) ? S.locked.filter(x=>typeof x==="string" && !!rec(x)) : [];
-S.recent = Array.isArray(S.recent) ? S.recent.filter(x=>typeof x==="string" && !!rec(x)).slice(0,RECENT_KEEP) : [];
-S.bought = isObj(S.bought) ? S.bought : {};
-/* a swap must be a whole cut on a dish that allows it — mince and whole cuts are different dishes */
-S.protein = isObj(S.protein) ? Object.fromEntries(Object.entries(S.protein).filter(([k,v])=>typeof v==="string" && ING[v] && MEATCYCLE.includes(v) && rec(k) && rec(k).flex)) : {};
-/* every field the log renderer touches is checked here: a bad entry used to brick the app on every load */
-S.log = Array.isArray(S.log) ? S.log.filter(l=>isObj(l) && typeof l.d==="string" && Number.isFinite(l.spent) && Number.isFinite(l.meals)) : [];
-S.N = Number.isInteger(S.N) && S.N>=1 && S.N<=14 ? S.N : 7;
-S.v = [1,2,3].includes(S.v) ? S.v : 2;
-S.tab = ["tonight","week","shop","save"].includes(S.tab) ? S.tab
-  : (S.tab==="plan" ? "week" : "tonight"); /* migrate from the old tab set: plan->week, cook/anything else->tonight */
-S.price = isObj(S.price) ? Object.fromEntries(Object.entries(S.price).filter(([k,v])=>ING[k] && typeof v==="number" && isFinite(v) && v>=0)) : {};
-S.mugi = S.mugi === true;
-/* leftover pieces: only a piece-unit ingredient, a positive count and a real date survive */
-S.planDate = typeof S.planDate==="string" && /^\d{4}-\d{2}-\d{2}$/.test(S.planDate) ? S.planDate : null;
-S.carry = isObj(S.carry) ? Object.fromEntries(Object.entries(S.carry).filter(([k,e])=>ING[k] && isObj(e)
-  && typeof e.q==="number" && isFinite(e.q) && e.q>0 && typeof e.d==="string" && /^\d{4}-\d{2}-\d{2}$/.test(e.d) && !isNaN(Date.parse(e.d)))) : {};
-pruneCarry();
-S.fridgeDate = typeof S.fridgeDate==="string" && /^\d{4}-\d{2}-\d{2}$/.test(S.fridgeDate) ? S.fridgeDate : null;
-/* The shelf used to start at {oil:true} and nothing ever filled it in, so the Shop tab kept
-   billing a full pantry of condiments as one-time purchases, week after week, for bottles
-   bought months ago. Seed the staples once. Only keys that were never set are touched, so a
-   condiment deliberately marked as run out stays marked. */
-if (S.shelfSeeded !== true) {
-  SHELF_SEED.forEach(k=>{ if (S.owned[k] === undefined) S.owned[k] = true; });
-  S.shelfSeeded = true;
-  try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {}
+const MAX_SERV = 14; /* one dish can cover a whole 14-meal week */
+const isDate = d => typeof d==="string" && /^\d{4}-\d{2}-\d{2}$/.test(d) && !isNaN(Date.parse(d));
+/* every field the log renderer touches is checked: a bad entry used to brick the app on every load */
+const validLog = l => isObj(l) && isDate(l.d) && Number.isFinite(l.spent) && Number.isFinite(l.meals);
+/* One sanitiser for every path in: boot, and each tier of the crash recovery at the bottom.
+   Anything it does not recognise is dropped or reset, so a poisoned save heals on load. */
+function loadState(raw){
+  S = isObj(raw) ? raw : {};
+  S.owned = isObj(S.owned) ? S.owned : {};
+  S.locked = Array.isArray(S.locked) ? S.locked.filter(x=>typeof x==="string" && !!rec(x)) : [];
+  S.recent = Array.isArray(S.recent) ? S.recent.filter(x=>typeof x==="string" && !!rec(x)).slice(0,RECENT_KEEP) : [];
+  S.bought = isObj(S.bought) ? S.bought : {};
+  /* a swap must be a whole cut on a dish that allows it — mince and whole cuts are different dishes */
+  S.protein = isObj(S.protein) ? Object.fromEntries(Object.entries(S.protein).filter(([k,v])=>typeof v==="string" && ING[v] && MEATCYCLE.includes(v) && rec(k) && rec(k).flex)) : {};
+  /* every field the log renderer touches is checked here: a bad entry used to brick the app on every load */
+  S.log = Array.isArray(S.log) ? S.log.filter(validLog) : [];
+  S.N = Number.isInteger(S.N) && S.N>=1 && S.N<=14 ? S.N : 7;
+  S.v = [1,2,3].includes(S.v) ? S.v : 2;
+  S.tab = ["tonight","week","shop","save"].includes(S.tab) ? S.tab
+    : (S.tab==="plan" ? "week" : "tonight"); /* migrate from the old tab set: plan->week, cook/anything else->tonight */
+  S.price = isObj(S.price) ? Object.fromEntries(Object.entries(S.price).filter(([k,v])=>ING[k] && typeof v==="number" && isFinite(v) && v>=0)) : {};
+  S.mugi = S.mugi === true;
+  /* leftovers: a pantry ingredient in its own unit (pieces or grams), a positive amount and a real date */
+  S.planDate = isDate(S.planDate) ? S.planDate : null;
+  S.carry = isObj(S.carry) ? Object.fromEntries(Object.entries(S.carry).filter(([k,e])=>ING[k] && isObj(e)
+    && typeof e.q==="number" && isFinite(e.q) && e.q>0 && isDate(e.d))) : {};
+  pruneCarry();
+  S.fridgeDate = isDate(S.fridgeDate) ? S.fridgeDate : null;
+  /* what the cook wizard finished this week, so Tonight offers the boxes instead of cooking again */
+  S.cooked = isObj(S.cooked) ? Object.fromEntries(Object.entries(S.cooked).filter(([k,e])=>rec(k) && isObj(e) && isDate(e.d))) : {};
+  /* The shelf used to start at {oil:true} and nothing ever filled it in, so the Shop tab kept
+     billing a full pantry of condiments as one-time purchases, week after week, for bottles
+     bought months ago. Seed the staples once. Only keys that were never set are touched, so a
+     condiment deliberately marked as run out stays marked. */
+  if (S.shelfSeeded !== true) {
+    SHELF_SEED.forEach(k=>{ if (S.owned[k] === undefined) S.owned[k] = true; });
+    S.shelfSeeded = true;
+    try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {}
+  }
+  /* rice and barley used to be billed every week by the gram; they are bag stock, seeded as in */
+  if (S.stockSeeded !== true) {
+    Object.keys(STOCK).forEach(k=>{ if (S.owned[k] === undefined) S.owned[k] = true; });
+    S.stockSeeded = true;
+    try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {}
+  }
+  /* salt joined the shelf on 25 Sep 2026; every kitchen has it, so it starts in stock */
+  if (S.owned.salt === undefined) S.owned.salt = true;
+  /* legacy fields from older saves: dropped, never resurrected */
+  delete S.stepdone; delete S.kit; delete S.aircap; delete S.fridge; delete S.day;
+  /* retired recipe ids are dropped here, or the header counts meals for dishes that no longer render */
+  if (S.plan !== undefined) { S.plan = Array.isArray(S.plan) ? S.plan.filter(x=>typeof x==="string" && !!rec(x)) : undefined; if (S.plan && !S.plan.length) S.plan = undefined; }
+  /* an unfinished cook survives a reload: the dish, step, round and servings */
+  if (!(isObj(S.cooking) && typeof S.cooking.id==="string" && rec(S.cooking.id)
+    && Number.isInteger(S.cooking.step) && S.cooking.step>=0 && S.cooking.step<=rec(S.cooking.id).steps.length
+    && Number.isInteger(S.cooking.round) && S.cooking.round>=1
+    && Number.isInteger(S.cooking.serv) && S.cooking.serv>=1 && S.cooking.serv<=MAX_SERV)) delete S.cooking;
 }
-/* rice and barley used to be billed every week by the gram; they are bag stock, seeded as in */
-if (S.stockSeeded !== true) {
-  Object.keys(STOCK).forEach(k=>{ if (S.owned[k] === undefined) S.owned[k] = true; });
-  S.stockSeeded = true;
-  try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {}
+{ let raw = {}; try { raw = JSON.parse(localStorage.getItem("lmp")||"{}"); } catch(e) {} loadState(raw); }
+/* another tab saved while this one had an overlay open: until the reload, only the unfinished
+   cook is written, merged into the other tab's save — never this tab's stale copy of the rest */
+let STALE = false;
+function save(){
+  try {
+    if (STALE) { const o = JSON.parse(localStorage.getItem("lmp")||"{}"); if (S.cooking) o.cooking = S.cooking; else delete o.cooking; localStorage.setItem("lmp", JSON.stringify(o)); return; }
+    localStorage.setItem("lmp", JSON.stringify(S));
+  } catch(e) {}
 }
-/* salt joined the shelf on 25 Sep 2026; every kitchen has it, so it starts in stock */
-if (S.owned.salt === undefined) S.owned.salt = true;
-/* legacy fields from older saves: dropped, never resurrected */
-delete S.stepdone; delete S.kit; delete S.aircap; delete S.fridge; delete S.day;
-/* retired recipe ids are dropped here, or the header counts meals for dishes that no longer render */
-if (S.plan !== undefined) { S.plan = Array.isArray(S.plan) ? S.plan.filter(x=>typeof x==="string" && !!rec(x)) : undefined; if (S.plan && !S.plan.length) S.plan = undefined; }
-/* an unfinished cook survives a reload: the dish, step, round and servings */
-if (!(isObj(S.cooking) && typeof S.cooking.id==="string" && rec(S.cooking.id)
-  && Number.isInteger(S.cooking.step) && S.cooking.step>=0 && S.cooking.step<=rec(S.cooking.id).steps.length
-  && Number.isInteger(S.cooking.round) && S.cooking.round>=1
-  && Number.isInteger(S.cooking.serv) && S.cooking.serv>=1 && S.cooking.serv<=8)) delete S.cooking;
-function save(){ try { localStorage.setItem("lmp", JSON.stringify(S)); } catch(e) {} }
 const priceOf = id => S.price[id] !== undefined ? S.price[id] : ING[id].p;
 
 /* ============ EPHEMERAL UI STATE (not persisted — resets on load) ============ */
-let U = { effort:null, heroIdx:0, sheet:null, fridge:null, fridgeBase:null, cook:null, step:0, serv:1, round:1, priceAll:false, toast:null, _toastTimer:null };
+const freshU = () => ({ effort:null, heroIdx:0, sheet:null, fridge:null, fridgeBase:null, fridgeInit:null, cook:null, step:0, serv:1, round:1, planServ:null,
+  priceAll:false, toast:null, _toastTimer:null, returnK:null, scrollY:0, overlaid:false });
+let U = freshU();
 if (S.cooking) { U.cook = S.cooking.id; U.step = S.cooking.step; U.round = Math.min(S.cooking.round, roundsFor(rec(S.cooking.id), S.cooking.serv)); U.serv = S.cooking.serv; }
 /* inline handlers can only see globals, and a script-scoped `let` is not one — so the panel's
    open state is written through a function, or it silently collapses on the next render */
 let priceOpen = false;
 function setPriceOpen(v){ priceOpen = !!v; }
+const rulesOpen = [false, false];
+function setRulesOpen(i, v){ rulesOpen[i] = !!v; }
 
 /* ============ TOAST (carries a 1-level undo for anything destructive) ============ */
-function flash(msg, undoFn){
+function flash(msg, undoFn, label){
   clearTimeout(U._toastTimer);
-  U.toast = { msg, undo: undoFn || null };
+  U.toast = { msg, undo: undoFn || null, label: label || "Undo" };
   render();
   U._toastTimer = setTimeout(()=>{ U.toast = null; render(); }, undoFn ? 6000 : 2200);
 }
@@ -717,7 +749,7 @@ function runToastUndo(){
 }
 
 /* ============ ACTIONS ============ */
-function setTab(t){ S.tab=t; save(); render(); try{ scrollTo(0,0); }catch(e){} }
+function setTab(t){ S.tab=t; clearTimeout(U._toastTimer); U.toast=null; save(); render(); try{ scrollTo(0,0); }catch(e){} }
 /* how many dishes a week of N meals gets at each variety setting */
 function dishCount(N, v){ return N<=2 ? N : v===1 ? 1 : v===2 ? Math.min(3, Math.max(2, Math.ceil(N/3))) : Math.min(N, 6); }
 /* what a dish needs to qualify for this week: short weeks cook fresh; max batch needs a batchable
@@ -730,7 +762,17 @@ function fitsWeek(r, N, v){
   if (r.minServ && per < r.minServ) return false;
   return true;
 }
+/* Everything a roll changes, so one Undo puts all of it back: the plan alone used to be restored,
+   leaving a meal count or variety that no longer matched it (21 Sep audit R2). */
+function snapshot(){
+  return JSON.parse(JSON.stringify({ plan:S.plan||null, bought:S.bought, carry:S.carry, planDate:S.planDate,
+    fridgeDate:S.fridgeDate, N:S.N, v:S.v, recent:S.recent, locked:S.locked, cooked:S.cooked }));
+}
+function restore(snap){ Object.assign(S, JSON.parse(JSON.stringify(snap))); if (!S.plan) delete S.plan; save(); render(); }
+/* anything ticked on Shop means this week's food is in the fridge: a reroll would throw it away */
+const shopped = () => !!S.plan && Object.values(S.bought).some(Boolean);
 function stepMeals(d){
+  const snap = snapshot();
   S.N = Math.min(14, Math.max(1, S.N+d)); save();
   if (!S.plan) { render(); return; }
   /* Reshuffle whenever the current dishes no longer suit the week: the wrong number of dishes for
@@ -738,10 +780,23 @@ function stepMeals(d){
      or a dish that no longer fits (a batch dish in a short week, a non-freezer over its keep days). */
   const mustReshuffle = S.plan.length !== dishCount(S.N, S.v)
     || S.plan.some(id=>{ const r = rec(id); return !r || !fitsWeek(r, S.N, S.v); });
-  plan(mustReshuffle ? true : "keep");
+  if (mustReshuffle && shopped()) {
+    /* keep the shopped dishes and spread the new count over them; replanning is his call */
+    plan("keep");
+    flash("You've shopped for this week, so the dishes stay and the servings respread.", ()=>plan(true, false, snap), "Replan");
+    return;
+  }
+  plan(mustReshuffle ? true : "keep", false, snap);
 }
-function setVariety(v){ S.v=v; save(); plan(true); }
-function eligible(){ return RECIPES; }
+function setVariety(v){
+  if (v === S.v) return;
+  if (shopped()) {
+    const label = {1:"1 dish, max batch", 2:"2–3 dishes", 3:"different most days"}[v];
+    flash("You've shopped for this week. Replan as "+label+"?", ()=>{ const snap = snapshot(); S.v = v; plan(true, false, snap); }, "Replan");
+    return;
+  }
+  const snap = snapshot(); S.v=v; save(); plan(true, false, snap);
+}
 /* Max-batch mode used to sort the pool by capacity and take the top, which meant it only ever
    returned the nine cap-4 pot and pan dishes — the appliances were structurally unreachable and
    every roll looked like the last one. Capacity still matters (it decides how many rounds you
@@ -754,7 +809,7 @@ function dishWeight(r, v, wantBatch){
   if (S.recent.includes(r.id)) w *= REPEAT_DAMP;
   /* each thing in the fridge the dish uses multiplies it, so a dish that clears two leftovers
      beats one that clears one */
-  ingsOf(r).forEach(([id])=>{ if (S.carry[id] && S.carry[id].q >= Math.min(0.25, (FRIDGE_Q[id]||[0.25])[0])) w *= carryBoost(id); });
+  ingsOf(r).forEach(([id])=>{ if (S.carry[id] && S.carry[id].q >= (ING[id].u==="pc" ? 0.25 : 30)) w *= carryBoost(id); });
   return w;
 }
 function pickWeighted(pool, k, v, wantBatch){
@@ -777,13 +832,15 @@ function settledCarry(){
   /* a list with no ticks only counts as shopped once the week is actually old; re-rolling
      three times on Sunday afternoon must not bank leftovers from lists that never went to LIFE */
   const shopped = anyTick || daysSince(S.planDate) >= 2;
-  if (prev && shopped) Object.entries(prev.pcReq).forEach(([id,req])=>{
+  /* every unit settles: pieces round to whole pieces bought, grams to the 50 g the list asked for.
+     A settled entry is arithmetic, not something he told the fridge check, so it loses f. */
+  if (prev && shopped) Object.entries(prev.req).forEach(([id,req])=>{
     const row = prev.rows.find(r=>r.id===id);
     if (row && anyTick && !S.bought[id]) return;
     const have = out[id] ? out[id].q : 0;
-    const bought = row ? Math.ceil(row.q) : 0;
+    const bought = row ? row.buy : 0;
     const left = have + bought - req;
-    if (left > 0.05) out[id] = { q:left, d:localDate() }; else delete out[id];
+    if (left > (ING[id].u==="pc" ? 0.05 : 20)) out[id] = { q:left, d:localDate() }; else delete out[id];
   });
   return out;
 }
@@ -799,20 +856,29 @@ function openFridge(){
     return [id, q <= 0 ? 0 : q >= lots ? 2 : 1];
   }));
   U.fridgeBase = base;
+  U.fridgeInit = {...U.fridge};
+  U.returnK = U.returnK || "regen";
   U.sheet = null; render();
 }
 function fridgeCycle(id){ U.fridge[id] = (U.fridge[id] + 1) % 3; render(); }
 function closeFridge(){ U.fridge = null; U.fridgeBase = null; render(); }
+/* the chip's amount: the real leftover while he has not touched it, the preset once he has */
+function fridgeQ(id){
+  const l = U.fridge[id]||0, b = U.fridgeBase && U.fridgeBase[id];
+  if (!l) return 0;
+  return (b && U.fridgeInit && l === U.fridgeInit[id]) ? b.q : FRIDGE_Q[id][l-1];
+}
+/* apply: what the chips say becomes the ledger. clear: "nothing to use up" empties it. Either way
+   this is a new week, so last week's basket ticks go. */
 function fridgeDone(apply){
-  const lv = U.fridge, base = U.fridgeBase || {};
+  const snap = snapshot();
   const nu = {};
   /* anything the check does not ask about (nothing today) keeps its arithmetic entry */
-  Object.entries(base).forEach(([id,e])=>{ if (!FRIDGE_Q[id]) nu[id] = e; });
-  if (apply) Object.entries(lv).forEach(([id,l])=>{ if (l) nu[id] = { q:FRIDGE_Q[id][l-1], d:localDate(), f:true }; });
-  else Object.entries(base).forEach(([id,e])=>{ nu[id] = e; });
-  U.fridge = null; U.fridgeBase = null;
-  S.carry = nu; S.fridgeDate = localDate();
-  plan(true, true);
+  Object.entries(U.fridgeBase || {}).forEach(([id,e])=>{ if (!FRIDGE_Q[id]) nu[id] = e; });
+  if (apply) Object.keys(FRIDGE_Q).forEach(id=>{ const q = fridgeQ(id); if (q > 0) nu[id] = { q, d:localDate(), f:true }; });
+  U.fridge = null; U.fridgeBase = null; U.fridgeInit = null;
+  S.carry = nu; S.fridgeDate = localDate(); S.bought = {}; S.cooked = {};
+  plan(true, true, snap);
 }
 const qtyText = (id, q) => ING[id].u==="pc" ? frac(q) : Math.round(q)+" g";
 function fridgeSheetHTML(){
@@ -820,34 +886,34 @@ function fridgeSheetHTML(){
   let h = '<div class="sheetcard"><div class="sheethead">'
     + '<div class="sheettitle"><div class="sheetname">What\'s in the fridge?</div><div class="sheetjp jp">冷蔵庫チェック</div></div>'
     + '<button class="closeb" data-k="fridgeclose" onclick="closeFridge()">✕</button></div>'
-    + '<div class="detailsnote" style="margin:14px 0 0">Tap once for a bit, twice for plenty. The week gets built around what would go off first, and the list only asks for the rest.</div>';
+    + '<div class="detailsnote" style="margin:14px 0 0">Tap once for a bit, twice for plenty, again for none. Last week\'s leftovers are already filled in. The week gets built around what would go off first, and the list only asks for the rest.</div>';
   groups.forEach(([cat,label])=>{
     const ids = Object.keys(FRIDGE_Q).filter(id=>ING[id].cat===cat); if (!ids.length) return;
     h += '<h3 class="sectionlabel" style="margin:20px 0 8px">'+label+'</h3><div class="condgrid">'
-      + ids.map(id=>{ const l = U.fridge[id]||0, q = l ? FRIDGE_Q[id][l-1] : 0;
-          return '<button class="condbtn fr'+l+(l?" on":"")+'" data-k="fr'+id+'" aria-pressed="'+(l>0)+'" aria-label="'+ING[id].n+(l?", "+(l===1?"a bit":"plenty")+", about "+qtyText(id,q):", none")+'" onclick="fridgeCycle(\''+id+'\')">'
-            + ING[id].n+(l?'<span class="frq">'+qtyText(id,q)+'</span>':'')+'</button>'; }).join("")
+      + ids.map(id=>{ const l = U.fridge[id]||0, q = fridgeQ(id), word = ["none","a bit","plenty"][l];
+          return '<button class="condbtn fr'+l+(l?" on":"")+'" data-k="fr'+id+'" aria-label="'+ING[id].n+': '+word+(l?", about "+qtyText(id,q):"")+'. Tap to change." onclick="fridgeCycle(\''+id+'\')">'
+            + ING[id].n+(l?'<span class="frq">'+qtyText(id,q)+' · '+word+'</span>':'')+'</button>'; }).join("")
       + '</div>';
   });
   h += '<button class="cta" data-k="fridgego" onclick="fridgeDone(true)">Plan the week around this</button>'
-    + '<button class="ghostbtn" data-k="fridgeskip" onclick="fridgeDone(false)">Skip — nothing to use up</button></div>';
+    + '<button class="ghostbtn" data-k="fridgeskip" onclick="fridgeDone(false)">Nothing to use up</button></div>';
   return {show:true, html:h};
 }
-function plan(reshuffle, fridgeStated){
+function plan(reshuffle, fridgeStated, snap){
   const N = S.N, v = S.v;
-  const short = N<=2;
   const k = dishCount(N, v);
-  const pool = eligible().filter(r=>fitsWeek(r, N, v));
+  const pool = RECIPES.filter(r=>fitsWeek(r, N, v));
   const locked = pool.filter(r=>S.locked.includes(r.id)).slice(0,k);
   const benched = S.locked.map(rec).filter(r=>r && !locked.includes(r));
   let picks = [...locked];
-  let undid = false, prevPlan = null;
+  const before = snap || snapshot();
+  let undid = false;
   if (reshuffle!=="keep" || !S.plan) {
-    if (S.plan) {
-      prevPlan = { plan:[...S.plan], bought:{...S.bought}, carry:{...S.carry}, planDate:S.planDate, fridgeDate:S.fridgeDate }; undid = true;
+    if (S.plan || before.plan) {
+      undid = true;
       /* the fridge check has just said what is actually there, which beats any arithmetic */
-      if (!fridgeStated) S.carry = settledCarry();
-    } else if (fridgeStated) prevPlan = null;
+      if (!fridgeStated && S.plan) S.carry = settledCarry();
+    }
     /* one dish is built around each perishable the fridge check reported, before the rest are drawn */
     const urgency = id => carryBoost(id) + (S.carry[id].q >= ((FRIDGE_Q[id]||[0,Infinity])[1]) ? 0.5 : 0);
     Object.keys(S.carry).filter(mustUse).sort((a,b)=>urgency(b)-urgency(a)).forEach(id=>{
@@ -870,11 +936,11 @@ function plan(reshuffle, fridgeStated){
     const kept = Object.keys(S.bought).length, note = [];
     if (kept) note.push(kept+" basket tick"+(kept>1?"s":"")+" kept");
     if (benched.length) note.push(benched.map(r=>r.n).join(", ")+" "+(benched.length>1?"don't":"doesn't")+" fit this week, so "+(benched.length>1?"they sit":"it sits")+" out");
-    flash("New week generated"+(note.length?" · "+note.join(" · "):""), ()=>{ S.plan=prevPlan.plan; S.bought=prevPlan.bought; S.carry=prevPlan.carry; S.planDate=prevPlan.planDate; S.fridgeDate=prevPlan.fridgeDate; save(); render(); });
+    flash("New week generated"+(note.length?" · "+note.join(" · "):""), ()=>restore(before));
   }
 }
 function swap(id){
-  const pool = eligible().filter(r=>!S.plan.includes(r.id) && fitsWeek(r, S.N, S.v));
+  const pool = RECIPES.filter(r=>!S.plan.includes(r.id) && fitsWeek(r, S.N, S.v));
   if (!pool.length) return;
   const nu = pickWeighted(pool, 1, S.v, false)[0]; /* a swap should favour the appliances too */
   const prevPlan = [...S.plan], prevLocked = [...S.locked];
@@ -916,7 +982,7 @@ function logWeek(){
   /* a stray extra zero should not become the savings headline */
   if (!v || v<0 || !isFinite(v)) return;
   if (v > 100000) { flash("That is more than ¥100,000 for a week — check the receipt total."); return; }
-  S.log.push({d:todayMidnight().toISOString().slice(0,10), spent:v, meals:S.N});
+  S.log.push({d:localDate(), spent:v, meals:S.N}); /* local date: toISOString is UTC, yesterday in JST */
   U._clearSpent = true;
   save(); render();
   flash("Logged "+yen(v)+" for "+S.N+" meals.");
@@ -970,12 +1036,31 @@ if (typeof document !== "undefined") {
 function pickEffort(k){ U.effort=k; U.heroIdx=0; render(); }
 function backToAsk(){ U.effort=null; render(); }
 function nextHero(){ U.heroIdx++; render(); }
-function openCookFromHero(rid){
-  const c = compute(), r = rec(rid);
-  startCook(rid, c && c.servings[rid] ? c.servings[rid] : defaultServ(r));
-}
+function openCookFromHero(rid){ startCook(rid, sessionServ(rec(rid), compute())); }
 /* an unplanned dish starts at the fewest servings that make sense on its gear */
 function defaultServ(r){ return Math.max(1, r.minServ || 1); }
+/* How many servings one cooking session makes — the single answer shared by the Week rhythm, the
+   dish sheet and Tonight, which used to disagree. A batch cooks the week's servings at once, except
+   a raw-freeze batch bigger than its fridge life: cook what keeps, bag the rest raw. Anything the
+   rhythm cooks fresh is cooked one meal at a time. */
+function sessionServ(r, c){
+  const s = c && c.servings[r.id];
+  if (!s) return defaultServ(r);
+  if (!(r.batch && s >= 3)) return defaultServ(r);
+  const kd = keepDaysOf(r);
+  return (s > kd && /raw/.test(r.freeze||"")) ? kd : s;
+}
+const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+/* the last day a box cooked on d is still good: cooked day counts as day 1 */
+function eatBy(d, kd){ const t = new Date(d+"T00:00:00"); t.setDate(t.getDate()+kd-1); return DOW[t.getDay()]; }
+function cookedNow(){
+  return Object.entries(S.cooked).map(([id,e])=>({r:rec(id), e})).filter(x=>x.r && daysSince(x.e.d) < keepDaysOf(x.r));
+}
+function finishCooked(id){
+  const prev = S.cooked[id]; if (!prev) return;
+  delete S.cooked[id]; U.heroIdx = 0; save(); render();
+  flash(rec(id).n+": marked finished", ()=>{ S.cooked[id] = prev; save(); render(); });
+}
 
 /* ---- sheet ---- */
 function openSheet(rid){ U.sheet = rid; render(); }
@@ -987,7 +1072,7 @@ function closeSheet(){ U.sheet = null; render(); }
 function startCook(rid, serv){
   const r = rec(rid); if (!r) return;
   clearTimeout(U._toastTimer); U.toast = null;
-  U.sheet=null; U.cook=rid; U.step=0; U.round=1; U.serv=Math.max(defaultServ(r), serv||1);
+  U.sheet=null; U.cook=rid; U.step=0; U.round=1; U.serv=Math.min(MAX_SERV, Math.max(defaultServ(r), serv||1));
   U.planServ = serv||1; persistCook(); render();
 }
 function persistCook(){
@@ -1002,7 +1087,7 @@ function quitCook(){
 }
 function cookServ(d){
   const r = rec(U.cook); if (!r) return;
-  U.serv = Math.min(8, Math.max(defaultServ(r), U.serv + d)); persistCook(); render();
+  U.serv = Math.min(MAX_SERV, Math.max(defaultServ(r), U.serv + d)); persistCook(); render();
 }
 /* servings cooked in round k of this session: full rounds first, the remainder last */
 function roundServ(r, total, k){
@@ -1025,8 +1110,12 @@ function nextStep(){
   if (U.step < r.steps.length) { U.step++; persistCook(); render(); return; }
   const rounds = roundsFor(r, U.serv);
   if (U.round < rounds) { U.round++; U.step = cookFrom(r)+1; persistCook(); render(); return; }
-  const kd = keepDaysOf(r);
-  const msg = "Done. " + (kd===1 ? "Eat it now." : "Leftovers keep "+kd+" days"+(r.freeze?" · "+r.freeze:"")+".");
+  const kd = keepDaysOf(r), batched = U.serv > 1 && kd > 1;
+  /* a finished batch is remembered (not counted): Tonight offers it as the zero-effort answer until
+     it would be past its fridge life, and stops offering to cook it again */
+  if (batched) S.cooked[r.id] = { d:localDate(), serv:U.serv };
+  const frz = r.freeze && !/raw/.test(r.freeze) ? " "+cap1(r.freeze)+"." : "";
+  const msg = "Done. " + (kd===1 || !batched ? "Eat it now." : "Boxes keep "+kd+" days — Tonight offers them until "+eatBy(localDate(), kd)+"."+frz);
   U.cook=null; U.step=0; U.round=1; U.effort=null; U.heroIdx=0;
   persistCook(); render();
   flash(msg);
@@ -1052,6 +1141,8 @@ function compute(){
     better = false;
     picks.forEach(a=>picks.forEach(b=>{
       if (a===b || servings[a.id]<=Math.max(1, a.minServ||1)) return;
+      /* never push a non-freezer past what it keeps */
+      if (!b.freeze && servings[b.id]+1 > keepDaysOf(b)) return;
       const before = total(); servings[a.id]--; servings[b.id]++;
       if (total() < before) better = true; else { servings[a.id]++; servings[b.id]--; }
     }));
@@ -1064,7 +1155,6 @@ function compute(){
     if (S.mugi && !r.cookin) mugiCups += (r.rice||0)*s;
     ingsOf(r).forEach(([id,q])=>{ g[id]=(g[id]||0)+q*s; });
   });
-  pruneCarry();
   let food = 0;
   /* a piece already in the fridge comes off the count before rounding; q is what is left to buy,
      req the whole requirement, so a roll can work out the new leftover */
@@ -1076,14 +1166,14 @@ function compute(){
     const buy = it.u==="pc" ? Math.ceil(q) : Math.ceil(q/50)*50;
     const cost = buy*priceOf(id); food += cost;
     /* meat and fish trays are sold by weight, not in 50 g steps: pick trays adding up to at least this */
-    return {id, cat:it.cat, n:it.n, jp:it.jp, q, req, cost,
-      disp: it.u==="pc" ? buy+(buy>1?" pcs":" pc")+(have?" · have "+frac(have):"") : (it.cat==="meat" ? "at least "+buy+" g" : buy+" g")+(have?" · have "+Math.round(have)+" g":"")};
+    return {id, cat:it.cat, n:it.n, jp:it.jp, q, req, buy, have, cost,
+      disp: it.u==="pc" ? buy+(buy>1?" pcs":" pc")+(have?" · have "+frac(have):"") : (have ? "buy "+(it.cat==="meat"?"at least ":"")+buy+" g · have "+Math.round(have)+" of "+Math.round(req) : (it.cat==="meat" ? "at least "+buy+" g" : buy+" g"))};
   }).filter(Boolean);
   /* rice and barley are bag stock (see STOCK): they join the shelf top-up, never the weekly rows */
   const needed = [...new Set([...picks.flatMap(r=>r.conds), ...(riceGo>0?["rice"]:[]), ...(mugiCups>0?["mugi"]:[])])];
   /* every piece requirement, covered or not, so a roll can settle the leftover ledger */
   const pcReq = Object.fromEntries(Object.entries(g).filter(([id])=>ING[id].u==="pc"));
-  return {picks, servings, N, rows, food, riceGo, sideCups, mugiCups, needed, pcReq};
+  return {picks, servings, N, rows, food, riceGo, sideCups, mugiCups, needed, pcReq, req:g};
 }
 
 /* A week is only 2–3 dishes, so it usually cannot answer all three effort questions —
@@ -1106,7 +1196,11 @@ function rotated(list, salt){
 function candidates(c){
   const eff = U.effort;
   const planned = c ? c.picks : [];
-  const inPlan = planned.filter(r=>r.eff<=eff).map(r=>({kind:"cook", r, eff:r.eff, serv:c.servings[r.id]}));
+  const done = cookedNow();
+  const doneIds = new Set(done.map(x=>x.r.id));
+  /* what is already cooked is the easiest answer there is — and is not offered for cooking again */
+  const reheats = eff===2 ? [] : done.map(({r,e})=>({kind:"reheat", r, eff:0, serv:1, d:e.d}));
+  const inPlan = planned.filter(r=>r.eff<=eff && !doneIds.has(r.id)).map(r=>({kind:"cook", r, eff:r.eff, serv:sessionServ(r, c)}));
   /* within a tier, dishes that are actually on the table soon come first — "something quick" at
      7:30 pm should not lead with an hour in the rice cooker */
   const soonCut = eff===0 ? 20 : eff===1 ? 35 : 999;
@@ -1120,8 +1214,8 @@ function candidates(c){
     const others = inPlan.filter(o=>o.r.eff!==2);
     return [...anchors, ...offPlan, ...others];
   }
-  /* asked for something easy: the plan first, hardest first, then the roster */
-  return [...inPlan.sort((a,b)=>(b.eff-a.eff) || (a.r.ready-b.r.ready)), ...offPlan];
+  /* asked for something easy: the boxes, then the plan soonest-on-the-table first, then the roster */
+  return [...reheats, ...inPlan.sort((a,b)=>readyTotal(a.r, a.serv)-readyTotal(b.r, b.serv)), ...offPlan];
 }
 function roundsFor(r, s){ return (!r.cap || s <= r.cap) ? 1 : Math.ceil(s / r.cap); }
 function roundsLabel(r, s){
@@ -1147,7 +1241,7 @@ function gearTips(r, s){
     ? "This dish only works one serving at a time — do "+s+" quick rounds back-to-back."
     : "×"+s+" servings won't fit in one go — cook "+Math.ceil(s/cp)+" rounds of ~"+cp+".");
   if (r.crowd && s >= 3) t.push("Three or more servings: split into rounds — a crowded 26 cm pan steams instead of sears.");
-  if (r.plate) t.push("Cooking plate: plain rice underneath only, food spread out rather than piled, and lift the plate out when it beeps — never keep warm with it in. Tiger caps the rice at 1 go with the plate in: half a cup a serving, two servings a run.");
+  if (r.plate) t.push(PLATE_RULE);
   if (r.minServ && s < r.minServ) t.push("The simmer menu needs at least "+r.minServ+" servings in the pot, or it sits under the bottom mark and can boil over.");
   return t;
 }
@@ -1160,6 +1254,8 @@ function tonightHTML(c){
   const dateLine = (d.getMonth()+1)+"月"+d.getDate()+"日 "+wd;
   const planCount = c ? c.N+" meals planned" : "no plan yet";
   let h = '<div class="bigrow"><h2 class="eyebrow jpx">'+dateLine+'</h2><div class="eyebrow mint">'+planCount+'</div></div>';
+  if (!c && !cookedNow().length && U.effort===null)
+    h += '<div class="emptycard" style="margin-top:22px">No week planned yet. Plan one and Tonight answers from what you shopped for.<br><button class="ghostbtn small" style="margin-top:14px" data-k="gotoweekt" onclick="setTab(\'week\')">Plan a week</button></div>';
   h += U.effort===null ? askingHTML() : answeredHTML(c);
   return h;
 }
@@ -1202,16 +1298,32 @@ function answeredHTML(c){
   h += '</div>';
   return h;
 }
+const isCrisp = r => r.gear.includes("air");
+function reheatText(r){
+  return (isCrisp(r) ? "Air fryer 180 °C, no oil: 4–5 min from the fridge, 8–10 from frozen."
+                     : "Microwave, lid on: 2–3 min from the fridge, 4–5 from frozen.")
+    + (riceKind(r)==="side" ? " A rice pot takes 3 min in the microwave." : "");
+}
 function heroHTML(hero){
   const r = hero.r;
+  if (hero.kind === "reheat") {
+    return '<div style="animation:lmpUp .3s ease both;margin-top:0">'
+      + '<div class="kicker mint" style="margin-top:26px">Already cooked · eat by '+eatBy(hero.d, keepDaysOf(r))+'</div>'
+      + '<div class="hero2">Reheat the '+r.n.replace(/^(Air-fryer|Rice-cooker|Tacook|One-pot) /,"")+'</div>'
+      + '<div class="herojp jp">'+r.jp+'</div>'
+      + '<div class="herowhy">'+reheatText(r)+'</div>'
+      + '<div class="herocta hlist"><button class="cta" data-k="herodone" onclick="finishCooked(\''+r.id+'\')">Finished them</button>'
+      + '<button class="nah" data-k="heronah" onclick="nextHero()">Nah</button></div>'
+      + '</div>';
+  }
   const off = hero.kind==="offplan";
-  const tag = (off ? "Not in this week's plan · " : (r.eff===2?"Batch anchor · ":"Cook fresh · ")) + r.time + " · " + readyLabel(r, hero.serv);
+  const tag = (off ? "Not in this week's plan · " : (hero.serv>1?"Batch · ":"Cook fresh · ")) + r.time + " · " + readyLabel(r, hero.serv);
   const gearTxt = r.gear.map(g=>GEARLABEL[g]).join(" + ");
-  const perRound = r.cap ? Math.min(hero.serv||r.cap, r.cap) : (hero.serv||1);
   const why = cap1(gearTxt)+". "+(off
-    ? (U.effort===2 ? "This week has no batch anchor in it, so this one is off the plan — you will need to shop for it."
-                    : "Nothing this easy is in this week's plan, so this one is off it — check the cupboard first.")
-    : (r.batch ? "Makes "+perRound+" at a time"+(r.freeze?", "+r.freeze:"")+"." : "Too quick to be worth batching."));
+    ? (!S.plan ? "No week planned, so nothing is shopped for — check the cupboard, or plan a week."
+      : U.effort===2 ? "This week has no batch anchor in it, so this one is off the plan — you will need to shop for it."
+                     : "Nothing this easy is in this week's plan, so this one is off it — check the cupboard first.")
+    : (hero.serv > 1 ? "Cooking ×"+hero.serv+" today"+(r.cap?", "+r.cap+" a round":"")+(r.freeze?" — "+r.freeze:"")+"." : r.batch ? "Cooked fresh this week — one serving." : "Too quick to be worth batching."));
   return '<div style="animation:lmpUp .3s ease both;margin-top:0">'
     + '<div class="kicker mint" style="margin-top:26px">'+tag+'</div>'
     + '<div class="hero2">'+r.n+'</div>'
@@ -1222,8 +1334,9 @@ function heroHTML(hero){
     + '</div>';
 }
 function altRowHTML(o,i){
-  const meta = o.r.time+" · "+readyLabel(o.r, o.serv)+" · "+o.r.gear.map(g=>GEARLABEL[g]).join(" + ");
-  const badge = o.kind==="offplan" ? "off plan" : (o.r.eff===2?"batch":"cook");
+  const meta = o.kind==="reheat" ? "Already cooked · eat by "+eatBy(o.d, keepDaysOf(o.r))
+    : o.r.time+" · "+readyLabel(o.r, o.serv)+" · "+gearText(o.r);
+  const badge = o.kind==="offplan" ? "off plan" : o.kind==="reheat" ? "reheat" : (o.serv>1?"batch":"cook");
   return '<button class="altrow" data-k="alt'+i+'" onclick="openSheet(\''+o.r.id+'\')">'
     + '<span class="altbody"><span class="altn">'+o.r.n+'</span><span class="altmeta">'+meta+'</span></span>'
     + '<span class="altbadge muted">'+badge+'</span></button>';
@@ -1237,10 +1350,10 @@ function weekHTML(c){
     + '<div class="hlist row2" style="width:auto"><button class="stepbtn" data-k="Ndec" onclick="stepMeals(-1)" aria-label="fewer">−</button><button class="stepbtn" data-k="Ninc" onclick="stepMeals(1)" aria-label="more">+</button></div>'
     + '</div>'
     + '<div class="hlist row3" style="margin-top:24px">'
-    + [1,2,3].map(v=>'<button class="'+(S.v===v?"varon":"varoff")+'" data-k="v'+v+'" onclick="setVariety('+v+')">'+V[v]+'</button>').join("")
+    + [1,2,3].map(v=>'<button class="'+(S.v===v?"varon":"varoff")+'" data-k="v'+v+'" aria-pressed="'+(S.v===v)+'"'+(S.N<=2?' disabled aria-disabled="true"':'')+' onclick="setVariety('+v+')">'+V[v]+'</button>').join("")
     + '</div>'
     + '<button class="ghostbtn" data-k="regen" onclick="rollWeek()">'+(c?"Roll a different week":"Generate my week")+'</button>'
-    + (c ? '<button class="clearlink" data-k="fridgecheck" onclick="openFridge()">Fridge check'+(S.fridgeDate?" · last "+S.fridgeDate.slice(5).replace("-","/"):"")+'</button>' : '');
+    + (c ? '<button class="ghostbtn small" data-k="fridgecheck" onclick="openFridge()">Fridge check'+(S.fridgeDate?" · last "+S.fridgeDate.slice(5).replace("-","/"):"")+'</button>' : '');
   if (c) h += '<div class="subline">'+yen(c.food)+' of groceries · saves '+yen(c.N*EAT_OUT-c.food)+' against eating out</div>';
   if (S.N<=2) h += '<div class="footnote" style="margin-top:14px;padding-top:0;border-top:none">Short week: quick cook-fresh dishes only — no batching, no leftovers.</div>';
   if (c) {
@@ -1271,7 +1384,7 @@ function usingUpHTML(c){
   const ids = Object.keys(S.carry); if (!ids.length) return "";
   const uses = c.picks.filter(r=>ingsOf(r).some(([id])=>S.carry[id]));
   return '<div class="subline" data-k="usingup">Using up: '+ids.map(id=>qtyText(id, S.carry[id].q)+" "+ING[id].n.toLowerCase()).join(", ")
-    +(uses.length ? " → "+uses.map(r=>r.n).join(", ") : " — nothing this week uses them")+'</div>';
+    +(uses.length ? " → "+uses.map(r=>r.n).join(", ") : " — nothing this week uses "+(ids.length>1?"them":"it"))+'</div>';
 }
 /* what the other appliances do while a batch anchor cooks — the whole point of a cook day */
 function pairingFor(r, c, riceRun){
@@ -1279,7 +1392,7 @@ function pairingFor(r, c, riceRun){
   const busyCooker = r.simmer || r.cookin || r.plate;
   if (riceKind(r) === "cooked") bits.push("It wants day-old rice, so cook "+Math.round(r.rice*c.servings[r.id]*2)/2+" cups the day before and keep them in the fridge.");
   else if (busyCooker) bits.push("It has the rice cooker for ~"+r.ready+" min, so any rice for the week goes in before it.");
-  else if (riceRun > 0) bits.push("Put "+riceRun+" cup"+(riceRun>1?"s":"")+" of rice on first ("+COOKER.whiteMin+" min), then start prepping — they finish together.");
+  else if (riceRun > 0) bits.push("Put "+cupsText(riceRun)+" of the week's rice on first ("+COOKER.whiteMin+" min), then start prepping — they finish together.");
   const prep = c.picks.filter(p=>p!==r && p.gear.includes("air") && /raw/.test(p.freeze||""));
   if (prep.length && !r.gear.includes("air")) bits.push("While it simmers, marinate the "+prep[0].n.replace(/^Air-fryer /,"")+" and bag it for later in the week.");
   return bits.join(" ");
@@ -1290,10 +1403,10 @@ function rhythmHTML(c){
   const rounds = r => { if (!r.cap || c.servings[r.id]<=r.cap) return " One go.";
     return r.cap===1 ? " One serving per run, so "+c.servings[r.id]+" quick rounds back to back."
       : " Your gear fits ~"+r.cap+" per run — "+Math.ceil(c.servings[r.id]/r.cap)+" rounds back to back."; };
-  /* side rice: cooked in 3-cup runs, the first alongside Sunday's anchor, the rest Wednesday's */
+  /* side rice: cooked in runs of at most 3 cups, each tied to a row that actually exists */
   const side = Math.ceil(c.sideCups*2)/2;
-  const runs = side ? Math.ceil(side/COOKER.white) : 0;
-  const run1 = Math.min(side, COOKER.white), run2 = Math.max(0, side-run1);
+  const runsArr = []; for (let left = side; left > 0; left = Math.round((left - COOKER.white)*2)/2) runsArr.push(Math.min(COOKER.white, left));
+  const run1 = bat[0] ? (runsArr[0]||0) : 0, run2 = bat[1] ? (runsArr[1]||0) : 0;
   const rows = [];
   /* a batch bigger than its fridge life is split on the day: the rest goes in the freezer at once */
   const keepLine = r => {
@@ -1304,48 +1417,55 @@ function rhythmHTML(c){
       ? " It keeps "+kd+" days cooked, so cook "+kd+" and bag the other "+extra+" raw for the freezer; cook those from frozen later in the week."
       : " It keeps "+kd+" days, so box "+kd+" for the fridge and freeze the other "+extra+" the same day.";
   };
-  if (bat[0]) rows.push(["日 SUN", "All "+c.servings[bat[0].id]+" servings of "+bat[0].n+" ("+GEARLABEL[bat[0].gear[0]]+")."+rounds(bat[0])+" "+pairingFor(bat[0], c, run1)+keepLine(bat[0])]);
-  if (bat[1]) rows.push(["水 WED", "Top up with "+bat[1].n+" ("+GEARLABEL[bat[1].gear[0]]+")."+rounds(bat[1])+" "+pairingFor(bat[1], c, run2)+keepLine(bat[1])]);
-  bat.slice(2).forEach(r=>rows.push(["ALSO", "Batch "+r.n+" ("+c.servings[r.id]+" servings)."+rounds(r)]));
-  quick.forEach(r=>rows.push([r.time.replace(" min"," MIN").toUpperCase(), r.n+" × "+c.servings[r.id]+", cooked fresh — "+(r.batch?"batchable, but at this size fresher is easier":"too quick to be worth batching")+"."+rounds(r)]));
+  if (bat[0]) rows.push(["日 SUN", "All "+c.servings[bat[0].id]+" servings of "+bat[0].n+" ("+GEARLABEL[bat[0].gear[0]]+")."+rounds(bat[0])+" "+pairingFor(bat[0], c, run1)+keepLine(bat[0]), bat[0]]);
+  if (bat[1]) rows.push(["水 WED", "Top up with "+bat[1].n+" ("+GEARLABEL[bat[1].gear[0]]+")."+rounds(bat[1])+" "+pairingFor(bat[1], c, run2)+keepLine(bat[1]), bat[1]]);
+  bat.slice(2).forEach(r=>rows.push(["ALSO", "Batch "+r.n+" ("+c.servings[r.id]+" servings)."+rounds(r)+keepLine(r), r]));
+  /* a dish the rhythm cooks fresh is cooked one meal at a time, so its rounds are per meal */
+  quick.forEach(r=>rows.push([r.time.replace(" min"," MIN").toUpperCase(), r.n+" × "+c.servings[r.id]+", cooked fresh one meal at a time — "+(r.batch?"batchable, but at this size fresher is easier":"too quick to be worth batching")+"."+(r.cap===1||!r.cap?"":" One go each time.")]));
   const own = c.picks.filter(r=>riceKind(r)==="self");
+  const slot = i => i===0 && bat[0] ? "with Sunday's cook" : i===1 && bat[1] ? "with Wednesday's" : i===0 ? "on the first cook" : "another day";
   let riceTxt = side
-    ? side+" cooker cup"+(side>1?"s":"")+" of side rice ("+Math.round(side*150)+" g dry). The JAJ-A550 takes 3 a run"
-      + (runs>1 ? ", so "+runs+" runs: "+run1+" with Sunday's cook, "+run2+" with Wednesday's" : ", so one run")
-      + ". Freeze what you will not eat in 2 days — the 355 ml pots or flat in bags, 3 min in the microwave."
+    ? cupsText(side)+" of side rice ("+Math.round(side*RICE_G)+" g dry). The cooker takes "+COOKER.white+" a run"
+      + (runsArr.length>1 ? ": "+runsArr.map((x,i)=>frac(x)+" "+slot(i)).join(", ") : ", so one run "+slot(0))
+      + ". Cooked rice goes hard in the fridge, so freeze what you will not eat in 2 days — the 355 ml pots or flat in bags, 3 min in the microwave."
     : "No side rice this week.";
   /* the cooker does one thing at a time: every self-rice dish is its own run, per round */
   if (own.length) {
     const runsOwn = own.reduce((a,r)=>a+roundsFor(r, c.servings[r.id]), 0);
     riceTxt += own.length===1 && runsOwn===1
       ? " "+own[0].n+" cooks its own rice, on a separate run."
-      : " "+own.map(r=>r.n).join(" and ")+(own.length>1?" each cook":" cooks")+" their own rice — "+runsOwn+" more cooker run"+(runsOwn>1?"s":"")+", one at a time, on different days.";
+      : " "+(own.length>1 ? own.map(r=>r.n).join(" and ")+" each cook their own rice" : own[0].n+" cooks its own rice")
+        +" — "+runsOwn+" more cooker run"+(runsOwn>1?"s":"")+", one at a time.";
   }
   if (S.mugi && c.mugiCups>0) riceTxt += " Mochi-mugi on: add "+Math.round(c.mugiCups*50)+" g barley across the plain rice (50 g per cup) plus 100 ml extra water per cup, same cycle. Seasoned-rice dishes stay white.";
   rows.push(["米 RICE", riceTxt]);
   let h = '<div class="bigrow" style="margin:38px 0 4px;align-items:center"><h3 class="sectionlabel">The rhythm</h3>'
     + '<button class="mugitoggle'+(S.mugi?" on":"")+'" data-k="mugi" onclick="toggleMugi()" aria-pressed="'+S.mugi+'" title="Barley into the plain rice at 3:1 — 50 g per cooker-cup, about ¥20 a serving, ten times the fibre. Same cycle, same effort.">mochi-mugi '+(S.mugi?"ON":"OFF")+'</button></div>'
     + '<div class="dividerlist">';
-  rows.forEach(([when,what])=>{ h += '<div class="schedrow"><div class="schedwhen jpx">'+when+'</div><div class="schedwhat">'+what+'</div></div>'; });
+  /* a cook-day row starts the wizard with exactly the servings it just described */
+  rows.forEach(([when,what,r])=>{ const n = r ? sessionServ(r, c) : 0;
+    h += '<div class="schedrow"><div class="schedwhen jpx">'+when+'</div><div class="schedwhat">'+what
+      + (r ? '<button class="ghostbtn small" data-k="rcook'+r.id+'" onclick="startCook(\''+r.id+'\', '+n+')">Cook ×'+n+'</button>' : '')
+      + '</div></div>'; });
   h += '</div>';
   h += rulesHTML();
   return h;
 }
 /* reference that is needed now and then: collapsed, never an open card */
 function rulesHTML(){
-  return '<details class="detailsblock"><summary>Air fryer, reheating and portioning — the rules</summary><div class="detailsnote">'
+  return '<details class="detailsblock"'+(rulesOpen[0]?" open":"")+' ontoggle="setRulesOpen(0,this.open)"><summary>Air fryer, reheating and portioning — the rules</summary><div class="detailsnote">'
     + '<b>Reheat wet</b> — rice, curry, keema, nikujaga, tonjiru, soboro. Microwave, lid on: 2–3 min from the fridge, 4–5 from frozen. Soups get their water back as they reheat.<br><br>'
     + '<b>Reheat crisp</b> — karaage, katsu, gyoza, tofu, salmon. Air fryer 180 °C, no oil: 4–5 min from the fridge, 8–10 from frozen. Food onto the basket; the container never goes in.<br><br>'
     + '<b>Cooking</b> — preheat 3 min for skin or coating, one layer with gaps, pat the oil on rather than spraying it. Amazon Basics 4.2 L, 60–200 °C.<br><br>'
-    + '<b>Rice</b> — 150 g dry per cooker cup, about 170 g cooked per serving. Mochi-mugi barley goes in at 3:1 (50 g per cup, plus 100 ml extra water): roughly ¥20 a serving for ten times the fibre, same cycle, same effort. Cook-in cooker dishes stay white.<br><br>'
-    + '<b>Portioning</b> — one serving goes in a 600 mL box: curry, keema and nikujaga land at 400–430 ml, tonjiru and the bean soup at ~520 once their water is back, nabe fills it. Rice goes in its own 355 ml one-bowl pot (約170 g), never in with the sauce. Four boxes and three rice pots covers the Sunday/Wednesday rhythm; only "1 dish, max batch" needs more.<br><br>'
+    + '<b>Rice</b> — a cup means the rice cooker cup (1 合, '+RICE_G+' g dry); half a cup, about 170 g cooked, is a serving. Mochi-mugi barley goes in at 3:1 (50 g per cup, plus 100 ml extra water): roughly ¥20 a serving for ten times the fibre, same cycle, same effort. Cook-in cooker dishes stay white.<br><br>'
+    + '<b>Portioning</b> — one serving goes in a 600 mL box: curry, keema and nikujaga land at 400–430 ml, tonjiru and minestrone at ~520 once their water is back, nabe fills it. Rice goes in its own 355 ml one-bowl pot (約170 g), never in with the sauce. Four boxes and three rice pots cover a 2–3 dish week of up to 7 meals; bigger weeks and "1 dish, max batch" put the extra servings in freezer bags.<br><br>'
     + '<b>The pot</b> — 1.6 L to 1.5 cm under the rim. That is why the stews stop at 3 servings: a fourth does not fit before the vegetables cook down.'
     + '</div></details>'
-    + '<details class="detailsblock"><summary>The rice cooker — what it can and cannot do</summary><div class="detailsnote">'
+    + '<details class="detailsblock"'+(rulesOpen[1]?" open":"")+' ontoggle="setRulesOpen(1,this.open)"><summary>The rice cooker — what it can and cannot do</summary><div class="detailsnote">'
     + 'Tiger tacook JAJ-A550, 3 cups. Rice limits by menu: white and quick 3 cups, cook-in and fried rice 2, risotto 1. White rice takes '+COOKER.whiteMin+' min, quick-cook '+COOKER.quickMin+'.<br><br>'
-    + '<b>The cooking plate</b> — plain rice underneath, never seasoned rice: the grains swell up into the plate and set like glue on the underside. Tiger caps the rice at 1 go (min 0.5) with the plate in — half a cup a serving, two servings a run. White-rice menu only. Spread the food out rather than piling it, and lift the plate out when it beeps: never keep warm with it in. To season the rice, fold the plate juices through afterwards.<br><br>'
+    + '<b>The cooking plate</b> — '+cap1(PLATE_RULE.replace(/^Cooking plate: /,""))+' White-rice menu only. Seasoned rice under the plate swells up into it and sets like glue, so to season the rice, fold the plate juices through afterwards.<br><br>'
     + '<b>Cook-in rice</b> — about 70 g of extras per cup of rice at most, sitting on top, not stirred in. More than that and the rice cooks hard.<br><br>'
-    + '<b>Simmer menu</b> — for the braises. Set the timer (5–120 min). Ingredients go between the 1-go and 3-go white-rice marks, about 0.4 to 1.1 L: over the top mark it will not cook through and will boil over, under the bottom one it boils over too. Short of done? Add 30 min, up to three times.<br><br>'
+    + '<b>Simmer menu</b> — for the braises. Set the timer (5–120 min). Ingredients go between the 1-cup and 3-cup white-rice marks, about 0.4 to 1.1 L: over the top mark it will not cook through and will boil over, under the bottom one it boils over too. Short of done? Add 30 min, up to three times.<br><br>'
     + '<b>Never during the cycle</b> — roux, starch or any other thickener. Thickened liquid foams, foam blocks the steam vent, and blocked vents spray. Thickeners and dairy go in after the cycle ends, on residual heat. No foil, wrap or bags inside. Go easy on oil.<br><br>'
     + '<b>Wooden paddle only</b> — metal scars the inner pot, and a scarred pot sticks forever after.'
     + '</div></details>';
@@ -1417,7 +1537,7 @@ function priceTuneHTML(c){
   return h;
 }
 function shelfHTML(){
-  return '<h3 class="sectionlabel" style="margin:38px 0 8px">The shelf · <span lang="ja">調味料</span></h3>'
+  return '<h3 class="sectionlabel" style="margin:38px 0 8px">The shelf · <span lang="ja">調味料と米</span></h3>'
     + '<div class="condgrid">'+Object.entries({...CONDS, ...STOCK}).map(([k,cd])=>'<button class="condbtn'+(S.owned[k]?" on":"")+'" data-k="cond'+k+'" aria-pressed="'+!!S.owned[k]+'" title="'+cd.jp+'" aria-label="'+cd.n+' ('+cd.jp+')'+(S.owned[k]?", in stock":", out of stock")+'" onclick="toggleCond(\''+k+'\')">'+cd.n+'</button>').join("")+'</div>'
     + '<div class="footnote" style="margin-top:10px;padding-top:0;border-top:none">Mint means you have it. Tap anything you have run out of and it joins the shopping list.</div>';
 }
@@ -1430,7 +1550,7 @@ function saveHTML(){
     + '<div class="bignum mint" style="margin-top:16px">'+yen(totSaved)+'</div>'
     + '<div class="subline">'+(S.log.length ? S.log.length+" week"+(S.log.length>1?"s":"")+" logged · "+yen(totSpent)+" spent, against "+yen(EAT_OUT)+" a meal outside" : "Log a receipt and this starts counting.")+'</div>'
     + '<div class="hlist row2" style="margin-top:28px">'
-    + '<input type="number" id="spentInput" inputmode="numeric" min="0" placeholder="'+(c?Math.round(c.food):"1700")+'" aria-label="What this week cost in yen" onkeydown="if(event.key===\'Enter\')logWeek()" data-k="spentinput">'
+    + '<input type="number" id="spentInput" inputmode="numeric" min="0" placeholder="¥ e.g. '+(c?Math.round(c.food):"1700")+'" aria-label="What this week cost in yen" onkeydown="if(event.key===\'Enter\')logWeek()" data-k="spentinput">'
     + '<button class="logbtn" data-k="logweek" onclick="logWeek()">Log it</button></div>'
     + '<div class="footnote" style="margin-top:10px;padding-top:0;border-top:none">What the LIFE receipt actually said this week.</div>';
   h += '<div class="dividerlist" style="margin-top:30px">';
@@ -1456,6 +1576,7 @@ function sheetHTML(c){
   const r = rec(U.sheet); if (!r) { U.sheet=null; return {show:false, html:""}; }
   const planned = !!(c && c.servings[r.id]);
   const serv = planned ? c.servings[r.id] : defaultServ(r);
+  const cookN = sessionServ(r, c);
   const kd = keepDaysOf(r);
   const facts = [[r.time,"hands on"], ["~"+readyTotal(r, serv)+" min"+(riceKind(r)==="side"?" + rice":""),"to the table"],
     planned ? ["×"+serv+" · "+roundsLabel(r, serv),"this week"] : ["—","not planned"],
@@ -1468,8 +1589,7 @@ function sheetHTML(c){
   const ingParts = ingsOf(r).map(([id,q])=>{ const it=ING[id]; return it.n+" "+(it.u==="pc"?q+" pc":q+" g"); });
   /* this used to print "150 g (1 cup)" for every dish regardless of r.rice, which was wrong for
      every half-cup dish in the roster and wronger now that rice is a costed line */
-  if (r.rice) ingParts.push("rice " + Math.round(r.rice*150) + " g (" +
-    (r.rice === 0.5 ? "half a cooker cup" : r.rice === 1 ? "1 cooker cup" : r.rice + " cooker cups") + ")");
+  if (r.rice) ingParts.push("rice " + Math.round(r.rice*RICE_G) + " g (" + cupsText(r.rice) + ")");
   const ingText = ingParts.length ? ingParts.join(" · ") : "Nothing to buy — shelf staples only.";
   const condsText = "Shelf: "+r.conds.map(x=>CONDS[x].n).join(", ").toLowerCase();
   let h = '<div class="sheetcard"><div class="sheethead">'
@@ -1485,7 +1605,7 @@ function sheetHTML(c){
     const cur = ING[S.protein[r.id]||baseMeat(r)].n;
     h += '<button class="flexbtn" data-k="sheetcycle" onclick="cycleProtein(\''+r.id+'\')">↔ '+cur+'</button>';
   }
-  h += '<button class="cta" data-k="sheetstart" onclick="startCook(\''+r.id+'\', '+serv+')">Cook it · '+r.steps.length+' steps</button>';
+  h += '<button class="cta" data-k="sheetstart" onclick="startCook(\''+r.id+'\', '+cookN+')">Cook ×'+cookN+' · '+r.steps.length+' steps</button>';
   h += '</div>';
   return {show:true, html:h};
 }
@@ -1493,14 +1613,15 @@ function sheetHTML(c){
 function riceFirstText(r, serv){
   const k = riceKind(r);
   if (k === "none" || k === "self") return "";
-  const cups = Math.round(r.rice*serv*2)/2, g = Math.round(cups*150);
-  if (k === "cooked") return "This needs "+Math.round(cups*330)+" g of cooked rice, ideally a day old. None in the fridge? Cook "+cups+" cup"+(cups>1?"s":"")+" now on quick-cook ("+COOKER.quickMin+" min) and let it cool.";
-  if (r.simmer) return "The rice cooker is busy for ~"+r.ready+" min with this. Want fresh rice? Cook "+cups+" cup"+(cups>1?"s":"")+" first and set it aside — or microwave frozen rice pots at the end.";
-  if (r.gear.every(g=>g==="rice")) return "Hot rice: microwave a frozen rice pot for 3 min, or cook "+cups+" cup"+(cups>1?"s":"")+" ("+g+" g) on quick-cook, "+COOKER.quickMin+" min.";
-  const lead = 50 - r.ready;
-  const when = lead >= 10 ? "this takes ~"+r.ready+" min, so start prepping in about "+(Math.round(lead/5)*5)+" min" : "this takes about as long, so start both now";
-  return "Rice first: "+cups+" cup"+(cups>1?"s":"")+" ("+g+" g) in the cooker now — white rice is "+COOKER.whiteMin+" min and "+when+"."
-    + (cups > COOKER.white ? " That is more than 3 cups: 3 now, the rest in a second run." : "")
+  const cups = Math.round(r.rice*serv*2)/2, g = Math.round(cups*RICE_G);
+  if (k === "cooked") return "This needs "+Math.round(cups*330)+" g of cooked rice, ideally a day old. None in the fridge? Cook "+cupsText(cups)+" now on quick-cook ("+COOKER.quickMin+" min) and let it cool.";
+  if (r.simmer) return "The rice cooker is busy for ~"+readyTotal(r, serv)+" min with this. Want fresh rice? Cook "+cupsText(cups)+" first and set it aside — or microwave frozen rice pots at the end.";
+  if (r.gear.every(g=>g==="rice")) return "Hot rice: microwave a frozen rice pot for 3 min, or cook "+cupsText(cups)+" ("+g+" g) on quick-cook, "+COOKER.quickMin+" min.";
+  const t = readyTotal(r, serv), lead = 50 - t;
+  const when = lead >= 10 ? "this takes ~"+t+" min, so start prepping in about "+(Math.round(lead/5)*5)+" min" : "this takes about as long, so start both now";
+  const runs = Math.ceil(cups / COOKER.white);
+  return "Rice for these "+serv+": "+cupsText(cups)+" ("+g+" g) in the cooker now — white rice is "+COOKER.whiteMin+" min and "+when+"."
+    + (runs > 1 ? " The cooker takes "+COOKER.white+" a run, so that is "+runs+" runs." : "")
     + (r.ready <= 25 ? " In a hurry, quick-cook is "+COOKER.quickMin+" min." : "")
     + " Using frozen rice pots instead? Skip this — 3 min in the microwave at the end.";
 }
@@ -1510,7 +1631,7 @@ function cookHTML(){
   const n = r.steps.length, rounds = roundsFor(r, U.serv), rs = roundServ(r, U.serv, U.round);
   const canWake = typeof navigator !== "undefined" && "wakeLock" in navigator;
   let h = '<div class="cookhead"><button class="quitb" data-k="cookquit" onclick="quitCook()">✕ Quit</button>'
-    + '<div class="stepdots" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+U.step+'">'
+    + '<div class="stepdots" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+U.step+'" aria-valuetext="'+(U.step ? "Step "+U.step+" of "+n+(rounds>1?", round "+U.round+" of "+rounds:"") : "Before you start")+'">'
     + r.steps.map((x,i)=>'<span class="dot '+(i<U.step?"on":"")+'"></span>').join("")+'</div>'
     /* only offer the screen lock where the API actually exists, or the button lies */
     + (canWake ? '<button class="wakeb'+(wakeWanted?" on":"")+'" data-k="cookwake" aria-pressed="'+wakeWanted+'" onclick="toggleWake()">'+(wakeWanted?"Staying awake":"Keep awake")+'</button>' : '')
@@ -1530,14 +1651,14 @@ function cookHTML(){
       + tips.map(t=>'<div class="setupline warm">'+t+'</div>').join("");
   } else {
     const ss = stepServ(r, U.step-1), shared = rounds>1 && U.step-1 < cookFrom(r);
-    h += '<div class="kicker mint">'+r.n+(rounds>1 ? (shared ? ' · prep for all '+U.serv : ' · round '+U.round+' of '+rounds+' · ×'+ss) : ' · ×'+ss)+'</div>'
-      + '<div class="stepnum">'+String(U.step).padStart(2,"0")+'</div>'
+    h += '<div class="kicker mint">'+r.n+' · <span class="nowrap">'+(rounds>1 ? (shared ? 'prep for all '+U.serv : 'round '+U.round+' of '+rounds+' · ×'+ss) : '×'+ss)+'</span></div>'
+      + '<div class="stepcount">Step '+U.step+' of '+n+'</div>'
       + '<div class="steptext">'+stepText(r, U.step-1, ss)+'</div>';
   }
   const lastStep = U.step === n;
   const label = U.step===0 ? "Start" : !lastStep ? "Next" : (U.round < rounds ? "Round "+(U.round+1)+" of "+rounds : "Done");
   h += '</div><div class="cookfoot hlist">'
-    + '<button class="backb" data-k="cookprev" aria-label="back" onclick="prevStep()">←</button>'
+    + '<button class="backb" data-k="cookprev" aria-label="'+(U.step===0?"Close":"Previous step")+'" onclick="prevStep()">←</button>'
     + '<button class="cta" data-k="cooknext" onclick="nextStep()">'+label+'</button>'
     + '</div>';
   return {show:true, html:h};
@@ -1555,13 +1676,13 @@ function renderTabBar(c){
 function toastHTML(){
   if (!U.toast) return {show:false, html:""};
   let h = '<span>'+U.toast.msg+'</span>';
-  if (U.toast.undo) h += '<button data-k="toastundo" onclick="runToastUndo()">Undo</button>';
+  if (U.toast.undo) h += '<button data-k="toastundo" onclick="runToastUndo()">'+(U.toast.label||"Undo")+'</button>';
   return {show:true, html:h};
 }
 
 /* ============ TOP-LEVEL RENDER ============ */
 function render(){
-  if (U._stale && !U.cook && !U.sheet && !U.fridge) { U._stale = false; try { location.reload(); return; } catch(e) {} }
+  if (STALE && !U.cook && !U.sheet && !U.fridge) { try { location.reload(); return; } catch(e) {} }
   const ae = document.activeElement;
   const fk = ae && ae.dataset ? ae.dataset.k : null;
   /* tabs are replaced wholesale via innerHTML, which wipes anything half-typed.
@@ -1569,6 +1690,7 @@ function render(){
   const typedVal = (ae && ae.tagName==="INPUT" && fk) ? ae.value : null;
   const spentEl = document.getElementById("spentInput");
   const spentVal = spentEl ? spentEl.value : null;
+  pruneCarry();
   const c = compute();
   document.getElementById("tab-tonight").innerHTML = tonightHTML(c);
   document.getElementById("tab-week").innerHTML = weekHTML(c);
@@ -1582,6 +1704,7 @@ function render(){
   const sheetEl = document.getElementById("sheet-overlay");
   sheetEl.innerHTML = sh.html;
   sheetEl.classList.toggle("show", sh.show);
+  sheetEl.setAttribute("aria-label", U.fridge ? "What's in the fridge?" : "Dish details");
   const ck = cookHTML();
   const cookEl = document.getElementById("cook-overlay");
   cookEl.innerHTML = ck.html;
@@ -1598,7 +1721,24 @@ function render(){
     const el = document.getElementById(id); if (!el) return;
     if (overlaid) el.setAttribute("inert",""); else el.removeAttribute("inert");
   });
+  /* position:fixed stops the page scrolling behind an overlay, but on its own it also jumps the
+     page to the top: pin it at the current offset and put the scroll back when the overlay goes */
+  if (overlaid && !U.overlaid) {
+    U.scrollY = window.scrollY || 0;
+    /* fk is what had focus before this render replaced the tabs — the opener */
+    if (!U.returnK && fk) U.returnK = fk;
+    document.body.style.top = -U.scrollY+"px";
+  }
   document.body.classList.toggle("noscroll", overlaid);
+  if (!overlaid && U.overlaid) {
+    document.body.style.top = "";
+    try { window.scrollTo(0, U.scrollY); } catch(e) {}
+    /* focus goes back to whatever opened the overlay, not to <body> */
+    const back = U.returnK && document.querySelector('[data-k="'+U.returnK+'"]');
+    U.returnK = null;
+    if (back && back.focus) back.focus();
+  }
+  U.overlaid = overlaid;
   document.body.classList.toggle("cooking", ck.show);
 
   /* put back what the user had typed, then where they were */
@@ -1620,15 +1760,15 @@ function render(){
     }
   }
 }
-/* Escape backs out of whatever is on top */
 if (typeof document !== "undefined") {
   /* another tab on this origin saved: reload so this tab does not overwrite it on its next save.
      Not mid-typing or mid-cook — that waits until the overlay closes. */
   window.addEventListener("storage", e=>{
     if (e.key !== "lmp") return;
     const typing = document.activeElement && document.activeElement.tagName === "INPUT";
-    if (!U.cook && !U.sheet && !U.fridge && !typing) location.reload(); else U._stale = true;
+    if (!U.cook && !U.sheet && !U.fridge && !typing) location.reload(); else STALE = true;
   });
+  /* Escape backs out of whatever is on top */
   document.addEventListener("keydown", e=>{
     if (e.key !== "Escape") return;
     if (U.cook) { quitCook(); }
@@ -1641,12 +1781,11 @@ if (typeof document !== "undefined") {
    leave one that fails again on every reload — so each attempt throws away strictly more */
 try { render(); } catch (e) {
   delete S.plan; S.protein = {}; S.bought = {}; S.tab = "tonight";
-  S.log = S.log.filter(l=>l && typeof l.d==="string" && Number.isFinite(l.spent) && Number.isFinite(l.meals));
   save();
   try { render(); } catch (e2) {
     try { localStorage.removeItem("lmp"); } catch (e3) {}
-    S = {owned:{oil:true}, locked:[], bought:{}, protein:{}, log:[], recent:[], N:7, v:2, tab:"tonight", price:{}, mugi:false};
-    U = { effort:null, heroIdx:0, sheet:null, cook:null, step:0, serv:1, round:1, priceAll:false, toast:null, _toastTimer:null };
+    /* the same sanitiser as boot, from nothing: seeded shelf, empty ledger, no plan */
+    loadState({}); U = freshU();
     try { render(); } catch (e4) {
       document.getElementById("tab-tonight").className = "wrap tab on";
       document.getElementById("tab-tonight").innerHTML = '<div class="emptycard">Something went wrong, so your saved week was cleared. Reload and tap Generate my week.</div>';
