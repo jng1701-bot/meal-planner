@@ -23,6 +23,27 @@ Tabs: **Tonight** (how much effort have you got?) · **Week** (dishes, the rhyth
 Rice cooker times (manual P.9): white 42–52 min, quick 20–40, cook-in 41–55, risotto 24–34,
 fried rice 34–45.
 
+## Sourced roster, veg floor and the fridge check (25 Sep 2026)
+
+- **45 dishes**, each checked against a published recipe (`src`: Kikkoman, Ajinomoto, NHK
+  きょうの料理, 白ごはん.com, クラシル, DELISH KITCHEN, ニチレイ, COSORI, Just One Cookbook…),
+  linked from the dish sheet. Only the chinchalok omelette and packet gyoza are house recipes.
+  New: chikuzenni (frozen root-veg mix), chicken minestrone, chilli con carne, miso pork &
+  cabbage, chicken & broccoli oyster stir-fry, oyakodon, yaki udon. Retired: bean soup,
+  eggplant dengaku, yaki-onigiri (no protein).
+- **Veg floor**: `vegOf(r)` ≥ 150 g a serving for batch dishes, ≥ 100 g for quick ones
+  (Japan's 350 g/day, a third a meal). Potato is the carb, not a veg. Where an appliance cannot
+  carry that much (the tacook plate), the dish gets an "At each meal" microwave side of frozen
+  spinach or broccoli — fixed per-bowl text, never multiplied by the batch.
+- **Carb portion**: a potato-carb dish carries ≥ 180 g potato; `PC_G.potato` is 130 g (a LIFE
+  男爵 from the bag of 4). The roast is 1½ potatoes a serving, so 4 servings = 6 potatoes.
+- **Fridge check**: the first roll of a week opens "What's in the fridge?" (meat, chilled,
+  produce; tap for a bit / plenty, amounts in `FRIDGE_Q`). Answers replace the carry ledger in
+  grams or pieces, flagged `f:true`. Stated perishables (meat, chilled, ≤5-day produce, or
+  plenty of anything) are **must-use**: a dish is built around each before the rest are drawn;
+  everything else gets a `carryBoost`. The list subtracts what is there. Re-rolls within 3 days
+  do not ask again; "Fridge check" on Week reopens it.
+
 ## Capacity is derived, not asserted
 
 `cap` has been wrong four times, every time because a wanted outcome picked the number. Now:
